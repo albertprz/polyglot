@@ -24,11 +24,10 @@ source-repository head
 
 library
   exposed-modules:
-      SyntaxTrees.Haskell.ClassDef
+      SyntaxTrees.Haskell.Common
       SyntaxTrees.Haskell.DataDef
       SyntaxTrees.Haskell.FnDef
       SyntaxTrees.Haskell.ModuleDef
-      SyntaxTrees.Haskell.Term
   other-modules:
       Paths_haskala
   hs-source-dirs:

@@ -1,23 +1,39 @@
 module SyntaxTrees.Haskell.DataDef  where
 
-import SyntaxTrees.Haskell.Term ( TermName )
+import SyntaxTrees.Haskell.Common ( Term, Type )
 
 data TypeDef = TypeDef {
-    typeAlias  :: TermName
-  , actualType :: TermName
+    alias :: Type
+  , type' :: Type
 }
 
-data NewTypeDef = NewTypeDef TermName FieldDef
+data NewTypeDef = NewTypeDef {
+    type' :: Type
+  , ctor  :: Term
+  , field :: FieldDef
+}
 
-data DataDef = DataDef TermName [DataCtorDef]
+data DataDef = DataDef {
+    type'    :: Type
+  , ctorDefs :: [DataCtorDef]
+}
 
-data DataCtorDef = UnNamedFieldsCtor [UnNamedFieldDef] |
-                   NamedFieldsCtor   [NamedFieldDef]
+data DataCtorDef =
+    UnNamedFieldsCtor {
+    ctor          :: Term
+  , unnamedFields :: [UnNamedFieldDef]
+} | NamedFieldsCtor {
+    ctor        :: Term
+  , namedFields :: [NamedFieldDef]
+}
 
-newtype UnNamedFieldDef = UnNamedFieldDef TermName
-data    NamedFieldDef   = NamedFieldDef {
-     fieldName :: TermName
-  ,  fieldType :: TermName
+newtype UnNamedFieldDef = UnNamedFieldDef {
+    type' :: Type
+}
+
+data NamedFieldDef = NamedFieldDef {
+    name  :: Term
+  , type' :: Type
 }
 
 data FieldDef = UnNamedField UnNamedFieldDef |

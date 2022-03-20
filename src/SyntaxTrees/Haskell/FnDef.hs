@@ -1,59 +1,78 @@
 module SyntaxTrees.Haskell.FnDef  where
 
-import SyntaxTrees.Haskell.Term ( TermName, Literal )
+import SyntaxTrees.Haskell.Common ( Term, Literal, Type, TypeParameter, Class, Pattern )
 
 
 data FnDef = FnDef {
-    name :: TermName
-  , sig :: FnSig
+    name  :: Term
+  , sig   :: FnSig
+  , exprs :: [FnExpr]
+}
+
+data LocalFnDef = LocalFnDef {
+    name  :: Term
   , exprs :: [FnExpr]
 }
 
 data FnSig = FnSig {
-    name :: TermName
-  , types :: [TermName]
+    name        :: Term
+  , constraints :: [ClassConstraint]
+  , types       :: [Type]
+  , paramTypes  :: [TypeParameter]
 }
+
+
+data ClassDef = ClassDef {
+    name        :: Class
+  , constraints :: [ClassConstraint]
+  , typeParam   :: TypeParameter
+  , sigs        :: [FnSig]
+}
+
+data InstanceDef = InstanceDef {
+    class' :: Class
+  , type'  :: Type
+  , defs   :: LocalFnDef
+}
+
+data ClassConstraint = ClassConstraint Class Type
+
+
 
 data FnExpr = FnExpr {
-     args :: [TermName]
+     args :: [Term]
   ,  body :: FnBody
 }
 
-data FnBody = FnApply {
-    name :: TermName
-  , args :: [TermName]
+data FnBody =
+    FnApply {
+    name :: Term
+  , args :: [Term]
 } | LambdaExpr {
-     args :: [TermName]
-  ,  body :: FnBody
+    args :: [Term]
+  , body :: FnBody
 } | LetExpr {
-     fnBindings :: [LocalFnDef]
-  ,  body :: FnBody
+    fnBindings :: [LocalFnDef]
+  , body       :: FnBody
 } | IfExpr {
-     cond :: FnBody
-  ,  ifBranch :: FnBody
-  ,  elseBranch :: FnBody
+    cond       :: FnBody
+  , ifBranch   :: FnBody
+  , elseBranch :: FnBody
+} | MultiWayIfExpr {
+    whenExprs :: [WhenExpr]
+  , otherwiseBranch :: FnBody
 } | DoExpr {
-     steps :: [DoStep]
-  ,  last  :: FnBody
-} | MatchExpr {
-     cases :: [CaseBinding]
-} | Var TermName
+    steps :: [DoStep]
+  , last  :: FnBody
+} | CaseOfExpr {
+    cases :: [CaseBinding]
+} | Var Term
   | Lit Literal
 
-data LocalFnDef = LocalFnDef {
-    name :: TermName
-  , exprs :: [FnExpr]
+data WhenExpr = WhenExpr {
+    cond       :: FnBody
+  , ifBranch   :: FnBody
 }
 
-data DoStep = DoBinding TermName FnBody | Body FnBody
-
+data DoStep = DoBinding Term FnBody | Body FnBody
 data CaseBinding = CaseBinding Pattern FnBody
-
-data Pattern = CtorPattern TermName [TermName] |
-               VarPattern TermName |
-               LitPattern Literal
-
-data Ctor = Ctor {
-    ctorName :: TermName
-  , fields :: TermName
-}
