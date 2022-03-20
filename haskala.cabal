@@ -24,6 +24,7 @@ source-repository head
 
 library
   exposed-modules:
+      Parsers.Haskell.Common
       SyntaxTrees.Haskell.Common
       SyntaxTrees.Haskell.DataDef
       SyntaxTrees.Haskell.FnDef

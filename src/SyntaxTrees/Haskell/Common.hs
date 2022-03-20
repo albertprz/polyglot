@@ -1,25 +1,33 @@
 module SyntaxTrees.Haskell.Common  where
 
-type Literal = String
-type Term    = String
+data Literal = IntLit String |
+               FloatLit String |
+               CharLit String |
+               StringLit String deriving Show
 
-type SimpleType    = String
-type TypeParameter = String
-type TypeCtor      = String
+newtype Var    = Var String deriving Show
+newtype Ctor   = Ctor String deriving Show
+newtype VarOp  = VarOp String deriving Show
+newtype CtorOp = CtorOp String deriving Show
 
-type Class  = String
-type Module = String
+newtype TypeVar   = TypeVar String deriving Show
+newtype TypeCtor  = TypeCtor String deriving Show
+newtype TypeParam = TypeParam String deriving Show
 
-data Type = SimpleType' SimpleType |
-            TypeParameter' TypeParameter |
-            TypeCtor' TypeCtor [Type] |
-            Arrow' [Type]
+data AnyKindedType = ZeroKinded Type |
+                     NonZeroKinded TypeCtor deriving Show
 
-data Pattern = CtorPattern' CtorPattern |
-               VarPattern' Term |
-               LitPattern' Literal
+newtype Class  = Class String deriving Show
+newtype Module = Module String deriving Show
 
-data CtorPattern = CtorPattern {
-    ctor   :: Term
-  , fields :: [Term]
-}
+data Type = Arrow      [Type] |
+            TypeApply  TypeCtor [Type] |
+            TypeVar'   TypeVar |
+            TypeParam' TypeParam deriving Show
+
+data Pattern = CtorPattern {
+    ctor   :: Ctor
+  , fields :: [Pattern]
+} | VarPattern Var
+  | LitPattern Literal
+  | Wildcard  deriving Show
