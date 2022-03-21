@@ -23,7 +23,9 @@ data AnyKindedType = TypeValue Type |
 newtype Class  = Class String deriving Show
 newtype Module = Module [String] deriving Show
 
-data Type = TypeApply  TypeCtor [Type] |
+data Type = CtorTypeApply TypeCtor [Type] |
+            ParamTypeApply TypeParam [Type] |
+            NestedTypeApply Type [Type] |
             TypeVar'   TypeVar |
             TypeParam' TypeParam deriving Show
 

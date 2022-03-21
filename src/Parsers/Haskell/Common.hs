@@ -2,9 +2,10 @@ module Parsers.Haskell.Common  where
 
 import SyntaxTrees.Haskell.Common ( Type(..), Module(..), Class(..), TypeCtor(..),
                                     TypeParam(..), CtorOp(..), VarOp(..),
-                                    Literal(..), Var(..), Ctor(..), TypeVar(..), AnyKindedType (TypeFn, TypeValue) )
+                                    Literal(..), Var(..), Ctor(..), TypeVar(..),
+                                    AnyKindedType (..))
 
-import Parser (Parser)
+import Parser (Parser, runParser)
 import ParserCombinators ( (<|>), (|*), (|+), IsMatch (oneOf, is, isNot), maybeWithin )
 import Parsers.String ( withinDoubleQuotes, withinQuotes, spacing, withinParens,
                         withinSquareBrackets)
@@ -17,7 +18,7 @@ token = maybeWithin spacing
 literal :: Parser Literal
 literal = IntLit . show <$> int <|>
           FloatLit . show <$> double <|>
-          CharLit . (:[]) <$> withinQuotes char <|>
+          CharLit . (: []) <$> withinQuotes char <|>
           StringLit <$> withinDoubleQuotes (isNot '"' |*)
 
 var :: Parser Var
@@ -58,10 +59,13 @@ module' = Module <$> ((:) <$> ident upper <*> ((dot *> ident upper) |*))
 type' :: Parser Type
 type' = token $ arrow <|> typeApply <|> elem'  where
 
-  typeApply  = TypeApply <$> typeCtor <*> (typeApplyElem |+)
-  arrow      = TypeApply Arrow <$> ((:) <$> arrowElem <*> ((is "->" *> arrowElem) |+))
-  tuple      = TypeApply Tuple <$> withinParens ((:) <$> type' <*> ((comma *> type') |+))
-  list       = TypeApply List . (: []) <$> withinSquareBrackets type'
+  typeApply = CtorTypeApply   <$> typeCtor               <*> (typeApplyElem |+) <|>
+              ParamTypeApply  <$> typeParam              <*> (typeApplyElem |+) <|>
+              NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
+
+  arrow      = CtorTypeApply Arrow <$> ((:) <$> arrowElem <*> ((is "->" *> arrowElem) |+))
+  tuple      = CtorTypeApply Tuple <$> withinParens ((:) <$> type' <*> ((comma *> type') |+))
+  list       = CtorTypeApply List . (: []) <$> withinSquareBrackets type'
   typeVar'   = TypeVar'   <$> typeVar
   typeParam' = TypeParam' <$> typeParam
 
