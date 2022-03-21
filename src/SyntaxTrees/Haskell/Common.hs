@@ -10,18 +10,20 @@ newtype Ctor   = Ctor String deriving Show
 newtype VarOp  = VarOp String deriving Show
 newtype CtorOp = CtorOp String deriving Show
 
-newtype TypeVar   = TypeVar String deriving Show
-newtype TypeCtor  = TypeCtor String deriving Show
 newtype TypeParam = TypeParam String deriving Show
 
-data AnyKindedType = ZeroKinded Type |
-                     NonZeroKinded TypeCtor deriving Show
+data TypeVar   = TypeVar String | Unit deriving Show
+
+data TypeCtor = TypeCtor String |
+                Arrow | Tuple | List deriving Show
+
+data AnyKindedType = TypeValue Type |
+                     TypeFn TypeCtor deriving Show
 
 newtype Class  = Class String deriving Show
-newtype Module = Module String deriving Show
+newtype Module = Module [String] deriving Show
 
-data Type = Arrow      [Type] |
-            TypeApply  TypeCtor [Type] |
+data Type = TypeApply  TypeCtor [Type] |
             TypeVar'   TypeVar |
             TypeParam' TypeParam deriving Show
 
