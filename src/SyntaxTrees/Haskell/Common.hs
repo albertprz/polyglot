@@ -23,6 +23,8 @@ data AnyKindedType = TypeValue Type |
 newtype Class  = Class String deriving Show
 newtype Module = Module [String] deriving Show
 
+data ClassConstraint = ClassConstraint Class Type
+
 data Type = CtorTypeApply TypeCtor [Type] |
             ParamTypeApply TypeParam [Type] |
             NestedTypeApply Type [Type] |

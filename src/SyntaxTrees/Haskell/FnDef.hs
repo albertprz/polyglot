@@ -1,47 +1,23 @@
 module SyntaxTrees.Haskell.FnDef  where
 
-import SyntaxTrees.Haskell.Common ( Var, Literal, Type, TypeParam, Class, Pattern, AnyKindedType )
-import Data.Set (Set)
+import SyntaxTrees.Haskell.Common ( Pattern, Literal, Var, Type,
+                                    ClassConstraint )
 
 
 data FnDef = FnDef {
     name  :: Var
-  , sig   :: FnSig
   , exprs :: [FnExpr]
 }
-
-data LocalFnDef = LocalFnDef {
-    name  :: Var
-  , exprs :: [FnExpr]
-}
-
-data ClassDef = ClassDef {
-    name        :: Class
-  , constraints :: [ClassConstraint]
-  , typeParam   :: TypeParam
-  , sigs        :: [FnSig]
-}
-
-data InstanceDef = InstanceDef {
-    class' :: Class
-  , type'  :: AnyKindedType
-  , defs   :: LocalFnDef
-}
-
-
-data ClassConstraint = ClassConstraint Class Type
-
 
 data FnSig = FnSig {
     name        :: Var
   , constraints :: [ClassConstraint]
   , types       :: [Type]
-  , paramTypes  :: Set TypeParam
 }
 
 data FnExpr = FnExpr {
-     args :: [Var]
-  ,  body :: FnBody
+     args :: [Pattern]
+  ,  guardedFns :: [GuardedFnBody]
 }
 
 data FnBody =
@@ -52,7 +28,7 @@ data FnBody =
     args :: [Var]
   , body :: FnBody
 } | LetExpr {
-    fnBindings :: [LocalFnDef]
+    fnBindings :: [FnDef]
   , body       :: FnBody
 } | IfExpr {
     cond       :: FnBody
@@ -74,5 +50,10 @@ data WhenExpr = WhenExpr {
   , ifBranch   :: FnBody
 }
 
+data GuardedFnBody = GuardedFnBody {
+    guards :: [FnBody]
+  , body :: FnBody
+}
+
 data DoStep = DoBinding Var FnBody | Body FnBody
-data CaseBinding = CaseBinding Pattern FnBody
+data CaseBinding = CaseBinding Pattern GuardedFnBody

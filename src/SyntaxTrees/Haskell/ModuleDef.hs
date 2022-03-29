@@ -2,7 +2,9 @@ module SyntaxTrees.Haskell.ModuleDef  where
 
 import SyntaxTrees.Haskell.Common ( Module, Var, Type )
 import SyntaxTrees.Haskell.DataDef ( TypeDef,  NewTypeDef, DataDef )
-import SyntaxTrees.Haskell.FnDef ( FnDef, ClassDef, InstanceDef )
+import SyntaxTrees.Haskell.FnDef ( FnDef, FnSig  )
+import SyntaxTrees.Haskell.ClassDef ( ClassDef, InstanceDef )
+
 
 data ModuleDef = ModuleDef  {
     name    :: Module
@@ -25,5 +27,6 @@ data InternalDef = TypeDef' TypeDef |
                    NewTypeDef' NewTypeDef |
                    DataDef' DataDef |
                    FnDef' FnDef |
+                   FnSig' FnSig |
                    ClassDef' ClassDef |
                    InstanceDef' InstanceDef

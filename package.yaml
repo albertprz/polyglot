@@ -31,38 +31,52 @@ ghc-options:
 - -Wredundant-constraints
 
 default-extensions:
+# Syntax
 - LambdaCase
-- EmptyCase
-- EmptyDataDecls
 - MultiWayIf
-- ApplicativeDo
 - TupleSections
-- NamedFieldPuns
 - PostfixOperators
 
-- BangPatterns
-- PatternSynonyms
+# Types
+- RankNTypes
+- ExplicitForAll
+- ScopedTypeVariables
+- LiberalTypeSynonyms
+- InstanceSigs
+- FunctionalDependencies
 
+# Records
+- DuplicateRecordFields
+- NoFieldSelectors
+- NamedFieldPuns
+- RecordWildCards
+- OverloadedRecordDot
+
+# Type Classes
+- ConstrainedClassMethods
+- MultiParamTypeClasses
 - FlexibleContexts
 - FlexibleInstances
-- MultiParamTypeClasses
 
+# Convenience
+- ApplicativeDo
+- ParallelListComp
+- MonadComprehensions
+
+# Type Level Programming
 - GADTs
 - TypeFamilies
-- FunctionalDependencies
 - TypeFamilyDependencies
-- TypeApplications
-- ScopedTypeVariables
 - DataKinds
 - PolyKinds
 
+# Deriving
 - DeriveFunctor
 - DeriveFoldable
 - DeriveTraversable
 - DeriveGeneric
 - GeneralizedNewtypeDeriving
 
-- DuplicateRecordFields
 
 library:
   source-dirs: src

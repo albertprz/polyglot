@@ -5,21 +5,21 @@ import SyntaxTrees.Haskell.Common ( Type(..), Module(..), Class(..), TypeCtor(..
                                     Literal(..), Var(..), Ctor(..), TypeVar(..),
                                     AnyKindedType (..))
 
-import Parser (Parser, runParser)
-import ParserCombinators ( (<|>), (|*), (|+), IsMatch (oneOf, is, isNot), maybeWithin )
+import Parser (Parser, runParser, withTransform, exactly)
+import ParserCombinators ( (<|>), (|*), (|+), IsMatch (oneOf, is, isNot),
+                           maybeWithin, manySeparatedBy, anySeparatedBy)
 import Parsers.String ( withinDoubleQuotes, withinQuotes, spacing, withinParens,
                         withinSquareBrackets)
-import Parsers.Char (lower, alphaNum, underscore, quote, upper, char, colon, dot, comma)
+import Parsers.Char
+
 import Parsers.Number ( double, int )
 
-token :: Parser a -> Parser a
-token = maybeWithin spacing
 
 literal :: Parser Literal
-literal = IntLit . show <$> int <|>
-          FloatLit . show <$> double <|>
+literal = IntLit . show    <$> int               <|>
+          FloatLit . show  <$> double            <|>
           CharLit . (: []) <$> withinQuotes char <|>
-          StringLit <$> withinDoubleQuotes (isNot '"' |*)
+          StringLit        <$> withinDoubleQuotes (isNot '"' |*)
 
 var :: Parser Var
 var = Var <$> ident lower
@@ -57,29 +57,28 @@ module' :: Parser Module
 module' = Module <$> ((:) <$> ident upper <*> ((dot *> ident upper) |*))
 
 type' :: Parser Type
-type' = token $ arrow <|> typeApply <|> elem'  where
+type' = arrow <|> typeApply <|> elem'
+  where
+    typeApply  = CtorTypeApply   <$> typeCtor               <*> (typeApplyElem |+) <|>
+                 ParamTypeApply  <$> typeParam              <*> (typeApplyElem |+) <|>
+                 NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
 
-  typeApply = CtorTypeApply   <$> typeCtor               <*> (typeApplyElem |+) <|>
-              ParamTypeApply  <$> typeParam              <*> (typeApplyElem |+) <|>
-              NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
+    arrow      = CtorTypeApply Arrow <$> manySeparatedBy (is "->") arrowElem
+    tuple      = CtorTypeApply Tuple <$> (withinParens $ manySeparatedBy comma type')
+    list       = CtorTypeApply List  <$> ((: []) <$> withinSquareBrackets type')
+    typeVar'   = TypeVar'   <$> typeVar
+    typeParam' = TypeParam' <$> typeParam
 
-  arrow      = CtorTypeApply Arrow <$> ((:) <$> arrowElem <*> ((is "->" *> arrowElem) |+))
-  tuple      = CtorTypeApply Tuple <$> withinParens ((:) <$> type' <*> ((comma *> type') |+))
-  list       = CtorTypeApply List . (: []) <$> withinSquareBrackets type'
-  typeVar'   = TypeVar'   <$> typeVar
-  typeParam' = TypeParam' <$> typeParam
-
-  typeApplyElem = token $ withinParens (arrow <|> typeApply) <|> elem'
-  arrowElem     = token $ withinParens arrow  <|> typeApply  <|> elem'
-  elem'         = tuple <|> list <|> typeVar' <|> typeParam'
+    typeApplyElem = elem'     <|> withinParens (arrow <|> typeApply)
+    arrowElem     = typeApply <|> elem'      <|> withinParens arrow
 
 
 
 ident :: Parser Char -> Parser String
-ident start = (:) <$> start <*> (idChar |*)
+ident start = token $ (:) <$> start <*> (idChar |*)
 
 operator :: Parser Char -> Parser String
-operator start = (:) <$> start <*> ((opSymbol <|> colon) |*)
+operator start = token $ (:) <$> start <*> ((opSymbol <|> colon) |*)
 
 idChar :: Parser Char
 idChar = alphaNum <|> underscore <|> quote
@@ -87,3 +86,6 @@ idChar = alphaNum <|> underscore <|> quote
 opSymbol :: Parser Char
 opSymbol = oneOf ['!', '#', '$', '%', '&', '⋆', '+', '.', '/', '<', '=',
                 '>', '?', '@', '\\', '|', '^', '|', '-', '~']
+
+token :: Parser a -> Parser a
+token = withTransform $ maybeWithin spacing

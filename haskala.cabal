@@ -25,6 +25,8 @@ source-repository head
 library
   exposed-modules:
       Parsers.Haskell.Common
+      Parsers.Haskell.DataDef
+      SyntaxTrees.Haskell.ClassDef
       SyntaxTrees.Haskell.Common
       SyntaxTrees.Haskell.DataDef
       SyntaxTrees.Haskell.FnDef
@@ -35,24 +37,30 @@ library
       src
   default-extensions:
       LambdaCase
-      EmptyCase
-      EmptyDataDecls
       MultiWayIf
-      ApplicativeDo
       TupleSections
-      NamedFieldPuns
       PostfixOperators
-      BangPatterns
-      PatternSynonyms
+      RankNTypes
+      ExplicitForAll
+      ScopedTypeVariables
+      LiberalTypeSynonyms
+      InstanceSigs
+      FunctionalDependencies
+      DuplicateRecordFields
+      NoFieldSelectors
+      NamedFieldPuns
+      RecordWildCards
+      OverloadedRecordDot
+      ConstrainedClassMethods
+      MultiParamTypeClasses
       FlexibleContexts
       FlexibleInstances
-      MultiParamTypeClasses
+      ApplicativeDo
+      ParallelListComp
+      MonadComprehensions
       GADTs
       TypeFamilies
-      FunctionalDependencies
       TypeFamilyDependencies
-      TypeApplications
-      ScopedTypeVariables
       DataKinds
       PolyKinds
       DeriveFunctor
@@ -60,7 +68,6 @@ library
       DeriveTraversable
       DeriveGeneric
       GeneralizedNewtypeDeriving
-      DuplicateRecordFields
   ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
@@ -76,24 +83,30 @@ executable haskala-exe
       app
   default-extensions:
       LambdaCase
-      EmptyCase
-      EmptyDataDecls
       MultiWayIf
-      ApplicativeDo
       TupleSections
-      NamedFieldPuns
       PostfixOperators
-      BangPatterns
-      PatternSynonyms
+      RankNTypes
+      ExplicitForAll
+      ScopedTypeVariables
+      LiberalTypeSynonyms
+      InstanceSigs
+      FunctionalDependencies
+      DuplicateRecordFields
+      NoFieldSelectors
+      NamedFieldPuns
+      RecordWildCards
+      OverloadedRecordDot
+      ConstrainedClassMethods
+      MultiParamTypeClasses
       FlexibleContexts
       FlexibleInstances
-      MultiParamTypeClasses
+      ApplicativeDo
+      ParallelListComp
+      MonadComprehensions
       GADTs
       TypeFamilies
-      FunctionalDependencies
       TypeFamilyDependencies
-      TypeApplications
-      ScopedTypeVariables
       DataKinds
       PolyKinds
       DeriveFunctor
@@ -101,7 +114,6 @@ executable haskala-exe
       DeriveTraversable
       DeriveGeneric
       GeneralizedNewtypeDeriving
-      DuplicateRecordFields
   ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

@@ -3,18 +3,12 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-snapshots:
-- original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/14.yaml
-  completed:
-    sha256: 87842ecbaa8ca9cee59a7e6be52369dbed82ed075cb4e0d152614a627e8fd488
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/14.yaml
-    size: 586069
+snapshots: []
 packages:
 - original:
-    hackage: bookhound-0.1.3.0
+    hackage: bookhound-0.1.7.0
   completed:
     pantry-tree:
-      sha256: acc1a65f692ca4381c8b793f5fc7e3407b0dd983e0dbe8b62441f482d4f1edcf
-      size: 1593
-    hackage: bookhound-0.1.3.0@sha256:4c2e110c9d263c46cff6e35ea520ac0d0fefe4b8c94c0ccd45c7ca89f7a0c95d,2211
+      sha256: b043f8708fba545b9969adc1bd2006708074d5d3f1c58de9f46f2abb32a77c28
+      size: 1640
+    hackage: bookhound-0.1.7.0@sha256:6828732dea36fc7ce0ed79eeba1fdb963a2874eedb475f93159b0d738f7b399c,2323
