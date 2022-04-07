@@ -1,7 +1,8 @@
 module SyntaxTrees.Haskell.FnDef  where
 
-import SyntaxTrees.Haskell.Common ( Pattern, Literal, Var, Type,
-                                    ClassConstraint )
+import SyntaxTrees.Haskell.Common ( Var, Literal )
+import SyntaxTrees.Haskell.Type ( Type )
+import SyntaxTrees.Haskell.Pattern ( Pattern )
 
 
 data FnDef = FnDef {
@@ -10,13 +11,14 @@ data FnDef = FnDef {
 }
 
 data FnSig = FnSig {
-    name        :: Var
-  , constraints :: [ClassConstraint]
-  , types       :: [Type]
+    name  :: Var
+  , type' :: Type
 }
 
+data FnDefOrSig = Def FnDef | Sig FnSig
+
 data FnExpr = FnExpr {
-     args :: [Pattern]
+     args       :: [Pattern]
   ,  guardedFns :: [GuardedFnBody]
 }
 
@@ -28,7 +30,7 @@ data FnBody =
     args :: [Var]
   , body :: FnBody
 } | LetExpr {
-    fnBindings :: [FnDef]
+    fnBindings :: [FnDefOrSig]
   , body       :: FnBody
 } | IfExpr {
     cond       :: FnBody
@@ -42,7 +44,9 @@ data FnBody =
   , last  :: FnBody
 } | CaseOfExpr {
     cases :: [CaseBinding]
-} | Var Var
+} | Tuple
+  | List
+  | Var Var
   | Lit Literal
 
 data WhenExpr = WhenExpr {

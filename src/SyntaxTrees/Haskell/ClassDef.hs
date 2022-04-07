@@ -1,19 +1,20 @@
 module SyntaxTrees.Haskell.ClassDef  where
 
-import SyntaxTrees.Haskell.Common ( AnyKindedType, TypeParam,
-                                    Class, ClassConstraint )
-import SyntaxTrees.Haskell.FnDef ( FnDef, FnSig )
+import SyntaxTrees.Haskell.Common ( Class )
+import SyntaxTrees.Haskell.Type ( ClassConstraint, AnyKindedType, TypeParam )
+import SyntaxTrees.Haskell.FnDef ( FnDefOrSig )
 
 
 data ClassDef = ClassDef {
-    name        :: Class
-  , constraints :: [ClassConstraint]
-  , typeParam   :: [TypeParam]
-  , sigs        :: [FnSig]
+    constraints :: [ClassConstraint]
+  , name        :: Class
+  , typeParams  :: [TypeParam]
+  , defs        :: [FnDefOrSig]
 }
 
 data InstanceDef = InstanceDef {
-    class' :: Class
-  , type'  :: AnyKindedType
-  , defs   :: FnDef
+    constraints :: [ClassConstraint]
+  , class'      :: Class
+  , types       :: [AnyKindedType]
+  , defs        :: [FnDefOrSig]
 }

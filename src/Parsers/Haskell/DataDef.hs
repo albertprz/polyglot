@@ -1,18 +1,24 @@
 module Parsers.Haskell.DataDef  where
 
-import Parser (Parser, runParser)
-import Parsers.String
+import Parser (Parser)
+import Parsers.String ( withinCurlyBrackets )
 
 import ParserCombinators
+    ( anySeparatedBy, someSeparatedBy,
+      (|?), (|*), (<|>), (<#>), IsMatch(..) )
 
-import SyntaxTrees.Haskell.Common
+import SyntaxTrees.Haskell.Common ( Class )
 
+import Parsers.Haskell.Type
+    ( typeParam, typeVar, anyKindedType, type' )
 
 import SyntaxTrees.Haskell.DataDef
+    ( DataCtorDef(..), DataDef(..), FieldDef(..), NamedFieldDef(..),
+      NewTypeDef(..), TypeDef(..), UnNamedFieldDef(..) )
 
 
-import Parsers.Haskell.Common
-import Parsers.Char
+import Parsers.Haskell.Common ( class', ctor, var )
+import Parsers.Char ( comma, colon, equal )
 import Data.Foldable(toList)
 
 
@@ -51,7 +57,8 @@ fieldDef = UnNamedField <$> unNamedFieldDef <|>
 
 dataCtorDef :: Parser DataCtorDef
 dataCtorDef = NamedFieldsCtor   <$> ctor
-                                <*> (withinCurlyBrackets $ anySeparatedBy comma namedFieldDef) <|>
+                                <*> (withinCurlyBrackets $
+                                     anySeparatedBy comma namedFieldDef) <|>
               UnNamedFieldsCtor <$> ctor
                                 <*> (unNamedFieldDef |*)
 

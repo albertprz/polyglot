@@ -1,6 +1,7 @@
 module SyntaxTrees.Haskell.ModuleDef  where
 
-import SyntaxTrees.Haskell.Common ( Module, Var, Type )
+import SyntaxTrees.Haskell.Common ( Module, Var )
+import SyntaxTrees.Haskell.Type ( Type )
 import SyntaxTrees.Haskell.DataDef ( TypeDef,  NewTypeDef, DataDef )
 import SyntaxTrees.Haskell.FnDef ( FnDef, FnSig  )
 import SyntaxTrees.Haskell.ClassDef ( ClassDef, InstanceDef )

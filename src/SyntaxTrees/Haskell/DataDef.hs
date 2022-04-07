@@ -1,7 +1,7 @@
 module SyntaxTrees.Haskell.DataDef  where
 
-import SyntaxTrees.Haskell.Common ( Var, Type, TypeVar, AnyKindedType,
-                                    Ctor, TypeParam, Class )
+import SyntaxTrees.Haskell.Common ( Class, Ctor, Var )
+import SyntaxTrees.Haskell.Type ( Type, AnyKindedType, TypeVar, TypeParam )
 
 
 data TypeDef = TypeDef {

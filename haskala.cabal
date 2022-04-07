@@ -26,11 +26,15 @@ library
   exposed-modules:
       Parsers.Haskell.Common
       Parsers.Haskell.DataDef
+      Parsers.Haskell.Pattern
+      Parsers.Haskell.Type
       SyntaxTrees.Haskell.ClassDef
       SyntaxTrees.Haskell.Common
       SyntaxTrees.Haskell.DataDef
       SyntaxTrees.Haskell.FnDef
       SyntaxTrees.Haskell.ModuleDef
+      SyntaxTrees.Haskell.Pattern
+      SyntaxTrees.Haskell.Type
   other-modules:
       Paths_haskala
   hs-source-dirs:
