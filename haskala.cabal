@@ -26,6 +26,7 @@ library
   exposed-modules:
       Parsers.Haskell.Common
       Parsers.Haskell.DataDef
+      Parsers.Haskell.FnDef
       Parsers.Haskell.Pattern
       Parsers.Haskell.Type
       SyntaxTrees.Haskell.ClassDef

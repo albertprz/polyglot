@@ -5,59 +5,70 @@ import SyntaxTrees.Haskell.Type ( Type )
 import SyntaxTrees.Haskell.Pattern ( Pattern )
 
 
-data FnDef = FnDef {
-    name  :: Var
-  , exprs :: [FnExpr]
-}
-
 data FnSig = FnSig {
     name  :: Var
   , type' :: Type
 }
 
+data FnDef = FnDef {
+     name          :: Var
+  ,  args          :: [Pattern]
+  ,  body          :: MaybeGuardedFnBody
+}
+
 data FnDefOrSig = Def FnDef | Sig FnSig
 
-data FnExpr = FnExpr {
-     args       :: [Pattern]
-  ,  guardedFns :: [GuardedFnBody]
-}
 
 data FnBody =
     FnApply {
-    fn   :: Var
-  , args :: [Var]
+    fn   :: FnBody
+  , args :: [FnBody]
+} | OperatorFnApply {
+    fn :: FnBody
+  , args :: [FnBody]
 } | LambdaExpr {
-    args :: [Var]
+    vars :: [Var]
   , body :: FnBody
 } | LetExpr {
     fnBindings :: [FnDefOrSig]
   , body       :: FnBody
+} | WhereExpr {
+    body       :: FnBody
+  , fnBindings :: [FnDefOrSig]
 } | IfExpr {
     cond       :: FnBody
   , ifBranch   :: FnBody
   , elseBranch :: FnBody
 } | MultiWayIfExpr {
-    whenExprs :: [WhenExpr]
-  , otherwiseBranch :: FnBody
+    whenExprs :: [GuardedFnBody]
 } | DoExpr {
     steps :: [DoStep]
-  , last  :: FnBody
 } | CaseOfExpr {
-    cases :: [CaseBinding]
-} | Tuple
-  | List
-  | Var Var
-  | Lit Literal
+    matchee :: FnBody
+  , cases   :: [CaseBinding]
+} | Tuple [FnBody]
+  | List [FnBody]
+  | Var' Var
+  | Literal' Literal
 
-data WhenExpr = WhenExpr {
-    cond       :: FnBody
-  , ifBranch   :: FnBody
-}
+
+data DoStep = DoBinding Var FnBody
+            | Body FnBody
+
+data CaseBinding = CaseBinding Pattern MaybeGuardedFnBody
+
+
+
+data MaybeGuardedFnBody = Guarded [GuardedFnBody]
+                        | Standard FnBody
 
 data GuardedFnBody = GuardedFnBody {
-    guards :: [FnBody]
+    guard :: Guard
   , body :: FnBody
 }
 
-data DoStep = DoBinding Var FnBody | Body FnBody
-data CaseBinding = CaseBinding Pattern GuardedFnBody
+data Guard = Guard [PatternGuard]
+
+data PatternGuard = PatternGuard Pattern FnBody
+                  | SimpleGuard FnBody
+                  | Otherwise
