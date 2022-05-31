@@ -3,4 +3,4 @@ packages:
 resolver:
   compiler: ghc-9.2.1
 extra-deps:
-- bookhound-0.1.7.0
+- bookhound-0.1.8.0

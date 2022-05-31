@@ -1,12 +1,11 @@
 module Parsers.Haskell.FnDef  where
 
-import SyntaxTrees.Haskell.Common
-import SyntaxTrees.Haskell.Type
-import SyntaxTrees.Haskell.Pattern
+
 import SyntaxTrees.Haskell.FnDef
 import Parsers.Haskell.Common
 import Parsers.Haskell.Type
 import Parsers.Haskell.Pattern
+
 
 import Parser
 import ParserCombinators
@@ -28,12 +27,14 @@ fnDefOrSig = Def <$> fnDef <|>
 
 
 fnBody :: Parser FnBody
-fnBody = _ where
+fnBody = openForm where
 
-  fnApply = FnApply <$> fnBody <*> (fnBody |*)
+  fnApply = FnApply <$> delimitedForm <*> (delimitedForm |+)
 
-  lambdaExpr = LambdaExpr <$> (is '\\' *> someSeparatedBy comma var)
-                          <*> (is "->" *> fnBody)
+  infixFnApply = uncurry InfixFnApply <$> sepByOp fnOp (complexInfixForm <|> singleForm)
+
+  lambdaExpr = LambdaExpr <$> (is '\\' *> someSepBy comma var)
+                          <*> (is "->" *> openForm)
 
   letExpr = LetExpr <$> (is "let" *> withinContext fnDefOrSig)
                     <*> (is "in"  *> fnBody)
@@ -41,25 +42,40 @@ fnBody = _ where
   whereExpr = WhereExpr <$> fnBody <* is "where"
                         <*> withinContext fnDefOrSig
 
-  ifExpr = IfExpr <$> (is "if"   *> fnBody)
-                  <*> (is "then" *> fnBody)
-                  <*> (is "else" *> fnBody)
+  ifExpr = IfExpr <$> (is "if"   *> openForm)
+                  <*> (is "then" *> openForm)
+                  <*> (is "else" *> openForm)
 
   multiWayIfExpr = MultiWayIfExpr <$> withinContext (guardedFnBody (is "->"))
 
   doExpr = DoExpr <$> (is "do" *> withinContext doStep)
 
-  caseOfExpr = CaseOfExpr <$> (is "case" *> fnBody <* is "of")
+  caseOfExpr = CaseOfExpr <$> (is "case" *> openForm <* is "of")
                           <*> withinContext caseBinding
 
-  tuple = tupleOf fnBody
+  tuple = Tuple <$> tupleOf openForm
 
-  list = listOf fnBody
+  list = List <$> listOf openForm
 
-  var' = Var' <$> var
+  fnOp = VarOp' <$> varOp <|> CtorOp' <$> ctorOp
+
+  fnVar = FnVar' . Var' <$> var <|> FnVar' . Ctor' <$> ctor
 
   literal' = Literal' <$> literal
 
+  openForm =    complexForm <|> singleForm
+
+  delimitedForm =   singleForm <|> withinParens complexForm
+
+  singleForm = fnVar <|> literal' <|> tuple <|> list
+
+  complexForm =  infixFnApply <|> complexInfixForm
+
+  complexInfixForm =  fnApply <|> lambdaExpr <|>
+                letExpr
+                <|> ifExpr <|>
+                multiWayIfExpr <|> doExpr <|> caseOfExpr <|> withinParens infixFnApply
+                -- <|> whereExpr
 
 
 
@@ -80,7 +96,7 @@ guardedFnBody sep = GuardedFnBody <$> guard <* sep <*> fnBody
 
 
 guard :: Parser Guard
-guard = Guard <$> (is "|" *> someSeparatedBy comma patternGuard)
+guard = Guard <$> (is "|" *> someSepBy comma patternGuard)
 
 
 patternGuard :: Parser PatternGuard
@@ -90,4 +106,4 @@ patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>
 
 
 withinContext :: Parser b -> Parser [b]
-withinContext parser =  withinCurlyBrackets $ someSeparatedBy (is ";") parser
+withinContext parser =  withinCurlyBrackets $ someSepBy (is ";") parser

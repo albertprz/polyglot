@@ -7,7 +7,7 @@ import SyntaxTrees.Haskell.Type
 
 import Parser ( Parser )
 import ParserCombinators
-    ( someSeparatedBy, manySeparatedBy, (|+), (<|>), IsMatch(is) )
+    ( someSepBy, manySepBy, (|+), (<|>), IsMatch(is) )
 import Parsers.String
     ( maybeWithinParens, withinSquareBrackets, withinParens )
 import Parsers.Char ( comma, dot, upper, lower )
@@ -48,15 +48,15 @@ type' = maybeWithinParens $ typeScope <|> classScope <|> type''
                ParamTypeApply  <$> typeParam              <*> (typeApplyElem |+) <|>
                NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
 
-  arrow      = CtorTypeApply Arrow     <$> manySeparatedBy (is "->") arrowElem
-  tuple      = CtorTypeApply TupleType <$> (withinParens $ manySeparatedBy comma type'')
+  arrow      = CtorTypeApply Arrow     <$> manySepBy (is "->") arrowElem
+  tuple      = CtorTypeApply TupleType <$> (withinParens $ manySepBy comma type'')
   list       = CtorTypeApply ListType  <$> ((: []) <$> withinSquareBrackets type'')
   typeVar'   = TypeVar'                <$> typeVar
   typeParam' = TypeParam'              <$> typeParam
 
-  typeScope  = TypeScope  <$> (is "forall" *> someSeparatedBy dot typeParam <* dot)
+  typeScope  = TypeScope  <$> (is "forall" *> someSepBy dot typeParam <* dot)
                           <*> (classScope <|> type'')
-  classScope = ClassScope <$> (((withinParens $ manySeparatedBy comma classConstraint') <|>
+  classScope = ClassScope <$> (((withinParens $ manySepBy comma classConstraint') <|>
                                 (: []) <$> classConstraint) <* (is "=>"))
                           <*> type''
 

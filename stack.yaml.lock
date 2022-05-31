@@ -3,12 +3,12 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-snapshots: []
 packages:
-- original:
-    hackage: bookhound-0.1.7.0
-  completed:
+- completed:
+    hackage: bookhound-0.1.8.0@sha256:01fb793653fbcfb9c6f77798a259aac0eb63859d3a17b98e9e8fb94298d5a6e6,2323
     pantry-tree:
-      sha256: b043f8708fba545b9969adc1bd2006708074d5d3f1c58de9f46f2abb32a77c28
       size: 1640
-    hackage: bookhound-0.1.7.0@sha256:6828732dea36fc7ce0ed79eeba1fdb963a2874eedb475f93159b0d738f7b399c,2323
+      sha256: bf91277480a07b18029a5eb1cde02d034b5d7e7329e58ffd8771e622cb38e0e2
+  original:
+    hackage: bookhound-0.1.8.0
+snapshots: []

@@ -5,9 +5,9 @@ import Parsers.Haskell.Common ( token, ctor, var, literal, ctorOp )
 import SyntaxTrees.Haskell.Common ()
 import SyntaxTrees.Haskell.Pattern ( Pattern(..) )
 
-import Parser ( Parser, runParser )
+import Parser ( Parser  )
 import ParserCombinators
-    ( anySeparatedBy, manySeparatedBy, (|?), (|+), (<|>), IsMatch(is), someSeparatedBy )
+    ( anySepBy, manySepBy, (|?), (|+), (<|>), IsMatch(is), sepByOp)
 import Parsers.String
     ( withinCurlyBrackets, maybeWithinParens, withinParens )
 import Parsers.Char ( underscore, comma )
@@ -31,9 +31,9 @@ pattern' = maybeWithinParens pattern''
   wildcard = Wildcard    <$  token underscore
 
   list          = ListPattern  <$> listOf pattern'
-  tuple         = TuplePattern <$> (withinParens $ manySeparatedBy comma pattern')
+  tuple         = TuplePattern <$> (withinParens $ manySepBy comma pattern')
   recordField   = (,)          <$> var <*> ((is "=" *> pattern'') |?)
-  recordShape p = withinCurlyBrackets  (anySeparatedBy comma p)
+  recordShape p = withinCurlyBrackets  (anySepBy comma p)
 
 
   elem'         = literal' <|> var' <|> wildcard <|> nullaryCtor <|>
@@ -48,11 +48,3 @@ pattern' = maybeWithinParens pattern''
                   ctor' <|> infixCtor
 
   pattern''     = alias <|> infixCtor <|> ctor' <|> ctorElem'
-
-
-sepByOp :: Parser a -> Parser b -> Parser (a, [b])
-sepByOp sep p = do x1 <- p
-                   op <- sep
-                   xs <- someSeparatedBy sep p
-                   pure $ (op, x1 : xs)
-

@@ -1,6 +1,6 @@
 module SyntaxTrees.Haskell.FnDef  where
 
-import SyntaxTrees.Haskell.Common ( Var, Literal )
+import SyntaxTrees.Haskell.Common ( Var, Literal, VarOp, Ctor, CtorOp )
 import SyntaxTrees.Haskell.Type ( Type )
 import SyntaxTrees.Haskell.Pattern ( Pattern )
 
@@ -8,23 +8,23 @@ import SyntaxTrees.Haskell.Pattern ( Pattern )
 data FnSig = FnSig {
     name  :: Var
   , type' :: Type
-}
+} deriving Show
 
 data FnDef = FnDef {
      name          :: Var
   ,  args          :: [Pattern]
   ,  body          :: MaybeGuardedFnBody
-}
+} deriving Show
 
-data FnDefOrSig = Def FnDef | Sig FnSig
+data FnDefOrSig = Def FnDef | Sig FnSig deriving Show
 
 
 data FnBody =
     FnApply {
     fn   :: FnBody
   , args :: [FnBody]
-} | OperatorFnApply {
-    fn :: FnBody
+} | InfixFnApply {
+    fnOp :: FnOp
   , args :: [FnBody]
 } | LambdaExpr {
     vars :: [Var]
@@ -48,27 +48,32 @@ data FnBody =
   , cases   :: [CaseBinding]
 } | Tuple [FnBody]
   | List [FnBody]
-  | Var' Var
-  | Literal' Literal
+  | FnVar' FnVar
+  | Literal' Literal deriving Show
+
+data FnVar = Var' Var |
+            Ctor' Ctor deriving Show
+
+data FnOp = VarOp' VarOp |
+            CtorOp' CtorOp deriving Show
 
 
 data DoStep = DoBinding Var FnBody
-            | Body FnBody
+            | Body FnBody deriving Show
 
-data CaseBinding = CaseBinding Pattern MaybeGuardedFnBody
-
+data CaseBinding = CaseBinding Pattern MaybeGuardedFnBody deriving Show
 
 
 data MaybeGuardedFnBody = Guarded [GuardedFnBody]
-                        | Standard FnBody
+                        | Standard FnBody deriving Show
 
 data GuardedFnBody = GuardedFnBody {
     guard :: Guard
   , body :: FnBody
-}
+} deriving Show
 
-data Guard = Guard [PatternGuard]
+data Guard = Guard [PatternGuard] deriving Show
 
 data PatternGuard = PatternGuard Pattern FnBody
                   | SimpleGuard FnBody
-                  | Otherwise
+                  | Otherwise deriving Show

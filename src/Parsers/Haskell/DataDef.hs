@@ -4,7 +4,7 @@ import Parser (Parser)
 import Parsers.String ( withinCurlyBrackets )
 
 import ParserCombinators
-    ( anySeparatedBy, someSeparatedBy,
+    ( anySepBy, someSepBy,
       (|?), (|*), (<|>), (<#>), IsMatch(..) )
 
 import SyntaxTrees.Haskell.Common ( Class )
@@ -40,7 +40,7 @@ dataDef = DataDef <$> (is "data" *> typeVar)
                   <*> (mconcat . toList <$> alternatives)
                   <*> derivingList
   where
-    alternatives = ((equal *> someSeparatedBy (is "|") dataCtorDef) |?)
+    alternatives = ((equal *> someSepBy (is "|") dataCtorDef) |?)
 
 
 namedFieldDef :: Parser NamedFieldDef
@@ -58,10 +58,10 @@ fieldDef = UnNamedField <$> unNamedFieldDef <|>
 dataCtorDef :: Parser DataCtorDef
 dataCtorDef = NamedFieldsCtor   <$> ctor
                                 <*> (withinCurlyBrackets $
-                                     anySeparatedBy comma namedFieldDef) <|>
+                                     anySepBy comma namedFieldDef) <|>
               UnNamedFieldsCtor <$> ctor
                                 <*> (unNamedFieldDef |*)
 
 derivingList :: Parser [Class]
 derivingList = mconcat . toList <$>
-                  ((is "deriving" *> anySeparatedBy comma class') |?)
+                  ((is "deriving" *> anySepBy comma class') |?)

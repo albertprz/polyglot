@@ -25,4 +25,4 @@ data Pattern
   | VarPattern Var
   | LitPattern Literal
   | Wildcard
-  deriving (Show)
+  deriving Show
