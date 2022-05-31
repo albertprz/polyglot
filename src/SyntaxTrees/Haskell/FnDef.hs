@@ -1,11 +1,11 @@
 module SyntaxTrees.Haskell.FnDef where
 
-import SyntaxTrees.Haskell.Common (Ctor, CtorOp, Literal, Var, VarOp)
-import SyntaxTrees.Haskell.Pattern (Pattern)
-import SyntaxTrees.Haskell.Type (Type)
+import           SyntaxTrees.Haskell.Common  (Ctor, CtorOp, Literal, Var, VarOp)
+import           SyntaxTrees.Haskell.Pattern (Pattern)
+import           SyntaxTrees.Haskell.Type    (Type)
 
 data FnSig = FnSig
-  { name :: Var,
+  { name  :: Var,
     type' :: Type
   }
   deriving (Show)
@@ -17,11 +17,12 @@ data FnDef = FnDef
   }
   deriving (Show)
 
-data FnDefOrSig = Def FnDef | Sig FnSig deriving (Show)
+data FnDefOrSig = Def FnDef | Sig FnSig
+  deriving (Show)
 
 data FnBody
   = FnApply
-      { fn :: FnBody,
+      { fn   :: FnBody,
         args :: [FnBody]
       }
   | InfixFnApply
@@ -34,15 +35,15 @@ data FnBody
       }
   | LetExpr
       { fnBindings :: [FnDefOrSig],
-        body :: FnBody
+        body       :: FnBody
       }
   | WhereExpr
-      { body :: FnBody,
+      { body       :: FnBody,
         fnBindings :: [FnDefOrSig]
       }
   | IfExpr
-      { cond :: FnBody,
-        ifBranch :: FnBody,
+      { cond       :: FnBody,
+        ifBranch   :: FnBody,
         elseBranch :: FnBody
       }
   | MultiWayIfExpr
@@ -53,7 +54,7 @@ data FnBody
       }
   | CaseOfExpr
       { matchee :: FnBody,
-        cases :: [CaseBinding]
+        cases   :: [CaseBinding]
       }
   | Tuple [FnBody]
   | List [FnBody]
@@ -76,7 +77,8 @@ data DoStep
   | Body FnBody
   deriving (Show)
 
-data CaseBinding = CaseBinding Pattern MaybeGuardedFnBody deriving (Show)
+data CaseBinding = CaseBinding Pattern MaybeGuardedFnBody
+  deriving (Show)
 
 data MaybeGuardedFnBody
   = Guarded [GuardedFnBody]
@@ -85,11 +87,12 @@ data MaybeGuardedFnBody
 
 data GuardedFnBody = GuardedFnBody
   { guard :: Guard,
-    body :: FnBody
+    body  :: FnBody
   }
   deriving (Show)
 
-data Guard = Guard [PatternGuard] deriving (Show)
+data Guard = Guard [PatternGuard]
+  deriving (Show)
 
 data PatternGuard
   = PatternGuard Pattern FnBody

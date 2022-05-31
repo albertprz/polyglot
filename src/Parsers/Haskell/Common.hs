@@ -1,41 +1,23 @@
 module Parsers.Haskell.Common where
 
-import Parser (Parser, withTransform)
-import ParserCombinators
-  ( IsMatch (is, isNot, oneOf),
-    maybeWithin,
-    (<|>),
-    (|*),
-  )
-import Parsers.Char
-  ( alphaNum,
-    char,
-    colon,
-    dot,
-    lower,
-    quote,
-    underscore,
-    upper,
-  )
-import Parsers.Number (double, int)
-import Parsers.String (spacing, withinDoubleQuotes, withinQuotes)
-import SyntaxTrees.Haskell.Common
-  ( Class (..),
-    Ctor (..),
-    CtorOp (..),
-    Literal (..),
-    Module (..),
-    Var (..),
-    VarOp (..),
-  )
+import           Parser                     (Parser, withTransform)
+import           ParserCombinators          (IsMatch (is, isNot, oneOf),
+                                             maybeWithin, (<|>), (|*))
+import           Parsers.Char               (alphaNum, char, colon, dot, lower,
+                                             quote, underscore, upper)
+import           Parsers.Number             (double, int)
+import           Parsers.String             (spacing, withinDoubleQuotes,
+                                             withinQuotes)
+import           SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
+                                             Literal (..), Module (..),
+                                             Var (..), VarOp (..))
 
 literal :: Parser Literal
-literal =
-  UnitLit <$ is "()"
-    <|> IntLit . show <$> int
-    <|> FloatLit . show <$> double
-    <|> CharLit . (: []) <$> withinQuotes char
-    <|> StringLit <$> withinDoubleQuotes (isNot '"' |*)
+literal = UnitLit <$ is "()" <|>
+          IntLit . show <$> int <|>
+          FloatLit . show <$> double <|>
+          CharLit . (: []) <$> withinQuotes char <|>
+          StringLit <$> withinDoubleQuotes (isNot '"' |*)
 
 var :: Parser Var
 var = Var <$> ident lower
@@ -53,20 +35,21 @@ class' :: Parser Class
 class' = Class <$> ident upper
 
 module' :: Parser Module
-module' = Module <$> ((:) <$> ident upper <*> ((dot *> ident upper) |*))
+module' = Module <$> ((:) <$> ident upper
+                          <*> ((dot *> ident upper) |*))
 
 ident :: Parser Char -> Parser String
 ident start = token $ (:) <$> start <*> (idChar |*)
 
 operator :: Parser Char -> Parser String
-operator start = token $ (:) <$> start <*> ((opSymbol <|> colon) |*)
+operator start = token $ (:) <$> start
+                             <*> ((opSymbol <|> colon) |*)
 
 idChar :: Parser Char
 idChar = alphaNum <|> underscore <|> quote
 
 opSymbol :: Parser Char
-opSymbol =
-  oneOf
+opSymbol = oneOf
     [ '!', '#', '$', '%', '&', '⋆', '+', '.', '/',
       '<', '=', '>', '?', '@', '\\', '|', '^', '|',
       '-', '~']

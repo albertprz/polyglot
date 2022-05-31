@@ -1,10 +1,11 @@
 module SyntaxTrees.Haskell.Pattern where
 
-import SyntaxTrees.Haskell.Common (Ctor, CtorOp, Literal, Var)
+import           SyntaxTrees.Haskell.Common (Ctor, CtorOp, Literal, Var)
+
 
 data Pattern
   = CtorPattern
-      { ctor :: Ctor,
+      { ctor   :: Ctor,
         fields :: [Pattern]
       }
   | InfixCtorPattern
@@ -12,11 +13,11 @@ data Pattern
         fields :: [Pattern]
       }
   | RecordPattern
-      { ctor :: Ctor,
+      { ctor        :: Ctor,
         namedFields :: [(Var, Maybe Pattern)]
       }
   | WildcardRecordPattern
-      { ctor :: Ctor,
+      { ctor        :: Ctor,
         namedFields :: [(Var, Maybe Pattern)]
       }
   | AliasedPattern Var Pattern

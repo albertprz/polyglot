@@ -1,8 +1,10 @@
 module SyntaxTrees.Haskell.Type where
 
-import SyntaxTrees.Haskell.Common (Class)
+import           SyntaxTrees.Haskell.Common (Class)
 
-newtype TypeParam = TypeParam String deriving (Show)
+
+newtype TypeParam = TypeParam String
+  deriving (Show)
 
 data TypeVar
   = TypeVar String
@@ -21,7 +23,9 @@ data AnyKindedType
   | TypeFn TypeCtor
   deriving (Show)
 
-data ClassConstraint = ClassConstraint Class Type deriving (Show)
+data ClassConstraint
+  = ClassConstraint Class Type
+  deriving (Show)
 
 data Type
   = CtorTypeApply TypeCtor [Type]
