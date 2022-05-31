@@ -1,6 +1,6 @@
 module SyntaxTrees.Haskell.Pattern where
 
-import SyntaxTrees.Haskell.Common (Ctor, Literal, Var, CtorOp)
+import SyntaxTrees.Haskell.Common (Ctor, CtorOp, Literal, Var)
 
 data Pattern
   = CtorPattern
@@ -25,4 +25,4 @@ data Pattern
   | VarPattern Var
   | LitPattern Literal
   | Wildcard
-  deriving Show
+  deriving (Show)

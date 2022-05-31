@@ -1,69 +1,89 @@
 module Parsers.Haskell.Type where
 
+import Parser (Parser)
+import ParserCombinators
+  ( IsMatch (is),
+    manySepBy,
+    someSepBy,
+    (<|>),
+    (|+),
+  )
+import Parsers.Char (comma, dot, lower, upper)
+import Parsers.Collections ()
+import Parsers.Haskell.Common (class', ident)
+import Parsers.Number ()
+import Parsers.String
+  ( maybeWithinParens,
+    withinParens,
+    withinSquareBrackets,
+  )
 import SyntaxTrees.Haskell.Common ()
 import SyntaxTrees.Haskell.Type
-    ( Type(..), ClassConstraint(..), AnyKindedType(..),
-      TypeCtor(..), TypeVar(..), TypeParam(..) )
-
-import Parser ( Parser )
-import ParserCombinators
-    ( someSepBy, manySepBy, (|+), (<|>), IsMatch(is) )
-import Parsers.String
-    ( maybeWithinParens, withinSquareBrackets, withinParens )
-import Parsers.Char ( comma, dot, upper, lower )
-
-import Parsers.Number ()
-import Parsers.Collections ()
-import Parsers.Haskell.Common ( class', ident )
-
-
+  ( AnyKindedType (..),
+    ClassConstraint (..),
+    Type (..),
+    TypeCtor (..),
+    TypeParam (..),
+    TypeVar (..),
+  )
 
 typeParam :: Parser TypeParam
 typeParam = TypeParam <$> ident lower
 
 typeVar :: Parser TypeVar
-typeVar = TypeVar  <$> ident upper <|>
-          UnitType <$  is "()"
+typeVar =
+  TypeVar <$> ident upper
+    <|> UnitType <$ is "()"
 
 typeCtor :: Parser TypeCtor
-typeCtor = TypeCtor  <$> ident upper <|>
-           Arrow     <$  is "(->)"   <|>
-           TupleType <$  is "(,)"    <|>
-           ListType  <$  is "[]"
+typeCtor =
+  TypeCtor <$> ident upper
+    <|> Arrow <$ is "(->)"
+    <|> TupleType <$ is "(,)"
+    <|> ListType <$ is "[]"
 
 anyKindedType :: Parser AnyKindedType
-anyKindedType = TypeValue <$> type'   <|>
-                TypeFn    <$> typeCtor
+anyKindedType =
+  TypeValue <$> type'
+    <|> TypeFn <$> typeCtor
 
 classConstraint :: Parser ClassConstraint
 classConstraint = ClassConstraint <$> class' <*> type'
 
-
 type' :: Parser Type
 type' = maybeWithinParens $ typeScope <|> classScope <|> type''
   where
-  type''     = arrow <|> typeApply  <|> elem'
+    type'' = arrow <|> typeApply <|> elem'
 
-  typeApply  = CtorTypeApply   <$> typeCtor               <*> (typeApplyElem |+) <|>
-               ParamTypeApply  <$> typeParam              <*> (typeApplyElem |+) <|>
-               NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
+    typeApply =
+      CtorTypeApply <$> typeCtor <*> (typeApplyElem |+)
+        <|> ParamTypeApply <$> typeParam <*> (typeApplyElem |+)
+        <|> NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
 
-  arrow      = CtorTypeApply Arrow     <$> manySepBy (is "->") arrowElem
-  tuple      = CtorTypeApply TupleType <$> (withinParens $ manySepBy comma type'')
-  list       = CtorTypeApply ListType  <$> ((: []) <$> withinSquareBrackets type'')
-  typeVar'   = TypeVar'                <$> typeVar
-  typeParam' = TypeParam'              <$> typeParam
+    arrow = CtorTypeApply Arrow <$> manySepBy (is "->") arrowElem
+    tuple = CtorTypeApply TupleType <$> (withinParens $ manySepBy comma type'')
+    list = CtorTypeApply ListType <$> ((: []) <$> withinSquareBrackets type'')
 
-  typeScope  = TypeScope  <$> (is "forall" *> someSepBy dot typeParam <* dot)
-                          <*> (classScope <|> type'')
-  classScope = ClassScope <$> (((withinParens $ manySepBy comma classConstraint') <|>
-                                (: []) <$> classConstraint) <* (is "=>"))
-                          <*> type''
+    typeVar' = TypeVar' <$> typeVar
+    typeParam' = TypeParam' <$> typeParam
 
-  classConstraint' = ClassConstraint <$> class'
-                                     <*> (elem' <|> withinParens (arrow <|> typeApply))
+    typeScope =
+      TypeScope <$> (is "forall" *> someSepBy dot typeParam <* dot)
+        <*> (classScope <|> type'')
+    classScope =
+      ClassScope
+        <$> (classScopeHelper <* (is "=>")) <*> type''
 
-  typeApplyElem = elem'     <|> withinParens (arrow <|> typeApply)
-  arrowElem     = typeApply <|> elem'      <|> withinParens arrow
-  elem'         = typeVar'  <|> typeParam' <|> tuple <|> list  <|>
-                  withinParens (typeScope  <|> classScope)
+    classScopeHelper =
+      (withinParens $ manySepBy comma classConstraint')
+        <|> (: []) <$> classConstraint
+
+    classConstraint' =
+      ClassConstraint <$> class'
+        <*> (elem' <|> withinParens (arrow <|> typeApply))
+
+    typeApplyElem = elem' <|> withinParens (arrow <|> typeApply)
+    arrowElem = typeApply <|> elem' <|> withinParens arrow
+    elem' =
+      typeVar' <|> typeParam' <|> tuple <|> list
+        <|> withinParens (typeScope <|> classScope)
