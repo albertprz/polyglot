@@ -2,7 +2,7 @@ module Parsers.Haskell.Common where
 
 import           Parser                     (Parser, withTransform)
 import           ParserCombinators          (IsMatch (is, isNot, oneOf),
-                                             maybeWithin, (<|>), (|*))
+                                             maybeWithin, (<|>), (|*), someSepBy)
 import           Parsers.Char               (alphaNum, char, colon, dot, lower,
                                              quote, underscore, upper)
 import           Parsers.Number             (double, int)
@@ -35,8 +35,7 @@ class' :: Parser Class
 class' = Class <$> ident upper
 
 module' :: Parser Module
-module' = Module <$> ((:) <$> ident upper
-                          <*> ((dot *> ident upper) |*))
+module' = Module <$> someSepBy dot (ident upper)
 
 ident :: Parser Char -> Parser String
 ident start = token $ (:) <$> start <*> (idChar |*)

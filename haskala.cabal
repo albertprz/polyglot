@@ -28,6 +28,7 @@ library
       Parsers.Haskell.Common
       Parsers.Haskell.DataDef
       Parsers.Haskell.FnDef
+      Parsers.Haskell.ModuleDef
       Parsers.Haskell.Pattern
       Parsers.Haskell.Type
       SyntaxTrees.Haskell.ClassDef

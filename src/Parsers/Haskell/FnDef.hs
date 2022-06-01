@@ -45,7 +45,7 @@ fnBody = openForm
     letExpr = LetExpr <$> (is "let" *> withinContext fnDefOrSig)
                       <*> (is "in"  *> fnBody)
 
-    whereExpr = WhereExpr <$> fnBody <* is "where"
+    whereExpr = WhereExpr <$> withinCurlyBrackets fnBody <* is "where"
                           <*> withinContext fnDefOrSig
 
     ifExpr = IfExpr <$> (is "if"   *> openForm)
@@ -79,7 +79,7 @@ fnBody = openForm
 
     complexForm = infixFnApply <|> complexInfixForm
 
-    complexInfixForm = fnApply <|> lambdaExpr <|> letExpr <|>
+    complexInfixForm = fnApply <|> lambdaExpr <|> letExpr <|> whereExpr <|>
                        ifExpr <|> multiWayIfExpr <|> doExpr <|>
                        caseOfExpr <|> withinParens infixFnApply
 
