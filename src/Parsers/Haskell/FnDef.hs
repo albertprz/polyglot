@@ -1,14 +1,23 @@
 module Parsers.Haskell.FnDef where
 
-import           Parser
-import           ParserCombinators
-import           Parsers.Char
+import           Parser                    (Parser)
+import           ParserCombinators         (IsMatch (is), sepByOp, someSepBy,
+                                            (<|>), (|*), (|+))
+import           Parsers.Char              (comma)
 import           Parsers.Collections       (listOf, tupleOf)
-import           Parsers.Haskell.Common
-import           Parsers.Haskell.Pattern
-import           Parsers.Haskell.Type
-import           Parsers.String
-import           SyntaxTrees.Haskell.FnDef
+import           Parsers.Haskell.Common    (ctor, ctorOp, literal, var, varOp)
+import           Parsers.Haskell.Pattern   (pattern')
+import           Parsers.Haskell.Type      (type')
+import           Parsers.String            (withinCurlyBrackets, withinParens)
+import           SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..),
+                                            FnBody (CaseOfExpr, DoExpr, FnApply, FnVar', IfExpr, InfixFnApply, LambdaExpr, LetExpr, List, Literal', MultiWayIfExpr, Tuple, WhereExpr),
+                                            FnDef (FnDef), FnDefOrSig (..),
+                                            FnOp (CtorOp', VarOp'),
+                                            FnSig (FnSig), FnVar (Ctor', Var'),
+                                            Guard (..),
+                                            GuardedFnBody (GuardedFnBody),
+                                            MaybeGuardedFnBody (..),
+                                            PatternGuard (..))
 
 
 fnSig :: Parser FnSig

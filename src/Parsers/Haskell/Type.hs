@@ -4,7 +4,7 @@ import           Parser                     (Parser)
 import           ParserCombinators          (IsMatch (is), manySepBy, someSepBy,
                                              (<|>), (|+))
 import           Parsers.Char               (comma, dot, lower, upper)
-import           Parsers.Collections        ()
+import           Parsers.Collections        (tupleOf)
 import           Parsers.Haskell.Common     (class', ident)
 import           Parsers.Number             ()
 import           Parsers.String             (maybeWithinParens, withinParens,
@@ -19,21 +19,27 @@ typeParam :: Parser TypeParam
 typeParam = TypeParam <$> ident lower
 
 typeVar :: Parser TypeVar
-typeVar = TypeVar <$> ident upper <|>
+typeVar = TypeVar  <$> ident upper <|>
           UnitType <$ is "()"
 
 typeCtor :: Parser TypeCtor
 typeCtor = TypeCtor  <$> ident upper <|>
-           Arrow     <$ is "(->)" <|>
-           TupleType <$ is "(,)" <|>
-           ListType  <$ is "[]"
+           Arrow     <$  is "(->)" <|>
+           TupleType <$  is "(,)" <|>
+           ListType  <$  is "[]"
 
 anyKindedType :: Parser AnyKindedType
 anyKindedType = TypeValue <$> type' <|>
-                TypeFn <$> typeCtor
+                TypeFn    <$> typeCtor
 
-classConstraint :: Parser ClassConstraint
-classConstraint = ClassConstraint <$> class' <*> type'
+
+classConstraints :: Parser Type -> Parser [ClassConstraint]
+classConstraints typeParser = tupleOf (classConstraint typeParser) <|>
+                (: []) <$> classConstraint typeParser
+
+classConstraint :: Parser Type -> Parser ClassConstraint
+classConstraint typeParser = ClassConstraint <$> class' <*> typeParser
+
 
 type' :: Parser Type
 type' = maybeWithinParens $ typeScope <|> classScope <|> type''
@@ -53,15 +59,12 @@ type' = maybeWithinParens $ typeScope <|> classScope <|> type''
 
     typeScope = TypeScope <$> (is "forall" *> someSepBy dot typeParam <* dot)
                           <*> (classScope <|> type'')
-    classScope = ClassScope <$> (classScopeHelper <* (is "=>"))
+    classScope = ClassScope <$> (classConstraints' <* (is "=>"))
                             <*> type''
 
-    classScopeHelper = (withinParens $ manySepBy comma classConstraint') <|>
-                       (: []) <$> classConstraint
+    classConstraints' = classConstraints
+                        (elem' <|> withinParens (arrow <|> typeApply))
 
-    classConstraint' = ClassConstraint <$> class'
-                                       <*> (elem' <|>
-                                            withinParens (arrow <|> typeApply))
 
     typeApplyElem = elem' <|> withinParens (arrow <|> typeApply)
     arrowElem     = typeApply <|> elem' <|> withinParens arrow
