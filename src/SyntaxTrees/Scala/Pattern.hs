@@ -1,6 +1,6 @@
 module SyntaxTrees.Scala.Pattern where
 
-import           SyntaxTrees.Scala.Common (Ctor, CtorOp, Literal, Var)
+import SyntaxTrees.Scala.Common (Ctor, CtorOp, Literal, Var)
 
 data Pattern
   = CtorPattern

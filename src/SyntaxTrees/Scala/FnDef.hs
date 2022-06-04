@@ -1,10 +1,8 @@
 module SyntaxTrees.Scala.FnDef where
 
-import           SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier,
-                                            Var, VarOp)
-import           SyntaxTrees.Scala.Pattern (Pattern)
-import           SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam,
-                                            UsingArgList)
+import SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier, Var, VarOp)
+import SyntaxTrees.Scala.Pattern (Pattern)
+import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
 
 
 data VarDef

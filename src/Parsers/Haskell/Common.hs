@@ -1,16 +1,15 @@
 module Parsers.Haskell.Common where
 
-import           Parser                     (Parser, withTransform)
-import           ParserCombinators          (IsMatch (is, isNot, oneOf),
-                                             maybeWithin, (<|>), (|*), someSepBy)
-import           Parsers.Char               (alphaNum, char, colon, dot, lower,
-                                             quote, underscore, upper)
-import           Parsers.Number             (double, int)
-import           Parsers.String             (spacing, withinDoubleQuotes,
-                                             withinQuotes)
-import           SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
-                                             Literal (..), Module (..),
-                                             Var (..), VarOp (..))
+import Parser                     (Parser, withTransform)
+import ParserCombinators          (IsMatch (is, isNot, oneOf), maybeWithin,
+                                   someSepBy, (<|>), (|*))
+import Parsers.Char               (alphaNum, char, colon, dot, lower, quote,
+                                   underscore, upper)
+import Parsers.Number             (double, int)
+import Parsers.String             (spacing, withinDoubleQuotes, withinQuotes)
+import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
+                                   Literal (..), Module (..), Var (..),
+                                   VarOp (..))
 
 literal :: Parser Literal
 literal = UnitLit <$ is "()" <|>

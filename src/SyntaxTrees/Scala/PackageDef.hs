@@ -1,8 +1,8 @@
 module SyntaxTrees.Scala.PackageDef where
 
-import           SyntaxTrees.Scala.Common  (Package, Var)
-import           SyntaxTrees.Scala.DataDef (InternalDef)
-import           SyntaxTrees.Scala.Type    (TypeVar)
+import SyntaxTrees.Scala.Common  (Package, Var)
+import SyntaxTrees.Scala.DataDef (InternalDef)
+import SyntaxTrees.Scala.Type    (TypeVar)
 
 
 data PackageDef

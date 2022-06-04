@@ -1,23 +1,21 @@
 module Parsers.Haskell.ModuleDef where
 
 
-import           Parsers.Haskell.ClassDef      (classDef, instanceDef)
-import           Parsers.Haskell.Common        (module', var)
-import           Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
-import           Parsers.Haskell.FnDef         (fnDef, fnSig, withinContext)
-import           Parsers.Haskell.Type          (typeVar)
-import           SyntaxTrees.Haskell.ModuleDef (InternalDef (..),
-                                                ModuleDef (ModuleDef),
-                                                ModuleExport (ModuleExport),
-                                                ModuleExportDef (DataExport, FilteredDataExport, FnExport, FullDataExport),
-                                                ModuleImport (ModuleImport),
-                                                ModuleImportDef (DataImport, FilteredDataImport, FnImport, FullDataImport))
+import Parsers.Haskell.ClassDef      (classDef, instanceDef)
+import Parsers.Haskell.Common        (module', var)
+import Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
+import Parsers.Haskell.FnDef         (fnDef, fnSig, withinContext)
+import Parsers.Haskell.Type          (typeVar)
+import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (ModuleDef),
+                                      ModuleExport (ModuleExport),
+                                      ModuleExportDef (DataExport, FilteredDataExport, FnExport, FullDataExport),
+                                      ModuleImport (ModuleImport),
+                                      ModuleImportDef (DataImport, FilteredDataImport, FnImport, FullDataImport))
 
-import           Parser                        (Parser)
-import           ParserCombinators             (IsMatch (is), anySepBy, (<|>),
-                                                (|*), (|?))
-import           Parsers.Char                  (comma)
-import           Parsers.String                (withinParens)
+import Parser            (Parser)
+import ParserCombinators (IsMatch (is), anySepBy, (<|>), (|*), (|?))
+import Parsers.Char      (comma)
+import Parsers.String    (withinParens)
 
 
 moduleDef :: Parser ModuleDef

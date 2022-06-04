@@ -1,6 +1,6 @@
 module SyntaxTrees.Scala.Type where
 
-import           SyntaxTrees.Scala.Common (Modifier, Var)
+import SyntaxTrees.Scala.Common (Modifier, Var)
 
 
 newtype TypeParam

@@ -1,9 +1,10 @@
 module SyntaxTrees.Haskell.Type where
 
-import           SyntaxTrees.Haskell.Common (Class)
+import SyntaxTrees.Haskell.Common (Class)
 
 
-newtype TypeParam = TypeParam String
+newtype TypeParam
+  = TypeParam String
   deriving (Show)
 
 data TypeVar

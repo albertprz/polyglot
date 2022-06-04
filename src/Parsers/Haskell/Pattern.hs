@@ -1,15 +1,15 @@
 module Parsers.Haskell.Pattern where
 
-import           Parser                      (Parser)
-import           ParserCombinators           (IsMatch (is), anySepBy, manySepBy,
-                                              sepByOp, (<|>), (|+), (|?))
-import           Parsers.Char                (comma, underscore)
-import           Parsers.Collections         (listOf)
-import           Parsers.Haskell.Common      (ctor, ctorOp, literal, token, var)
-import           Parsers.String              (maybeWithinParens,
-                                              withinCurlyBrackets, withinParens)
-import           SyntaxTrees.Haskell.Common  ()
-import           SyntaxTrees.Haskell.Pattern (Pattern (..))
+import Parser                      (Parser)
+import ParserCombinators           (IsMatch (is), anySepBy, manySepBy, sepByOp,
+                                    (<|>), (|+), (|?))
+import Parsers.Char                (comma, underscore)
+import Parsers.Collections         (listOf)
+import Parsers.Haskell.Common      (ctor, ctorOp, literal, token, var)
+import Parsers.String              (maybeWithinParens, withinCurlyBrackets,
+                                    withinParens)
+import SyntaxTrees.Haskell.Common  ()
+import SyntaxTrees.Haskell.Pattern (Pattern (..))
 
 
 pattern' :: Parser Pattern

@@ -1,50 +1,54 @@
 module SyntaxTrees.Haskell.FnDef where
 
-import           SyntaxTrees.Haskell.Common  (Ctor, CtorOp, Literal, Var, VarOp)
-import           SyntaxTrees.Haskell.Pattern (Pattern)
-import           SyntaxTrees.Haskell.Type    (Type)
+import SyntaxTrees.Haskell.Common  (Ctor, CtorOp, Literal, Var, VarOp)
+import SyntaxTrees.Haskell.Pattern (Pattern)
+import SyntaxTrees.Haskell.Type    (Type)
 
-data FnSig = FnSig
-  { name  :: Var,
-    type' :: Type
-  }
+data FnSig
+  = FnSig
+      { name  :: Var
+      , type' :: Type
+      }
   deriving (Show)
 
-data FnDef = FnDef
-  { name :: Var,
-    args :: [Pattern],
-    body :: MaybeGuardedFnBody
-  }
+data FnDef
+  = FnDef
+      { name :: Var
+      , args :: [Pattern]
+      , body :: MaybeGuardedFnBody
+      }
   deriving (Show)
 
-data FnDefOrSig = Def FnDef | Sig FnSig
+data FnDefOrSig
+  = Def FnDef
+  | Sig FnSig
   deriving (Show)
 
 data FnBody
   = FnApply
-      { fn   :: FnBody,
-        args :: [FnBody]
+      { fn   :: FnBody
+      , args :: [FnBody]
       }
   | InfixFnApply
-      { fnOp :: FnOp,
-        args :: [FnBody]
+      { fnOp :: FnOp
+      , args :: [FnBody]
       }
   | LambdaExpr
-      { vars :: [Var],
-        body :: FnBody
+      { vars :: [Var]
+      , body :: FnBody
       }
   | LetExpr
-      { fnBindings :: [FnDefOrSig],
-        body       :: FnBody
+      { fnBindings :: [FnDefOrSig]
+      , body       :: FnBody
       }
   | WhereExpr
-      { body       :: FnBody,
-        fnBindings :: [FnDefOrSig]
+      { body       :: FnBody
+      , fnBindings :: [FnDefOrSig]
       }
   | IfExpr
-      { cond       :: FnBody,
-        ifBranch   :: FnBody,
-        elseBranch :: FnBody
+      { cond       :: FnBody
+      , ifBranch   :: FnBody
+      , elseBranch :: FnBody
       }
   | MultiWayIfExpr
       { whenExprs :: [GuardedFnBody]
@@ -53,8 +57,8 @@ data FnBody
       { steps :: [DoStep]
       }
   | CaseOfExpr
-      { matchee :: FnBody,
-        cases   :: [CaseBinding]
+      { matchee :: FnBody
+      , cases   :: [CaseBinding]
       }
   | Tuple [FnBody]
   | List [FnBody]
@@ -77,7 +81,8 @@ data DoStep
   | Body FnBody
   deriving (Show)
 
-data CaseBinding = CaseBinding Pattern MaybeGuardedFnBody
+data CaseBinding
+  = CaseBinding Pattern MaybeGuardedFnBody
   deriving (Show)
 
 data MaybeGuardedFnBody
@@ -85,13 +90,15 @@ data MaybeGuardedFnBody
   | Standard FnBody
   deriving (Show)
 
-data GuardedFnBody = GuardedFnBody
-  { guard :: Guard,
-    body  :: FnBody
-  }
+data GuardedFnBody
+  = GuardedFnBody
+      { guard :: Guard
+      , body  :: FnBody
+      }
   deriving (Show)
 
-data Guard = Guard [PatternGuard]
+data Guard
+  = Guard [PatternGuard]
   deriving (Show)
 
 data PatternGuard

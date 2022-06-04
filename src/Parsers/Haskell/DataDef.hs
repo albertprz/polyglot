@@ -1,19 +1,18 @@
 module Parsers.Haskell.DataDef where
 
-import           Data.Foldable               (toList)
-import           Parser                      (Parser)
-import           ParserCombinators           (IsMatch (..), anySepBy, someSepBy,
-                                              (<#>), (<|>), (|*), (|?))
-import           Parsers.Char                (colon, comma, equal)
-import           Parsers.Haskell.Common      (class', ctor, var)
-import           Parsers.Haskell.Type        (anyKindedType, type', typeParam,
-                                              typeVar)
-import           Parsers.String              (withinCurlyBrackets)
-import           SyntaxTrees.Haskell.Common  (Class)
-import           SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
-                                              FieldDef (..), NamedFieldDef (..),
-                                              NewTypeDef (..), TypeDef (..),
-                                              UnNamedFieldDef (..))
+import Data.Foldable               (toList)
+import Parser                      (Parser)
+import ParserCombinators           (IsMatch (..), anySepBy, someSepBy, (<#>),
+                                    (<|>), (|*), (|?))
+import Parsers.Char                (colon, comma, equal)
+import Parsers.Haskell.Common      (class', ctor, var)
+import Parsers.Haskell.Type        (anyKindedType, type', typeParam, typeVar)
+import Parsers.String              (withinCurlyBrackets)
+import SyntaxTrees.Haskell.Common  (Class)
+import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
+                                    FieldDef (..), NamedFieldDef (..),
+                                    NewTypeDef (..), TypeDef (..),
+                                    UnNamedFieldDef (..))
 
 
 typeDef :: Parser TypeDef

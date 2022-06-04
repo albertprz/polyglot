@@ -1,24 +1,24 @@
 module SyntaxTrees.Haskell.Pattern where
 
-import           SyntaxTrees.Haskell.Common (Ctor, CtorOp, Literal, Var)
+import SyntaxTrees.Haskell.Common (Ctor, CtorOp, Literal, Var)
 
 
 data Pattern
   = CtorPattern
-      { ctor   :: Ctor,
-        fields :: [Pattern]
+      { ctor   :: Ctor
+      , fields :: [Pattern]
       }
   | InfixCtorPattern
-      { ctorOp :: CtorOp,
-        fields :: [Pattern]
+      { ctorOp :: CtorOp
+      , fields :: [Pattern]
       }
   | RecordPattern
-      { ctor        :: Ctor,
-        namedFields :: [(Var, Maybe Pattern)]
+      { ctor        :: Ctor
+      , namedFields :: [(Var, Maybe Pattern)]
       }
   | WildcardRecordPattern
-      { ctor        :: Ctor,
-        namedFields :: [(Var, Maybe Pattern)]
+      { ctor        :: Ctor
+      , namedFields :: [(Var, Maybe Pattern)]
       }
   | AliasedPattern Var Pattern
   | ListPattern [Pattern]

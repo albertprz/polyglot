@@ -1,11 +1,9 @@
 module SyntaxTrees.Scala.DataDef where
 
-import           SyntaxTrees.Scala.Common (Modifier)
-import           SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef, ValDef,
-                                           VarDef)
-import           SyntaxTrees.Scala.Type   (AnyKindedType, ArgField, ArgList,
-                                           Type, TypeParam, TypeVar,
-                                           UsingArgList)
+import SyntaxTrees.Scala.Common (Modifier)
+import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef, ValDef, VarDef)
+import SyntaxTrees.Scala.Type   (AnyKindedType, ArgField, ArgList, Type,
+                                 TypeParam, TypeVar, UsingArgList)
 
 
 data TypeDef

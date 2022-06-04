@@ -1,23 +1,19 @@
 module Parsers.Haskell.FnDef where
 
-import           Parser                    (Parser)
-import           ParserCombinators         (IsMatch (is), sepByOp, someSepBy,
-                                            (<|>), (|*), (|+))
-import           Parsers.Char              (comma)
-import           Parsers.Collections       (listOf, tupleOf)
-import           Parsers.Haskell.Common    (ctor, ctorOp, literal, var, varOp)
-import           Parsers.Haskell.Pattern   (pattern')
-import           Parsers.Haskell.Type      (type')
-import           Parsers.String            (withinCurlyBrackets, withinParens)
-import           SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..),
-                                            FnBody (CaseOfExpr, DoExpr, FnApply, FnVar', IfExpr, InfixFnApply, LambdaExpr, LetExpr, List, Literal', MultiWayIfExpr, Tuple, WhereExpr),
-                                            FnDef (FnDef), FnDefOrSig (..),
-                                            FnOp (CtorOp', VarOp'),
-                                            FnSig (FnSig), FnVar (Ctor', Var'),
-                                            Guard (..),
-                                            GuardedFnBody (GuardedFnBody),
-                                            MaybeGuardedFnBody (..),
-                                            PatternGuard (..))
+import Parser                    (Parser)
+import ParserCombinators         (IsMatch (is), sepByOp, someSepBy, (<|>), (|*),
+                                  (|+))
+import Parsers.Char              (comma)
+import Parsers.Collections       (listOf, tupleOf)
+import Parsers.Haskell.Common    (ctor, ctorOp, literal, var, varOp)
+import Parsers.Haskell.Pattern   (pattern')
+import Parsers.Haskell.Type      (type')
+import Parsers.String            (withinCurlyBrackets, withinParens)
+import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
+                                  FnDef (FnDef), FnDefOrSig (..), FnOp (..),
+                                  FnSig (..), FnVar (..), Guard (..),
+                                  GuardedFnBody (..), MaybeGuardedFnBody (..),
+                                  PatternGuard (..))
 
 
 fnSig :: Parser FnSig

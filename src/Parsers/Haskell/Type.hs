@@ -1,19 +1,18 @@
 module Parsers.Haskell.Type where
 
-import           Parser                     (Parser)
-import           ParserCombinators          (IsMatch (is), manySepBy, someSepBy,
-                                             (<|>), (|+))
-import           Parsers.Char               (comma, dot, lower, upper)
-import           Parsers.Collections        (tupleOf)
-import           Parsers.Haskell.Common     (class', ident)
-import           Parsers.Number             ()
-import           Parsers.String             (maybeWithinParens, withinParens,
-                                             withinSquareBrackets)
-import           SyntaxTrees.Haskell.Common ()
-import           SyntaxTrees.Haskell.Type   (AnyKindedType (..),
-                                             ClassConstraint (..), Type (..),
-                                             TypeCtor (..), TypeParam (..),
-                                             TypeVar (..))
+import Parser                     (Parser)
+import ParserCombinators          (IsMatch (is), manySepBy, someSepBy, (<|>),
+                                   (|+))
+import Parsers.Char               (comma, dot, lower, upper)
+import Parsers.Collections        (tupleOf)
+import Parsers.Haskell.Common     (class', ident)
+import Parsers.Number             ()
+import Parsers.String             (maybeWithinParens, withinParens,
+                                   withinSquareBrackets)
+import SyntaxTrees.Haskell.Common ()
+import SyntaxTrees.Haskell.Type   (AnyKindedType (..), ClassConstraint (..),
+                                   Type (..), TypeCtor (..), TypeParam (..),
+                                   TypeVar (..))
 
 typeParam :: Parser TypeParam
 typeParam = TypeParam <$> ident lower
