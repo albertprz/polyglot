@@ -4,7 +4,7 @@ import           SyntaxTrees.Haskell.ClassDef (ClassDef, InstanceDef)
 import           SyntaxTrees.Haskell.Common   (Module, Var)
 import           SyntaxTrees.Haskell.DataDef  (DataDef, NewTypeDef, TypeDef)
 import           SyntaxTrees.Haskell.FnDef    (FnDef, FnSig)
-import           SyntaxTrees.Haskell.Type     (Type, TypeVar)
+import           SyntaxTrees.Haskell.Type     (TypeVar)
 
 
 data ModuleDef = ModuleDef

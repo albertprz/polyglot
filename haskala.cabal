@@ -38,6 +38,12 @@ library
       SyntaxTrees.Haskell.ModuleDef
       SyntaxTrees.Haskell.Pattern
       SyntaxTrees.Haskell.Type
+      SyntaxTrees.Scala.Common
+      SyntaxTrees.Scala.DataDef
+      SyntaxTrees.Scala.FnDef
+      SyntaxTrees.Scala.PackageDef
+      SyntaxTrees.Scala.Pattern
+      SyntaxTrees.Scala.Type
   other-modules:
       Paths_haskala
   hs-source-dirs:
