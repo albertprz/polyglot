@@ -5,7 +5,7 @@ import SyntaxTrees.Haskell.Common (Class)
 
 newtype TypeParam
   = TypeParam String
-  deriving (Show)
+  deriving (Eq, Ord, Show)
 
 data TypeVar
   = TypeVar String

@@ -42,8 +42,15 @@ data DataCtorDef
       }
   deriving (Show)
 
-newtype UnNamedFieldDef
-  = UnNamedFieldDef { type' :: Type }
+data FieldDef
+  = UnNamedField UnNamedFieldDef
+  | NamedField NamedFieldDef
+  deriving (Show)
+
+data UnNamedFieldDef
+  = UnNamedFieldDef
+      { type' :: Type
+      }
   deriving (Show)
 
 data NamedFieldDef
@@ -51,9 +58,4 @@ data NamedFieldDef
       { name  :: Var
       , type' :: Type
       }
-  deriving (Show)
-
-data FieldDef
-  = UnNamedField UnNamedFieldDef
-  | NamedField NamedFieldDef
   deriving (Show)

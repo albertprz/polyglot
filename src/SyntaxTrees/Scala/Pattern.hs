@@ -20,7 +20,6 @@ data Pattern
       , namedFields :: [(Var, Maybe Pattern)]
       }
   | AliasedPattern Var Pattern
-  | ListPattern [Pattern]
   | TuplePattern [Pattern]
   | VarPattern Var
   | LitPattern Literal

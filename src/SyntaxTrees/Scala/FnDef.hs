@@ -5,18 +5,21 @@ import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
 
 
-data VarDef
-  = VarDef
-      { name       :: Var
-      , qualifiers :: [Modifier]
-      , body       :: Maybe FnBody
+data FnSig
+  = FnSig
+      { typeParams :: [TypeParam]
+      , argLists   :: [ArgList]
+      , usingArgs  :: UsingArgList
+      , returnType :: Maybe Type
       }
   deriving (Show)
+
 
 data ValDef
   = ValDef
       { qualifiers :: [Modifier]
       , name       :: Var
+      , returnType :: Maybe Type
       , body       :: Maybe FnBody
       }
   deriving (Show)
@@ -107,19 +110,7 @@ data PatternGuard
   deriving (Show)
 
 
-data FnSig
-  = FnSig
-      { typeParams :: [TypeParam]
-      , argLists   :: [ArgList]
-      , usingArgs  :: UsingArgList
-      , returnType :: Type
-      }
-  deriving (Show)
-
 data InternalFnDef
-  = FnVar VarDef
-  | FnVal ValDef
+  = FnVal ValDef
   | FnMethod MethodDef
   deriving (Show)
-
-

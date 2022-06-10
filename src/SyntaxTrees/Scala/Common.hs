@@ -18,8 +18,12 @@ newtype CtorOp
   = CtorOp String
   deriving (Show)
 
+newtype TypeClass
+  = TypeClass String
+  deriving (Show)
+
 newtype Package
-  = Package String
+  = Package [String]
   deriving (Show)
 
 

@@ -24,6 +24,11 @@ source-repository head
 
 library
   exposed-modules:
+      Conversions.HaskellToScala.Common
+      Conversions.HaskellToScala.DataDef
+      Conversions.HaskellToScala.FnDef
+      Conversions.HaskellToScala.Pattern
+      Conversions.HaskellToScala.Type
       Parsers.Haskell.ClassDef
       Parsers.Haskell.Common
       Parsers.Haskell.DataDef

@@ -1,6 +1,6 @@
 module SyntaxTrees.Scala.Type where
 
-import SyntaxTrees.Scala.Common (Modifier, Var)
+import SyntaxTrees.Scala.Common (Modifier, TypeClass, Var)
 
 
 newtype TypeParam
@@ -49,6 +49,9 @@ data AnyKindedType
   | TypeFn TypeCtor
   deriving (Show)
 
+data ClassConstraint
+  = ClassConstraint TypeClass Type
+  deriving (Show)
 
 data Type
   = CtorTypeApply TypeCtor [Type]
@@ -57,4 +60,5 @@ data Type
   | TypeVar' TypeVar
   | TypeParam' TypeParam
   | TypeScope [TypeParam] Type
+  | ClassScope [ClassConstraint] Type
   deriving (Show)

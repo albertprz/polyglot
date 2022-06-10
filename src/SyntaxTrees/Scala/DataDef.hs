@@ -1,7 +1,7 @@
 module SyntaxTrees.Scala.DataDef where
 
-import SyntaxTrees.Scala.Common (Modifier)
-import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef, ValDef, VarDef)
+import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass)
+import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef, ValDef)
 import SyntaxTrees.Scala.Type   (AnyKindedType, ArgField, ArgList, Type,
                                  TypeParam, TypeVar, UsingArgList)
 
@@ -19,7 +19,7 @@ data OpaqueTypeDef
       { type'        :: TypeVar
       , typeParams   :: [TypeParam]
       , field        :: ArgField
-      , derives      :: [Type]
+      , derives      :: [TypeClass]
       , internalDefs :: [InternalFnDef]
       }
   deriving (Show)
@@ -27,32 +27,32 @@ data OpaqueTypeDef
 
 data TraitDef
   = TraitDef
-      { modifiers    :: [Modifier]
-      , name         :: Type
-      , typeParams   :: [TypeParam]
-      , argLists     :: [ArgList]
-      , usingArgs    :: UsingArgList
-      , extends      :: [Type]
-      , internalDefs :: [InternalDef]
+      { modifiers     :: [Modifier]
+      , name          :: TypeVar
+      , typeParams    :: [TypeParam]
+      , argLists      :: [ArgList]
+      , usingArgLists :: [UsingArgList]
+      , extends       :: [Type]
+      , internalDefs  :: [InternalDef]
       }
   deriving (Show)
 
 data ClassDef
   = ClassDef
-      { modifiers    :: [Modifier]
-      , name         :: Type
-      , typeParams   :: [TypeParam]
-      , argLists     :: [ArgList]
-      , usingArgs    :: UsingArgList
-      , extends      :: [Type]
-      , internalDefs :: [InternalDef]
+      { modifiers     :: [Modifier]
+      , name          :: TypeVar
+      , typeParams    :: [TypeParam]
+      , argLists      :: [ArgList]
+      , usingArgLists :: [UsingArgList]
+      , extends       :: [Type]
+      , internalDefs  :: [InternalDef]
       }
   deriving (Show)
 
 data ObjectDef
   = ObjectDef
       { modifiers    :: [Modifier]
-      , name         :: Type
+      , name         :: TypeVar
       , extends      :: [Type]
       , internalDefs :: [InternalDef]
       }
@@ -61,45 +61,44 @@ data ObjectDef
 
 data EnumDef
   = EnumDef
-      { modifiers  :: [Modifier]
-      , name       :: Type
-      , typeParams :: [TypeParam]
-      , argLists   :: [ArgList]
-      , usingArgs  :: UsingArgList
-      , extends    :: [Type]
-      , derives    :: [Type]
-      , cases      :: [EnumCaseDef]
+      { modifiers     :: [Modifier]
+      , name          :: TypeVar
+      , typeParams    :: [TypeParam]
+      , argLists      :: [ArgList]
+      , usingArgLists :: [UsingArgList]
+      , derives       :: [TypeClass]
+      , cases         :: [EnumCaseDef]
       }
   deriving (Show)
 
 data EnumCaseDef
   = EnumCaseDef
-      { name         :: Type
-      , argLists     :: [ArgList]
-      , usingArgs    :: UsingArgList
-      , extends      :: [Type]
-      , internalDefs :: [InternalFnDef]
+      { name          :: Ctor
+      , argLists      :: [ArgList]
+      , usingArgLists :: [UsingArgList]
+      , extends       :: [Type]
+      , internalDefs  :: [InternalFnDef]
       }
   deriving (Show)
 
 
 data CaseClassDef
   = CaseClassDef
-      { modifiers    :: [Modifier]
-      , name         :: Type
-      , typeParams   :: [TypeParam]
-      , argLists     :: [ArgList]
-      , usingArgs    :: UsingArgList
-      , extends      :: [Type]
-      , derives      :: [Type]
-      , internalDefs :: [InternalFnDef]
+      { modifiers     :: [Modifier]
+      , name          :: TypeVar
+      , typeParams    :: [TypeParam]
+      , argLists      :: [ArgList]
+      , usingArgLists :: [UsingArgList]
+      , extends       :: [Type]
+      , derives       :: [TypeClass]
+      , internalDefs  :: [InternalFnDef]
       }
   deriving (Show)
 
 data CaseObjectDef
   = CaseObjectDef
       { modifiers    :: [Modifier]
-      , name         :: Type
+      , name         :: TypeVar
       , extends      :: [Type]
       , derives      :: [Type]
       , internalDefs :: [InternalFnDef]
@@ -108,17 +107,16 @@ data CaseObjectDef
 
 data ExtensionDef
   = ExtensionDef
-      { typeParams :: [TypeParam]
-      , argLists   :: [ArgList]
-      , usingArgs  :: UsingArgList
-      , methodDefs :: [MethodDef]
+      { typeParams    :: [TypeParam]
+      , argLists      :: [ArgList]
+      , usingArgLists :: [UsingArgList]
+      , methodDefs    :: [MethodDef]
       }
   deriving (Show)
 
 
 data InternalDef
-  = Var VarDef
-  | Val ValDef
+  = Val ValDef
   | Method MethodDef
   | TypeAlias TypeDef
   | OpaqueType OpaqueTypeDef
