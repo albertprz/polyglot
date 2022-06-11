@@ -1,6 +1,7 @@
 module SyntaxTrees.Scala.Pattern where
 
 import SyntaxTrees.Scala.Common (Ctor, CtorOp, Literal, Var)
+import Utils.String
 
 data Pattern
   = CtorPattern
@@ -11,17 +12,19 @@ data Pattern
       { ctorOp :: CtorOp
       , fields :: [Pattern]
       }
-  | RecordPattern
-      { ctor        :: Ctor
-      , namedFields :: [(Var, Maybe Pattern)]
-      }
-  | WildcardRecordPattern
-      { ctor        :: Ctor
-      , namedFields :: [(Var, Maybe Pattern)]
-      }
   | AliasedPattern Var Pattern
   | TuplePattern [Pattern]
   | VarPattern Var
   | LitPattern Literal
   | Wildcard
-  deriving (Show)
+
+
+
+instance Show Pattern where
+  show (CtorPattern x y)      = show x +++ wrapParensCsv y
+  show (InfixCtorPattern x y) = str (wrapSpaces $ show x) y
+  show (AliasedPattern x y)   = show x +++ "@" +++ show y
+  show (TuplePattern x)       = wrapParensCsv x
+  show (VarPattern x)         = show x
+  show (LitPattern x)         = show x
+  show Wildcard               = "_"

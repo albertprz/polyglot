@@ -49,6 +49,8 @@ library
       SyntaxTrees.Scala.PackageDef
       SyntaxTrees.Scala.Pattern
       SyntaxTrees.Scala.Type
+      Utils.Foldable
+      Utils.String
   other-modules:
       Paths_haskala
   hs-source-dirs:

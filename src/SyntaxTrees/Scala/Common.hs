@@ -1,30 +1,26 @@
 module SyntaxTrees.Scala.Common where
 
+import Data.List (intercalate)
+
 
 
 newtype Var
   = Var String
-  deriving (Show)
 
 newtype Ctor
   = Ctor String
-  deriving (Show)
 
 newtype VarOp
   = VarOp String
-  deriving (Show)
 
 newtype CtorOp
   = CtorOp String
-  deriving (Show)
 
 newtype TypeClass
   = TypeClass String
-  deriving (Show)
 
 newtype Package
   = Package [String]
-  deriving (Show)
 
 
 data Literal
@@ -33,7 +29,6 @@ data Literal
   | FloatLit String
   | CharLit String
   | StringLit String
-  deriving (Show)
 
 data Modifier
   = Implicit
@@ -45,4 +40,44 @@ data Modifier
   | Override
   | Sealed
   | Open
-  deriving (Show)
+
+
+
+instance Show Var where
+  show (Var x) = x
+
+instance Show Ctor where
+  show (Ctor x) = x
+
+
+instance Show VarOp where
+  show (VarOp x) = x
+
+instance Show CtorOp where
+  show (CtorOp x) = x
+
+
+instance Show TypeClass where
+  show (TypeClass x) = x
+
+instance Show Package where
+  show (Package x) = intercalate "." x
+
+instance Show Literal where
+  show UnitLit       = "()"
+  show (IntLit x)    = x
+  show (FloatLit x)  = x
+  show (CharLit x)   = x
+  show (StringLit x) = x
+
+
+instance Show Modifier where
+  show Implicit  = "implicit"
+  show Lazy      = "lazy"
+  show Abstract  = "abstract"
+  show Private   = "private"
+  show Public    = "public"
+  show Protected = "protected"
+  show Override  = "override"
+  show Sealed    = "sealed"
+  show Open      = "open"

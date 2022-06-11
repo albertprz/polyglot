@@ -2,17 +2,17 @@ module SyntaxTrees.Scala.DataDef where
 
 import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass)
 import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef, ValDef)
-import SyntaxTrees.Scala.Type   (AnyKindedType, ArgField, ArgList, Type,
-                                 TypeParam, TypeVar, UsingArgList)
+import SyntaxTrees.Scala.Type   (ArgField, ArgList (..), Type, TypeParam,
+                                 TypeVar, UsingArgList)
+import Utils.String
 
 
 data TypeDef
   = TypeDef
       { alias      :: TypeVar
       , typeParams :: [TypeParam]
-      , type'      :: AnyKindedType
+      , type'      :: Type
       }
-  deriving (Show)
 
 data OpaqueTypeDef
   = OpaqueTypeDef
@@ -22,8 +22,6 @@ data OpaqueTypeDef
       , derives      :: [TypeClass]
       , internalDefs :: [InternalFnDef]
       }
-  deriving (Show)
-
 
 data TraitDef
   = TraitDef
@@ -35,7 +33,6 @@ data TraitDef
       , extends       :: [Type]
       , internalDefs  :: [InternalDef]
       }
-  deriving (Show)
 
 data ClassDef
   = ClassDef
@@ -47,7 +44,6 @@ data ClassDef
       , extends       :: [Type]
       , internalDefs  :: [InternalDef]
       }
-  deriving (Show)
 
 data ObjectDef
   = ObjectDef
@@ -56,7 +52,6 @@ data ObjectDef
       , extends      :: [Type]
       , internalDefs :: [InternalDef]
       }
-  deriving (Show)
 
 
 data EnumDef
@@ -69,7 +64,6 @@ data EnumDef
       , derives       :: [TypeClass]
       , cases         :: [EnumCaseDef]
       }
-  deriving (Show)
 
 data EnumCaseDef
   = EnumCaseDef
@@ -79,7 +73,6 @@ data EnumCaseDef
       , extends       :: [Type]
       , internalDefs  :: [InternalFnDef]
       }
-  deriving (Show)
 
 
 data CaseClassDef
@@ -89,21 +82,19 @@ data CaseClassDef
       , typeParams    :: [TypeParam]
       , argLists      :: [ArgList]
       , usingArgLists :: [UsingArgList]
-      , extends       :: [Type]
       , derives       :: [TypeClass]
+      , extends       :: [Type]
       , internalDefs  :: [InternalFnDef]
       }
-  deriving (Show)
 
 data CaseObjectDef
   = CaseObjectDef
       { modifiers    :: [Modifier]
       , name         :: TypeVar
+      , derives      :: [TypeClass]
       , extends      :: [Type]
-      , derives      :: [Type]
       , internalDefs :: [InternalFnDef]
       }
-  deriving (Show)
 
 data ExtensionDef
   = ExtensionDef
@@ -112,7 +103,6 @@ data ExtensionDef
       , usingArgLists :: [UsingArgList]
       , methodDefs    :: [MethodDef]
       }
-  deriving (Show)
 
 
 data InternalDef
@@ -128,4 +118,81 @@ data InternalDef
   | CaseClass CaseClassDef
   | CaseObject CaseObjectDef
   | Extension ExtensionDef
-  deriving (Show)
+
+
+
+instance Show TypeDef where
+  show (TypeDef x y z) =
+    joinWords ["type", show x, wrapSquareCsv y, "=", show z]
+
+instance Show OpaqueTypeDef where
+  show (OpaqueTypeDef x y z t u) =
+    showStructure "opaque type" [] x y [ArgList [z]] [] t [] u
+
+instance Show TraitDef where
+  show (TraitDef x y z t u v w) =
+    showStructure "trait" x y z t u [] v w
+
+instance Show ClassDef where
+  show (ClassDef x y z t u v w) =
+    showStructure "class" x y z t u [] v w
+
+instance Show ObjectDef where
+  show (ObjectDef x y z t) =
+    showStructure "object" x y [] [] [] [] z t
+
+instance Show EnumDef where
+  show (EnumDef x y z t u v w) =
+    showStructure "enum" x y z t u v [] w
+
+instance Show EnumCaseDef where
+  show (EnumCaseDef x y z t u) =
+    showStructure "case" [] x [] y z [] t u
+
+instance Show CaseClassDef where
+  show (CaseClassDef x y z t u v w r) =
+    showStructure "case class" x y z t u v w r
+
+instance Show CaseObjectDef where
+  show (CaseObjectDef x y z t u) =
+    showStructure "case object" x y [] [] [] z t u
+
+instance Show ExtensionDef where
+  show (ExtensionDef x y z t) =
+    showStructure "extension" [] Empty x y z [] [] t
+
+
+
+showStructure :: (Show a, Show b) => String -> [Modifier] -> a -> [TypeParam]
+                 -> [ArgList] -> [UsingArgList] -> [TypeClass] -> [Type] -> [b]
+                 -> String
+showStructure  x y z t u v w r s = joinWords [x,
+                                              str " " y,
+                                              show z,
+                                              wrapSquareCsv t,
+                                              str " " u,
+                                              str " " v,
+                                              joinList "derives" ", " w,
+                                              joinList "extends" ", " r ++ ":",
+                                              wrapSpacedBlock s]
+
+instance Show InternalDef where
+  show (Val x)        = show x
+  show (Method x)     = show x
+  show (TypeAlias x)  = show x
+  show (OpaqueType x) = show x
+  show (Trait x)      = show x
+  show (Class x)      = show x
+  show (Object x)     = show x
+  show (Enum x)       = show x
+  show (EnumCase x)   = show x
+  show (CaseClass x)  = show x
+  show (CaseObject x) = show x
+  show (Extension x)  = show x
+
+
+data Empty
+  = Empty
+
+instance Show Empty where
+  show Empty = ""
