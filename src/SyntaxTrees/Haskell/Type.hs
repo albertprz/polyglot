@@ -25,7 +25,7 @@ data AnyKindedType
   deriving (Show)
 
 data ClassConstraint
-  = ClassConstraint Class Type
+  = ClassConstraint Class [Type]
   deriving (Show)
 
 data Type

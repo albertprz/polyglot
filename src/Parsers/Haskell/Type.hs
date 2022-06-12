@@ -34,10 +34,11 @@ anyKindedType = TypeValue <$> type' <|>
 
 classConstraints :: Parser Type -> Parser [ClassConstraint]
 classConstraints typeParser = tupleOf (classConstraint typeParser) <|>
-                (: []) <$> classConstraint typeParser
+                pure <$> classConstraint typeParser
 
 classConstraint :: Parser Type -> Parser ClassConstraint
-classConstraint typeParser = ClassConstraint <$> class' <*> typeParser
+classConstraint typeParser = ClassConstraint <$> class' <*> (typeParser |+)
+
 
 
 type' :: Parser Type
@@ -51,7 +52,7 @@ type' = maybeWithinParens $ typeScope <|> classScope <|> type''
 
     arrow = CtorTypeApply Arrow     <$> manySepBy (is "->") arrowElem
     tuple = CtorTypeApply TupleType <$> (withinParens $ manySepBy comma type'')
-    list  = CtorTypeApply ListType  <$> ((: []) <$> withinSquareBrackets type'')
+    list  = CtorTypeApply ListType  <$> (pure <$> withinSquareBrackets type'')
 
     typeVar'   = TypeVar'   <$> typeVar
     typeParam' = TypeParam' <$> typeParam

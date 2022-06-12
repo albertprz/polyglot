@@ -21,7 +21,8 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - containers
-- bookhound >= 0.1.3 && < 0.2
+- extra >= 1.7.10 && < 1.8
+- bookhound >= 0.1.8 && < 0.2
 
 ghc-options:
 - -Wall

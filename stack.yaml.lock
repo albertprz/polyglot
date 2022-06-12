@@ -11,4 +11,18 @@ packages:
       sha256: bf91277480a07b18029a5eb1cde02d034b5d7e7329e58ffd8771e622cb38e0e2
   original:
     hackage: bookhound-0.1.8.0
+- completed:
+    hackage: extra-1.7.10@sha256:e384751317577554f873812358fab022da02aa9a286c9341308fac83f4d766c5,2691
+    pantry-tree:
+      size: 1896
+      sha256: fe513979693efb8777d5afdaf45ed6d958d09b3e9eb002ebbe6c297602d9f1cd
+  original:
+    hackage: extra-1.7.10
+- completed:
+    hackage: clock-0.8.3@sha256:a692159828c2cd278eaec317b3a7e9fb6d7b787c8a19f086004d15d9fa1fd72c,4601
+    pantry-tree:
+      size: 499
+      sha256: 3e62393d5c7671b21d8aa84ef9ee0550334053711c80b5beeca295466a6615c7
+  original:
+    hackage: clock-0.8.3
 snapshots: []

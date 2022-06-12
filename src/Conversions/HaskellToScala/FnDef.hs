@@ -5,52 +5,63 @@ import qualified SyntaxTrees.Haskell.FnDef  as H
 import qualified SyntaxTrees.Haskell.Type   as H
 import qualified SyntaxTrees.Scala.Common   as S
 import qualified SyntaxTrees.Scala.FnDef    as S
-import qualified SyntaxTrees.Scala.Type     as S
+import qualified SyntaxTrees.Scala.Pattern  as S
 
-import           Conversions.HaskellToScala.Common  (var)
-import           Conversions.HaskellToScala.Pattern (pattern')
-import           Conversions.HaskellToScala.Type    (findTypeParams, type',
-                                                     typeParam, typeSplit)
-import           Data.Foldable                      (Foldable (toList))
-import qualified SyntaxTrees.Scala.Pattern          as S
+import Conversions.HaskellToScala.Common  (var)
+import Conversions.HaskellToScala.Pattern (allVars, extractVars, pattern')
+import Conversions.HaskellToScala.Type    (argList, classScopeSplit,
+                                           findTypeParams, typeParam, typeSplit,
+                                           usingArgList)
+
+import Data.Foldable    (Foldable (toList))
+import Data.Maybe       (fromMaybe, listToMaybe)
+import Data.Tuple.Extra (uncurry3)
 
 
 emptyFnSig :: S.FnSig
-emptyFnSig = S.FnSig [] [] (S.UsingArgList []) Nothing
+emptyFnSig = S.FnSig [] [] [] Nothing
 
 namedFnSig :: H.Type -> [H.Var] -> S.FnSig
 namedFnSig tpe args = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
-        [S.ArgList $ uncurry (S.ArgField []) <$> zip (var <$> args) argTypes]
-        (S.UsingArgList []) (Just retType)
+                      [argList (var <$> args) argTypes]
+                      [usingArgList constraints]
+                      (Just retType)
  where
-   (argTypes, retType) = typeSplit (length args) tpe
+   (constraints, rest) = classScopeSplit tpe
+   (argTypes, retType) = typeSplit (length args) rest
 
 
 unNamedFnSig :: H.Type -> Int -> S.FnSig
 unNamedFnSig tpe n = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
-        [S.ArgList $ uncurry (S.ArgField []) <$> zip (S.Var <$> autoFnIds) argTypes]
-        (S.UsingArgList []) (Just retType)
+                     [argList (S.Var <$> autoFnIds) argTypes]
+                     [usingArgList constraints]
+                     (Just retType)
  where
-   (argTypes, retType) = typeSplit n tpe
+   (constraints, rest) = classScopeSplit tpe
+   (argTypes, retType) = typeSplit n rest
 
-fnDef :: H.FnSig -> [H.FnDef] -> S.MethodDef
-fnDef (H.FnSig x y) defs = S.MethodDef [] (var x) (unNamedFnSig y n)
-                                       (Just $ _ defs)
+
+fnDefs :: (Maybe H.FnSig, Maybe [H.FnDef]) -> S.MethodDef
+fnDefs (x, Just [y])
+  | (allVars . (.args)) y = simpleFnDef x y
+fnDefs (x, y) = fnDef x y
+
+fnDef :: Maybe H.FnSig -> Maybe [H.FnDef] -> S.MethodDef
+fnDef sig defs = S.MethodDef [] name fnSig (fnDefToFnBody <$> defs)
   where
-    n = (length . (.args)) (head defs)
+    n = maybe 0 (length . (.args)) $ (listToMaybe . (fromMaybe [])) defs
+    fnSig = maybe emptyFnSig (`unNamedFnSig` n) $ (.type') <$> sig
+    name = var $ maybe ((.name) . head $ fromMaybe [] defs) (.name) sig
 
-simpleFnDef :: H.FnSig -> H.FnDef -> [H.Var] -> S.MethodDef
-simpleFnDef (H.FnSig x y) def args = S.MethodDef [] (var x) (namedFnSig y args)
-                                                 (Just $ _ $ pure def)
-
-internalFnDef :: [H.FnDef] -> S.MethodDef
-internalFnDef defs = S.MethodDef [] (var name) emptyFnSig
-                                 (Just $ fnDefToFnBody defs)
+simpleFnDef :: Maybe H.FnSig -> H.FnDef -> S.MethodDef
+simpleFnDef sig def = S.MethodDef [] name fnSig (Just $ simpleFnDefToFnBody def)
   where
-    name = (.name) (head defs)
+    name = var $ (.name) def
+    args = extractVars $ (.args) def
+    fnSig = maybe emptyFnSig (`namedFnSig` args) $ (.type') <$> sig
 
 
-simpleFnDefToFnBody :: H.FnDef -> S.MaybeGuardedFnBody
+simpleFnDefToFnBody :: H.FnDef -> S.FnBody
 simpleFnDefToFnBody def = maybeGuardeBody . (.body) $ def
 
 fnDefToFnBody :: [H.FnDef] -> S.FnBody
@@ -59,12 +70,13 @@ fnDefToFnBody defs = match
     match = S.MatchExpr (tuple $ take n autoFnIds) cases
     casePatterns = (S.TuplePattern  . (pattern' <$>) . (.args)) <$> defs
     caseBodies =  (maybeGuardeBody . (.body)) <$> defs
-    cases = uncurry S.CaseBinding <$> zip casePatterns caseBodies
+    cases = uncurry3 S.CaseBinding <$> zip3 casePatterns (repeat Nothing)
+                                              caseBodies
     tuple x = S.Tuple $ (S.FnVar' . S.Var' . S.Var) <$> x
     n = (length . (.args)) (head defs)
 
-maybeGuardeBody :: H.MaybeGuardedFnBody -> S.MaybeGuardedFnBody
-maybeGuardeBody x = _
+maybeGuardeBody :: H.MaybeGuardedFnBody -> S.FnBody
+maybeGuardeBody _ = undefined
 
 autoFnIds :: [String]
 autoFnIds = pure <$> ['x', 'y', 'z', 't', 'u', 'v', 'w', 'p', 'q', 'r', 's']

@@ -1,5 +1,6 @@
 module SyntaxTrees.Scala.FnDef where
 
+import Data.Maybe                (maybeToList)
 import SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier, Var, VarOp)
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
@@ -28,6 +29,16 @@ data MethodDef
       , name       :: Var
       , sig        :: FnSig
       , body       :: Maybe FnBody
+      }
+
+data GivenDef
+  = GivenDef
+      { qualifiers   :: [Modifier]
+      , name         :: Maybe Var
+      , typeParams   :: [TypeParam]
+      , usingArgs    :: [UsingArgList]
+      , returnType   :: Type
+      , internalDefs :: [MethodDef]
       }
 
 
@@ -105,6 +116,20 @@ instance Show MethodDef where
   show (MethodDef x y z t) = joinWords [str " " x,
                                         "def",
                                         showDef y (Just z) t]
+
+instance Show GivenDef where
+  show (GivenDef x y z t u v) = joinWords [str " " x,
+                                          "given",
+                                          maybe "" show y,
+                                          wrapSquareCsv z,
+                                          str " " t,
+                                          if displaySep then ":" else "",
+                                          show u,
+                                          "with",
+                                          wrapSpacedBlock v]
+    where
+      displaySep = not (null y && null z && null t)
+
 
 instance Show FnBody where
   show (FnApply x y)      = joinWords [show x, wrapParensCsv y]

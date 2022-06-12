@@ -26,7 +26,7 @@ classDef = ClassDef <$> (is "class" *> classConstraints')
                      ((classConstraints type' <* is "=>") |?)
 
   typeParams = mconcat . maybeToList <$>
-               ((tupleOf typeParam <|> (: []) <$> typeParam) |?)
+               ((tupleOf typeParam <|> pure <$> typeParam) |?)
 
 
 
@@ -42,4 +42,4 @@ instanceDef = InstanceDef <$> (is "class" *> classConstraints')
                      ((classConstraints type' <* is "=>") |?)
 
   types = mconcat . maybeToList <$>
-               ((tupleOf anyKindedType <|> (: []) <$> anyKindedType) |?)
+               ((tupleOf anyKindedType <|> pure <$> anyKindedType) |?)

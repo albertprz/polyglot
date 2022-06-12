@@ -15,7 +15,7 @@ literal :: Parser Literal
 literal = UnitLit <$ is "()" <|>
           IntLit . show <$> int <|>
           FloatLit . show <$> double <|>
-          CharLit . (: []) <$> withinQuotes char <|>
+          CharLit . pure <$> withinQuotes char <|>
           StringLit <$> withinDoubleQuotes (isNot '"' |*)
 
 var :: Parser Var

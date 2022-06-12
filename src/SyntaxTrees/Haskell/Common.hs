@@ -3,27 +3,27 @@ module SyntaxTrees.Haskell.Common where
 
 newtype Var
   = Var String
-  deriving (Show)
+  deriving (Eq, Show)
 
 newtype Ctor
   = Ctor String
-  deriving (Show)
+  deriving (Eq, Show)
 
 newtype VarOp
   = VarOp String
-  deriving (Show)
+  deriving (Eq, Show)
 
 newtype CtorOp
   = CtorOp String
-  deriving (Show)
+  deriving (Eq, Show)
 
 newtype Class
   = Class String
-  deriving (Show)
+  deriving (Eq, Show)
 
 newtype Module
   = Module [String]
-  deriving (Show)
+  deriving (Eq, Show)
 
 data Literal
   = UnitLit
@@ -31,4 +31,4 @@ data Literal
   | FloatLit String
   | CharLit String
   | StringLit String
-  deriving (Show)
+  deriving (Eq, Show)

@@ -22,13 +22,13 @@ data Type
   | NestedTypeApply Type [Type]
   | TypeVar' TypeVar
   | TypeParam' TypeParam
+  | ExistentialType
   | TypeScope [TypeParam] Type
   | ClassScope [ClassConstraint] Type
 
 
 data ClassConstraint
   = ClassConstraint TypeClass [Type]
-
 
 newtype ArgList
   = ArgList [ArgField]
@@ -48,7 +48,7 @@ data UsingArgField
   = UsingArgField
       { modifiers :: [Modifier]
       , name      :: Maybe Var
-      , type'     :: Type
+      , type'     :: ClassConstraint
       }
 
 
@@ -66,6 +66,7 @@ instance Show Type where
   show (NestedTypeApply x y) = show x ++ wrapSquareCsv y
   show (TypeVar' x) = show x
   show (TypeParam' x) = show x
+  show ExistentialType = "?"
   show (TypeScope x y) = wrapParens (wrapSquareCsv x +++ "=>" +++ show y)
   show (ClassScope x y) = wrapParens (wrapParensCsv x +++ "?=>" +++ show y)
 
