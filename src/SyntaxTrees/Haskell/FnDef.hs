@@ -54,7 +54,8 @@ data FnBody
       { whenExprs :: [GuardedFnBody]
       }
   | DoExpr
-      { steps :: [DoStep]
+      { steps     :: [DoStep]
+      , finalStep :: FnBody
       }
   | CaseOfExpr
       { matchee :: FnBody

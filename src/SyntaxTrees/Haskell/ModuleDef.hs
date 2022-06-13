@@ -3,7 +3,7 @@ module SyntaxTrees.Haskell.ModuleDef where
 import SyntaxTrees.Haskell.ClassDef (ClassDef, InstanceDef)
 import SyntaxTrees.Haskell.Common   (Module, Var)
 import SyntaxTrees.Haskell.DataDef  (DataDef, NewTypeDef, TypeDef)
-import SyntaxTrees.Haskell.FnDef    (FnDef, FnSig)
+import SyntaxTrees.Haskell.FnDef    (FnDefOrSig)
 import SyntaxTrees.Haskell.Type     (TypeVar)
 
 
@@ -37,7 +37,6 @@ data InternalDef
   = TypeDef' TypeDef
   | NewTypeDef' NewTypeDef
   | DataDef' DataDef
-  | FnDef' FnDef
-  | FnSig' FnSig
+  | FnDefOrSig' FnDefOrSig
   | ClassDef' ClassDef
   | InstanceDef' InstanceDef

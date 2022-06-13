@@ -1,7 +1,7 @@
 module SyntaxTrees.Scala.DataDef where
 
 import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass)
-import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef, ValDef)
+import SyntaxTrees.Scala.FnDef  (GivenDef, InternalFnDef, MethodDef, ValDef)
 import SyntaxTrees.Scala.Type   (ArgField, ArgList (..), Type, TypeParam,
                                  TypeVar, UsingArgList)
 import Utils.String
@@ -108,6 +108,7 @@ data ExtensionDef
 data InternalDef
   = Val ValDef
   | Method MethodDef
+  | Given GivenDef
   | TypeAlias TypeDef
   | OpaqueType OpaqueTypeDef
   | Trait TraitDef
@@ -179,6 +180,7 @@ showStructure  x y z t u v w r s = joinWords [x,
 instance Show InternalDef where
   show (Val x)        = show x
   show (Method x)     = show x
+  show (Given x)      = show x
   show (TypeAlias x)  = show x
   show (OpaqueType x) = show x
   show (Trait x)      = show x

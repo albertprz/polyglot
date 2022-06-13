@@ -28,6 +28,7 @@ library
       Conversions.HaskellToScala.Common
       Conversions.HaskellToScala.DataDef
       Conversions.HaskellToScala.FnDef
+      Conversions.HaskellToScala.ModuleDef
       Conversions.HaskellToScala.Pattern
       Conversions.HaskellToScala.Type
       Parsers.Haskell.ClassDef

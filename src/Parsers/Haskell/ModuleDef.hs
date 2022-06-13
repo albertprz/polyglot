@@ -12,10 +12,11 @@ import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (ModuleDef),
                                       ModuleImport (ModuleImport),
                                       ModuleImportDef (DataImport, FilteredDataImport, FnImport, FullDataImport))
 
-import Parser            (Parser)
-import ParserCombinators (IsMatch (is), anySepBy, (<|>), (|*), (|?))
-import Parsers.Char      (comma)
-import Parsers.String    (withinParens)
+import Parser                    (Parser)
+import ParserCombinators         (IsMatch (is), anySepBy, (<|>), (|*), (|?))
+import Parsers.Char              (comma)
+import Parsers.String            (withinParens)
+import SyntaxTrees.Haskell.FnDef (FnDefOrSig (Def, Sig))
 
 
 moduleDef :: Parser ModuleDef
@@ -54,10 +55,10 @@ moduleImportDef = FnImport            <$> var                   <|>
 
 
 internalDef :: Parser InternalDef
-internalDef = TypeDef'     <$> typeDef      <|>
-              NewTypeDef'  <$> newtypeDef   <|>
-              DataDef'     <$> dataDef      <|>
-              FnDef'       <$> fnDef        <|>
-              FnSig'       <$> fnSig        <|>
-              ClassDef'    <$> classDef     <|>
-              InstanceDef' <$> instanceDef
+internalDef = TypeDef'          <$> typeDef      <|>
+              NewTypeDef'       <$> newtypeDef   <|>
+              DataDef'          <$> dataDef      <|>
+              FnDefOrSig' . Def <$> fnDef        <|>
+              FnDefOrSig' . Sig <$> fnSig        <|>
+              ClassDef'         <$> classDef     <|>
+              InstanceDef'      <$> instanceDef

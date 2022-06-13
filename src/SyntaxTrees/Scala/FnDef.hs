@@ -1,6 +1,5 @@
 module SyntaxTrees.Scala.FnDef where
 
-import Data.Maybe                (maybeToList)
 import SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier, Var, VarOp)
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
@@ -64,6 +63,10 @@ data FnBody
       , ifBranch   :: FnBody
       , elseBranch :: FnBody
       }
+  | MultiWayIfExpr
+      { whenExprs :: [WhenExpr]
+      , otherwise :: Maybe FnBody
+      }
   | ForExpr
       { steps :: [ForStep]
       , yield :: FnBody
@@ -98,6 +101,13 @@ data CaseBinding
 data InternalFnDef
   = FnVal ValDef
   | FnMethod MethodDef
+  | FnGiven GivenDef
+
+data WhenExpr
+  = WhenExpr
+      { cond :: FnBody
+      , body :: FnBody
+      }
 
 
 
@@ -139,9 +149,11 @@ instance Show FnBody where
   show (Tuple x)          = wrapParensCsv x
   show (FnVar' x)         = show x
   show (Literal' x)       = show x
-  show (IfExpr x y z)     = joinWords ["if" +++ show x,
-                                       "then" +++ show y,
-                                       "else" +++ show z]
+  show (IfExpr x y z)     = joinWords ["if", show x,
+                                       "then", show y,
+                                       "else", show z]
+  show (MultiWayIfExpr x y)     = joinWords [str ("\n" ++ "else ") x,
+                                             ("\n" ++ "else ") `joinMaybe` y]
   show (ForExpr x y)      = joinWords ["for",
                                       wrapBlock x,
                                       "yield",
@@ -158,6 +170,9 @@ instance Show CaseBinding where
   show (CaseBinding x y z) = joinWords ["case", show x,
                                         "if" `joinMaybe` y,
                                         "=>", show z]
+instance Show WhenExpr where
+  show (WhenExpr x y) = joinWords ["if", show x,
+                                  "then", show y]
 
 instance Show FnVar where
   show (Var' x)  = show x
@@ -170,6 +185,7 @@ instance Show FnOp where
 instance Show InternalFnDef where
   show (FnVal x)    = show x
   show (FnMethod x) = show x
+  show (FnGiven x)  = show x
 
 showDef :: (Show a, Show b, Show c) => a -> Maybe b -> Maybe c -> String
 showDef x y z = show x ++  ":" `joinMaybe` y

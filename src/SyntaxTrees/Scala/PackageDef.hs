@@ -7,7 +7,7 @@ import Utils.String
 
 
 data PackageDef
-  = ModuleDef
+  = PackageDef
       { name    :: Package
       , imports :: [PackageImport]
       , defs    :: [InternalDef]
@@ -17,8 +17,10 @@ data PackageImport
   = PackageImport Package PackageImportDef
 
 data PackageImportDef
-  = MembersImport [PackageMember]
-  | FullImport
+  = FullImport
+  | MembersImport [PackageMember]
+  | FullObjectImport TypeVar
+  | FilteredObjectImport TypeVar [PackageMember]
 
 data PackageMember
   = VarMember Var
@@ -26,7 +28,7 @@ data PackageMember
 
 
 instance Show PackageDef where
-  show (ModuleDef x y z) = joinLines ["package" +++ show x,
+  show (PackageDef x y z) = joinLines ["package" +++ show x,
                                       unlines (show <$> y),
                                       joinLines (show <$> z)]
 
@@ -34,8 +36,10 @@ instance Show PackageImport where
   show (PackageImport x y) = "import" +++ show x ++ show y
 
 instance Show PackageImportDef where
-  show (MembersImport x) = wrapCurlyCsv x
-  show FullImport        = "_"
+  show FullImport                 = "_"
+  show (MembersImport x)          = wrapCurlyCsv x
+  show (FullObjectImport x)       = show x ++ "." ++ "_"
+  show (FilteredObjectImport x y) = show x ++ "." ++ wrapCurlyCsv y
 
 instance Show PackageMember where
   show (VarMember x)  = show x
