@@ -63,10 +63,6 @@ data FnBody
       , ifBranch   :: FnBody
       , elseBranch :: FnBody
       }
-  | MultiWayIfExpr
-      { whenExprs :: [WhenExpr]
-      , otherwise :: Maybe FnBody
-      }
   | ForExpr
       { steps :: [ForStep]
       , yield :: FnBody
@@ -152,8 +148,6 @@ instance Show FnBody where
   show (IfExpr x y z)     = joinWords ["if", show x,
                                        "then", show y,
                                        "else", show z]
-  show (MultiWayIfExpr x y)     = joinWords [str ("\n" ++ "else ") x,
-                                             ("\n" ++ "else ") `joinMaybe` y]
   show (ForExpr x y)      = joinWords ["for",
                                       wrapBlock x,
                                       "yield",

@@ -13,6 +13,7 @@ import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
 
 literal :: Parser Literal
 literal = UnitLit <$ is "()" <|>
+          BoolLit <$> (True <$ is "True" <|> False <$ is "False") <|>
           IntLit . show <$> int <|>
           FloatLit . show <$> double <|>
           CharLit . pure <$> withinQuotes char <|>

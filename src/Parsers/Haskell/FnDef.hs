@@ -95,12 +95,12 @@ guardedFnBody :: Parser a -> Parser GuardedFnBody
 guardedFnBody sep = GuardedFnBody <$> guard <* sep <*> fnBody
 
 guard :: Parser Guard
-guard = Guard <$> (is "|" *> someSepBy comma patternGuard)
+guard = Guard     <$> (is "|" *> someSepBy comma patternGuard) <|>
+        Otherwise <$ is "otherwise"
 
 patternGuard :: Parser PatternGuard
 patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>
-               SimpleGuard  <$> fnBody <|>
-               Otherwise    <$ is "otherwise"
+               SimpleGuard  <$> fnBody
 
 withinContext :: Parser b -> Parser [b]
 withinContext parser = withinCurlyBrackets $ someSepBy (is ";") parser

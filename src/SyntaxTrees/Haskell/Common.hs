@@ -27,6 +27,7 @@ newtype Module
 
 data Literal
   = UnitLit
+  | BoolLit Bool
   | IntLit String
   | FloatLit String
   | CharLit String

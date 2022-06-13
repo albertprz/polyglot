@@ -7,16 +7,17 @@ import qualified SyntaxTrees.Scala.Common   as S
 import qualified SyntaxTrees.Scala.FnDef    as S
 import qualified SyntaxTrees.Scala.Pattern  as S
 
-import Conversions.HaskellToScala.Common  (literal, var, varOp)
+import Conversions.HaskellToScala.Common  (ctor, ctorOp, literal, var, varOp)
 import Conversions.HaskellToScala.Pattern (allVars, extractVars, pattern')
 import Conversions.HaskellToScala.Type    (argList, classScopeSplit,
-                                           findTypeParams, fnOp, typeParam,
-                                           typeSplit, usingArgList)
+                                           findTypeParams, typeParam, typeSplit,
+                                           usingArgList)
 
-import           Data.Foldable             (Foldable (toList))
-import           Data.Maybe                (fromMaybe, listToMaybe)
-import           Data.Tuple.Extra          (uncurry3)
-import qualified SyntaxTrees.Haskell.FnDef as S
+import Data.Foldable    (Foldable (toList))
+import Data.List        (nubBy)
+import Data.Maybe       (fromMaybe, listToMaybe, mapMaybe)
+import Data.Tuple.Extra (uncurry3)
+import Utils.List       (groupTuplesByKey, mergeUnion)
 
 
 emptyFnSig :: S.FnSig
@@ -40,6 +41,21 @@ unNamedFnSig tpe n = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
  where
    (constraints, rest) = classScopeSplit tpe
    (argTypes, retType) = typeSplit n rest
+
+
+fnDefOrSigs :: [H.FnDefOrSig] -> [(Maybe H.FnSig, Maybe [H.FnDef])]
+fnDefOrSigs defsOrSigs = nubBy dedupFn $ mergeUnion sigs groupedDefs
+
+  where
+    dedupFn x y = ((.name) <$> fst x) == ((.name) <$> fst y)
+    defs = mapMaybe (\case (H.Def x) -> Just ((.name) x, x)
+                           (H.Sig _) -> Nothing)
+           defsOrSigs
+    sigs = mapMaybe (\case (H.Def _) -> Nothing
+                           (H.Sig x) -> Just ((.name) x, x))
+           defsOrSigs
+    groupedDefs = groupTuplesByKey defs
+
 
 
 fnDefs :: (Maybe H.FnSig, Maybe [H.FnDef]) -> S.MethodDef
@@ -77,52 +93,83 @@ fnDefToFnBody defs = match
     n = (length . (.args)) (head defs)
 
 
-maybeGuardeBody :: H.MaybeGuardedFnBody -> S.FnBody
-maybeGuardeBody _ = undefined
 
 
 fnBody :: H.FnBody -> S.FnBody
 fnBody (H.FnApply x y)      = S.FnApply (fnBody x) (fnBody <$> y)
 fnBody (H.InfixFnApply x y) = S.InfixFnApply (fnOp x) (fnBody <$> y)
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (var <$> x) (fnBody y)
-fnBody (H.LetExpr x y)      = S.LetExpr (Method <$> fnDefOrSigs x) (fnBody y)
-fnBody (H.WhereExpr x y)      = S.LetExpr (Method <$> fnDefOrSigs y) (fnBody x)
+fnBody (H.LetExpr x y)      = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs x)
+                                        (fnBody y)
+fnBody (H.WhereExpr x y)      = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs y)
+                                          (fnBody x)
 fnBody (H.IfExpr x y z)      = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
-fnBody (H.MultiWayIfExpr Expr x y z) = S.MultiWayIfExpr [] Nothing
-fnBody (H.DoExpr x y) =  S.ForExpr (doStep <$> x) (fnBody y)
+fnBody (H.MultiWayIfExpr x) = maybeGuardeBody $ H.Guarded x
+fnBody (H.DoExpr x) =  S.ForExpr (doStep <$> init x) (extractDoStep $ last x)
 fnBody (H.CaseOfExpr x y) =  S.MatchExpr (fnBody x) (caseBinding <$> y)
 fnBody (H.Tuple x) =  S.Tuple $ fnBody <$> x
-fnBody (H.List x) =  S.FnApply (S.FnVar' $ S.Ctor' $ Ctor "List") (fnBody <$> y)
+fnBody (H.List x) =  S.FnApply (S.FnVar' $ S.Ctor' $ S.Ctor "List") (fnBody <$> x)
 fnBody (H.FnVar' x) = S.FnVar' $ fnVar x
 fnBody (H.Literal' x) = S.Literal' $ literal x
 
 
 
+doStep :: H.DoStep -> S.ForStep
 doStep (H.DoBinding x y) = S.ForBinding (var x) (fnBody y)
 doStep (H.Body x)        = S.ForBinding (S.Var "_") (fnBody x)
 
-caseBinding (H.CaseBinding x y) = S.CaseBinding (pattern' x) Nothing (maybeGuardeBody y)
 
 
+caseBinding :: H.CaseBinding -> S.CaseBinding
+caseBinding (H.CaseBinding x y) = S.CaseBinding (pattern' x) Nothing
+                                                (maybeGuardeBody y)
+
+
+maybeGuardeBody :: H.MaybeGuardedFnBody -> S.FnBody
+maybeGuardeBody (H.Guarded x)  = S.MatchExpr (S.Literal' $ S.BoolLit True)
+                                             (guardedBody <$> x)
+maybeGuardeBody (H.Standard x) = fnBody x
+
+
+guardedBody :: H.GuardedFnBody -> S.CaseBinding
+guardedBody (H.GuardedFnBody (H.Guard x) body)
+      | all (\case (H.SimpleGuard _) -> True; _ -> False ) x =
+        S.CaseBinding S.Wildcard (Just $ S.InfixFnApply (S.VarOp' $ S.VarOp "&&") $
+        mapMaybe (\case (H.SimpleGuard y) -> Just (fnBody y); _ -> Nothing) x)
+                (fnBody body)
+
+      | otherwise = S.CaseBinding S.Wildcard Nothing $
+                                foldr patternGuard (fnBody body) x
+
+guardedBody (H.GuardedFnBody (H.Otherwise) body) =
+  S.CaseBinding S.Wildcard Nothing $ fnBody body
+
+patternGuard :: H.PatternGuard -> S.FnBody -> S.FnBody
+patternGuard (H.PatternGuard x y) body =
+  S.MatchExpr
+        (fnBody y)
+        [S.CaseBinding (pattern' x) Nothing body]
+
+patternGuard (H.SimpleGuard x) body =
+  S.MatchExpr
+        (S.Literal' $ S.BoolLit True)
+        [S.CaseBinding S.Wildcard (Just (fnBody x)) body]
+
+
+fnVar :: H.FnVar -> S.FnVar
 fnVar (H.Var' x)  = S.Var' $ var x
 fnVar (H.Ctor' x) = S.Ctor' $ ctor x
 
-fnOp (H.VarOp' x)  = H.VarOp' $ varOp x
-fnOp (H.CtorOp' x) = H.CtorOp' $ ctorOp x
+
+fnOp :: H.FnOp -> S.FnOp
+fnOp (H.VarOp' x)  = S.VarOp' $ varOp x
+fnOp (H.CtorOp' x) = S.CtorOp' $ ctorOp x
 
 
-fnDefOrSigs :: [H.FnDefOrSig] -> [(Maybe H.FnSig, Maybe [H.FnDef])]
-fnDefOrSigs defsOrSigs = nubBy dedupFn $ mergeUnion sigs groupedDefs
+extractDoStep :: H.DoStep -> S.FnBody
+extractDoStep (H.DoBinding _ y) = fnBody y
+extractDoStep (H.Body x)        = fnBody x
 
-  where
-    dedupFn x y = ((.name) <$> fst x) == ((.name) <$> fst y)
-    defs = mapMaybe (\case (H.Def x) -> Just ((.name) x, x)
-                           (H.Sig _) -> Nothing)
-           defsOrSigs
-    sigs = mapMaybe (\case (H.Def _) -> Nothing
-                           (H.Sig x) -> Just ((.name) x, x))
-           defsOrSigs
-    groupedDefs = groupTuplesByKey defs
 
 autoFnIds :: [String]
 autoFnIds = pure <$> ['x', 'y', 'z', 't', 'u', 'v', 'w', 'p', 'q', 'r', 's']

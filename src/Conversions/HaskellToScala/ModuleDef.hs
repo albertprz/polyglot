@@ -1,16 +1,16 @@
 module Conversions.HaskellToScala.ModuleDef where
 
-import           Conversions.HaskellToScala.DataDef (dataDef, newtypeDef,
-                                                     typeDef)
-import           Data.Maybe                         (mapMaybe)
-import qualified SyntaxTrees.Haskell.ModuleDef      as H
-import qualified SyntaxTrees.Scala.DataDef          as S
-import qualified SyntaxTrees.Scala.PackageDef       as S
+import qualified SyntaxTrees.Haskell.ModuleDef as H
+import qualified SyntaxTrees.Scala.DataDef     as S
+import qualified SyntaxTrees.Scala.PackageDef  as S
 
-import Conversions.HaskellToScala.ClassDef
-import Conversions.HaskellToScala.Common
-import Conversions.HaskellToScala.FnDef
+import Conversions.HaskellToScala.ClassDef (classDef, instanceDef)
+import Conversions.HaskellToScala.Common   (module', var)
+import Conversions.HaskellToScala.DataDef  (dataDef, newtypeDef, typeDef)
+import Conversions.HaskellToScala.FnDef    (fnDefOrSigs, fnDefs)
 import Conversions.HaskellToScala.Type     (typeVar)
+
+import Data.Maybe (mapMaybe)
 
 
 
@@ -48,7 +48,7 @@ singleImportDef _                = Nothing
 internalDefs :: [H.InternalDef] -> [S.InternalDef]
 internalDefs defs =
   (mapMaybe internalDef others) ++
-  (S.Method . fnDefs <$> fnDefOrSig fns)
+  (S.Method . fnDefs <$> fnDefOrSigs fns)
 
   where
     fns = mapMaybe (\case (H.FnDefOrSig' x) -> Just x

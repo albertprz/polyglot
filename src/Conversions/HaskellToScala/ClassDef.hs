@@ -2,17 +2,14 @@ module Conversions.HaskellToScala.ClassDef where
 
 import qualified SyntaxTrees.Haskell.ClassDef as H
 import qualified SyntaxTrees.Haskell.Common   as H
-import qualified SyntaxTrees.Haskell.FnDef    as H
 import qualified SyntaxTrees.Scala.DataDef    as S
 import qualified SyntaxTrees.Scala.FnDef      as S
 import qualified SyntaxTrees.Scala.Type       as S
 
-import Conversions.HaskellToScala.FnDef (fnDe, fnDefOrSigs)
+import Conversions.HaskellToScala.FnDef (fnDefOrSigs, fnDefs)
 import Conversions.HaskellToScala.Type
-import Data.Foldable                    (Foldable (toList))
-import Data.List                        (nubBy)
-import Data.Maybe                       (mapMaybe)
-import Utils.List                       (groupTuplesByKey, mergeUnion)
+
+import Data.Foldable (Foldable (toList))
 
 
 

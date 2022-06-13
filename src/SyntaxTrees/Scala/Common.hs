@@ -25,6 +25,7 @@ newtype Package
 
 data Literal
   = UnitLit
+  | BoolLit Bool
   | IntLit String
   | FloatLit String
   | CharLit String
@@ -64,11 +65,13 @@ instance Show Package where
   show (Package x) = intercalate "." x
 
 instance Show Literal where
-  show UnitLit       = "()"
-  show (IntLit x)    = x
-  show (FloatLit x)  = x
-  show (CharLit x)   = x
-  show (StringLit x) = x
+  show UnitLit         = "()"
+  show (BoolLit True)  = "true"
+  show (BoolLit False) = "false"
+  show (IntLit x)      = x
+  show (FloatLit x)    = x
+  show (CharLit x)     = x
+  show (StringLit x)   = x
 
 
 instance Show Modifier where

@@ -54,8 +54,7 @@ data FnBody
       { whenExprs :: [GuardedFnBody]
       }
   | DoExpr
-      { steps     :: [DoStep]
-      , finalStep :: FnBody
+      { steps :: [DoStep]
       }
   | CaseOfExpr
       { matchee :: FnBody
@@ -100,10 +99,10 @@ data GuardedFnBody
 
 data Guard
   = Guard [PatternGuard]
+  | Otherwise
   deriving (Show)
 
 data PatternGuard
   = PatternGuard Pattern FnBody
   | SimpleGuard FnBody
-  | Otherwise
   deriving (Show)

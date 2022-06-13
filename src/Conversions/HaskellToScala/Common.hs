@@ -30,6 +30,7 @@ module' (H.Module x) = S.Package $ (toLower <$>) <$> init x ++ [last x]
 
 literal :: H.Literal -> S.Literal
 literal H.UnitLit       = S.UnitLit
+literal (H.BoolLit x)   = S.BoolLit x
 literal (H.IntLit x)    = S.IntLit x
 literal (H.FloatLit x)  = S.FloatLit x
 literal (H.CharLit x)   = S.CharLit x
