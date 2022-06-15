@@ -197,4 +197,4 @@ data Empty
   = Empty
 
 instance Show Empty where
-  show Empty = ""
+  show Empty = mempty

@@ -5,4 +5,5 @@ resolver:
 extra-deps:
 - bookhound-0.1.8.0
 - extra-1.7.10
+- utility-ht-0.0.16
 - clock-0.8.3

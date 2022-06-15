@@ -19,6 +19,7 @@ literal = UnitLit <$ is "()" <|>
           CharLit . pure <$> withinQuotes char <|>
           StringLit <$> withinDoubleQuotes (isNot '"' |*)
 
+
 var :: Parser Var
 var = Var <$> ident lower
 

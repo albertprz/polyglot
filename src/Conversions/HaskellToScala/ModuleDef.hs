@@ -51,8 +51,8 @@ internalDefs defs =
   (S.Method . fnDefs <$> fnDefOrSigs fns)
 
   where
-    fns = mapMaybe (\case (H.FnDefOrSig' x) -> Just x
-                          _                 -> Nothing) defs
+    fns    = mapMaybe (\case (H.FnDefOrSig' x) -> Just x
+                             _                 -> Nothing) defs
 
     others = mapMaybe (\case (H.FnDefOrSig' _) -> Nothing
                              x                 -> Just x) defs

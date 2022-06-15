@@ -3,7 +3,7 @@ module Parsers.Haskell.ClassDef where
 import SyntaxTrees.Haskell.ClassDef (ClassDef (ClassDef),
                                      InstanceDef (InstanceDef))
 
-import Data.Maybe             (maybeToList)
+import Data.Foldable          (Foldable (fold))
 import Parser                 (Parser)
 import ParserCombinators      (IsMatch (is), (<|>), (|?))
 import Parsers.Collections    (tupleOf)
@@ -22,10 +22,10 @@ classDef = ClassDef <$> (is "class" *> classConstraints')
                     <*> withinContext fnDefOrSig
   where
 
-  classConstraints' = mconcat . maybeToList <$>
-                     ((classConstraints type' <* is "=>") |?)
+  classConstraints' = fold <$>
+                      ((classConstraints type' <* is "=>") |?)
 
-  typeParams = mconcat . maybeToList <$>
+  typeParams = fold <$>
                ((tupleOf typeParam <|> pure <$> typeParam) |?)
 
 
@@ -38,8 +38,8 @@ instanceDef = InstanceDef <$> (is "class" *> classConstraints')
                           <*> withinContext fnDefOrSig
   where
 
-  classConstraints' = mconcat . maybeToList <$>
-                     ((classConstraints type' <* is "=>") |?)
+  classConstraints' = fold <$>
+                      ((classConstraints type' <* is "=>") |?)
 
-  types = mconcat . maybeToList <$>
-               ((tupleOf anyKindedType <|> pure <$> anyKindedType) |?)
+  types = fold <$>
+          ((tupleOf anyKindedType <|> pure <$> anyKindedType) |?)

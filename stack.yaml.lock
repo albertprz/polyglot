@@ -19,6 +19,13 @@ packages:
   original:
     hackage: extra-1.7.10
 - completed:
+    hackage: utility-ht-0.0.16@sha256:8cae2a7f031783ea49a7057f688236d456a3da98a290090a6954b9dd55679ccd,3115
+    pantry-tree:
+      size: 3198
+      sha256: e0d14f1593a2bff5d8241def45074a738053802b503c9a5ebd062e0177122a7f
+  original:
+    hackage: utility-ht-0.0.16
+- completed:
     hackage: clock-0.8.3@sha256:a692159828c2cd278eaec317b3a7e9fb6d7b787c8a19f086004d15d9fa1fd72c,4601
     pantry-tree:
       size: 499

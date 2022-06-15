@@ -1,8 +1,24 @@
 module Utils.List where
 
+import qualified Data.List.NonEmpty as Nel
+
 import Data.Foldable    (find)
 import Data.List        (groupBy, sortBy)
 import Data.Tuple.Extra (first)
+
+
+
+safeHead :: [a] -> Maybe a
+safeHead = (Nel.head <$>) . Nel.nonEmpty
+
+safeLast :: [a] -> Maybe a
+safeLast = (Nel.last <$>) . Nel.nonEmpty
+
+safeTail :: [a] -> Maybe [a]
+safeTail = (Nel.tail <$>) . Nel.nonEmpty
+
+safeInit :: [a] -> Maybe [a]
+safeInit = (Nel.init <$>) . Nel.nonEmpty
 
 
 groupByKey :: Eq b => (a -> b) -> [a] -> [[a]]

@@ -1,6 +1,6 @@
 module Parsers.Haskell.DataDef where
 
-import Data.Foldable               (toList)
+import Data.Foldable               (Foldable (fold))
 import Parser                      (Parser)
 import ParserCombinators           (IsMatch (..), anySepBy, someSepBy, (<#>),
                                     (<|>), (|*), (|?))
@@ -30,7 +30,7 @@ newtypeDef = NewTypeDef <$> (is "newtype" *> typeVar)
 dataDef :: Parser DataDef
 dataDef = DataDef <$> (is "data" *> typeVar)
                   <*> (typeParam |*)
-                  <*> (mconcat . toList <$> alternatives)
+                  <*> (fold <$> alternatives)
                   <*> derivingList
   where
     alternatives = ((equal *> someSepBy (is "|") dataCtorDef) |?)
@@ -54,4 +54,4 @@ dataCtorDef = NamedFieldsCtor   <$> ctor
                                 <*> (unNamedFieldDef |*)
 
 derivingList :: Parser [Class]
-derivingList = mconcat . toList <$> ((is "deriving" *> anySepBy comma class') |?)
+derivingList = fold <$> ((is "deriving" *> anySepBy comma class') |?)

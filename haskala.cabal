@@ -31,6 +31,7 @@ library
       Conversions.HaskellToScala.ModuleDef
       Conversions.HaskellToScala.Pattern
       Conversions.HaskellToScala.Type
+      Lexers.Haskell.Layout
       Parsers.Haskell.ClassDef
       Parsers.Haskell.Common
       Parsers.Haskell.DataDef
@@ -52,6 +53,7 @@ library
       SyntaxTrees.Scala.Pattern
       SyntaxTrees.Scala.Type
       Utils.Foldable
+      Utils.Functor
       Utils.List
       Utils.String
   other-modules:
@@ -97,6 +99,7 @@ library
     , bookhound >=0.1.8 && <0.2
     , containers
     , extra >=1.7.10 && <1.8
+    , utility-ht >=0.0.16
   default-language: Haskell2010
 
 executable haskala-exe
@@ -145,4 +148,5 @@ executable haskala-exe
     , containers
     , extra >=1.7.10 && <1.8
     , haskala
+    , utility-ht >=0.0.16
   default-language: Haskell2010

@@ -1,8 +1,10 @@
 module SyntaxTrees.Scala.FnDef where
 
+import Data.Monoid.HT            (when)
 import SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier, Var, VarOp)
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
+import Utils.Foldable            (hasSome)
 import Utils.String
 
 
@@ -126,15 +128,15 @@ instance Show MethodDef where
 instance Show GivenDef where
   show (GivenDef x y z t u v) = joinWords [str " " x,
                                           "given",
-                                          maybe "" show y,
+                                          foldMap show y,
                                           wrapSquareCsv z,
                                           str " " t,
-                                          if displaySep then ":" else "",
+                                          when displaySep ":",
                                           show u,
                                           "with",
                                           wrapSpacedBlock v]
     where
-      displaySep = not (null y && null z && null t)
+      displaySep = hasSome y || hasSome z || hasSome t
 
 
 instance Show FnBody where
@@ -180,6 +182,7 @@ instance Show InternalFnDef where
   show (FnVal x)    = show x
   show (FnMethod x) = show x
   show (FnGiven x)  = show x
+
 
 showDef :: (Show a, Show b, Show c) => a -> Maybe b -> Maybe c -> String
 showDef x y z = show x ++  ":" `joinMaybe` y

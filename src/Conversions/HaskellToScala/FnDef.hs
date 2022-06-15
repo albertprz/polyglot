@@ -13,7 +13,7 @@ import Conversions.HaskellToScala.Type    (argList, classScopeSplit,
                                            findTypeParams, typeParam, typeSplit,
                                            usingArgList)
 
-import Data.Foldable    (Foldable (toList))
+import Data.Foldable    (Foldable (fold, toList))
 import Data.List        (nubBy)
 import Data.Maybe       (fromMaybe, listToMaybe, mapMaybe)
 import Data.Tuple.Extra (uncurry3)
@@ -28,9 +28,9 @@ namedFnSig tpe args = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
                       [argList (var <$> args) argTypes]
                       [usingArgList constraints]
                       (Just retType)
- where
-   (constraints, rest) = classScopeSplit tpe
-   (argTypes, retType) = typeSplit (length args) rest
+  where
+    (constraints, rest) = classScopeSplit tpe
+    (argTypes, retType) = typeSplit (length args) rest
 
 
 unNamedFnSig :: H.Type -> Int -> S.FnSig
@@ -38,9 +38,9 @@ unNamedFnSig tpe n = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
                      [argList (S.Var <$> autoFnIds) argTypes]
                      [usingArgList constraints]
                      (Just retType)
- where
-   (constraints, rest) = classScopeSplit tpe
-   (argTypes, retType) = typeSplit n rest
+  where
+    (constraints, rest) = classScopeSplit tpe
+    (argTypes, retType) = typeSplit n rest
 
 
 fnDefOrSigs :: [H.FnDefOrSig] -> [(Maybe H.FnSig, Maybe [H.FnDef])]
@@ -66,7 +66,7 @@ fnDefs (x, y) = fnDef x y
 fnDef :: Maybe H.FnSig -> Maybe [H.FnDef] -> S.MethodDef
 fnDef sig defs = S.MethodDef [] name fnSig (fnDefToFnBody <$> defs)
   where
-    n = maybe 0 (length . (.args)) $ (listToMaybe . (fromMaybe [])) defs
+    n = maybe 0 (length . (.args)) $ (listToMaybe . fold) defs
     fnSig = maybe emptyFnSig (`unNamedFnSig` n) $ (.type') <$> sig
     name = var $ maybe ((.name) . head $ fromMaybe [] defs) (.name) sig
 
@@ -99,19 +99,20 @@ fnBody :: H.FnBody -> S.FnBody
 fnBody (H.FnApply x y)      = S.FnApply (fnBody x) (fnBody <$> y)
 fnBody (H.InfixFnApply x y) = S.InfixFnApply (fnOp x) (fnBody <$> y)
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (var <$> x) (fnBody y)
-fnBody (H.LetExpr x y)      = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs x)
-                                        (fnBody y)
-fnBody (H.WhereExpr x y)      = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs y)
-                                          (fnBody x)
-fnBody (H.IfExpr x y z)      = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
+fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
+fnBody (H.DoExpr x)         = S.ForExpr (doStep <$> init x) (extractDoStep $ last x)
 fnBody (H.MultiWayIfExpr x) = maybeGuardeBody $ H.Guarded x
-fnBody (H.DoExpr x) =  S.ForExpr (doStep <$> init x) (extractDoStep $ last x)
-fnBody (H.CaseOfExpr x y) =  S.MatchExpr (fnBody x) (caseBinding <$> y)
-fnBody (H.Tuple x) =  S.Tuple $ fnBody <$> x
-fnBody (H.List x) =  S.FnApply (S.FnVar' $ S.Ctor' $ S.Ctor "List") (fnBody <$> x)
-fnBody (H.FnVar' x) = S.FnVar' $ fnVar x
-fnBody (H.Literal' x) = S.Literal' $ literal x
+fnBody (H.CaseOfExpr x y)   = S.MatchExpr (fnBody x) (caseBinding <$> y)
+fnBody (H.Tuple x)          = S.Tuple $ fnBody <$> x
+fnBody (H.FnVar' x)         = S.FnVar' $ fnVar x
+fnBody (H.Literal' x)       = S.Literal' $ literal x
 
+fnBody (H.List x)        = S.FnApply (S.FnVar' $ S.Ctor' $ S.Ctor "List")
+                                     (fnBody <$> x)
+fnBody (H.LetExpr x y)   = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs x)
+                                     (fnBody y)
+fnBody (H.WhereExpr x y) = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs y)
+                                     (fnBody x)
 
 
 doStep :: H.DoStep -> S.ForStep
