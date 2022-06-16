@@ -1,3 +1,6 @@
 .stack-work/
+.metals/
+output/
+target/
 stack.yaml.lock
 *~

@@ -19,11 +19,14 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/githubuser/haskala#readme>
 
 dependencies:
+- bookhound >= 0.1.9 && < 0.2
+- filepath >= 1.4.0 && < 1.5.0
+- optparse-applicative >= 0.17.0 && < 0.18
+
 - base >= 4.7 && < 5
 - containers
 - extra >= 1.7.10 && < 1.8
 - utility-ht >= 0.0.16
-- bookhound >= 0.1.8 && < 0.2
 
 ghc-options:
 - -Wall

@@ -96,15 +96,19 @@ library
   ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , bookhound >=0.1.8 && <0.2
+    , bookhound >=0.1.9 && <0.2
     , containers
     , extra >=1.7.10 && <1.8
+    , filepath >=1.4.0 && <1.5.0
+    , optparse-applicative >=0.17.0 && <0.18
     , utility-ht >=0.0.16
   default-language: Haskell2010
 
 executable haskala-exe
   main-is: Main.hs
   other-modules:
+      CommandLine.Options
+      CommandLine.Process
       Paths_haskala
   hs-source-dirs:
       app
@@ -144,9 +148,11 @@ executable haskala-exe
   ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bookhound >=0.1.8 && <0.2
+    , bookhound >=0.1.9 && <0.2
     , containers
     , extra >=1.7.10 && <1.8
+    , filepath >=1.4.0 && <1.5.0
     , haskala
+    , optparse-applicative >=0.17.0 && <0.18
     , utility-ht >=0.0.16
   default-language: Haskell2010
