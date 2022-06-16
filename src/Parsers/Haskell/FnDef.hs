@@ -1,8 +1,10 @@
 module Parsers.Haskell.FnDef where
 
+import Data.Foldable             (Foldable (fold))
+import Data.Maybe                (maybeToList)
 import Parser                    (Parser)
 import ParserCombinators         (IsMatch (is), sepByOp, someSepBy, (<|>), (|*),
-                                  (|+))
+                                  (|+), (|?))
 import Parsers.Char              (comma)
 import Parsers.Collections       (listOf, tupleOf)
 import Parsers.Haskell.Common    (ctor, ctorOp, literal, var, varOp)
@@ -102,5 +104,6 @@ patternGuard :: Parser PatternGuard
 patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>
                SimpleGuard  <$> fnBody
 
-withinContext :: Parser b -> Parser [b]
-withinContext parser = withinCurlyBrackets $ someSepBy (is ";") parser
+withinContext :: Parser a -> Parser [a]
+withinContext parser = fold <$> (withinCurlyBrackets $ someSepBy (is ";")
+                        (maybeToList <$> (parser |?)))

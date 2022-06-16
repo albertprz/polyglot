@@ -12,7 +12,7 @@ import Data.Tuple.Extra (fst3)
 import Parsers.String   (word)
 import Utils.Foldable   (hasNone, hasSome)
 import Utils.List       (safeHead)
-import Utils.String     ((+++))
+import Utils.String     (joinWords)
 
 
 layoutBegin :: Parser String
@@ -25,11 +25,11 @@ otherText = mconcat <$>
 
 
 
-ammendLayout :: String -> Either ParseError String
-ammendLayout str = (++ " }") . unlines . fst3 <$>
-                   foldM layout args (lines str)
+adaptLayout :: String -> Either ParseError String
+adaptLayout str = (++ " }") . unlines . fst3 <$> layoutLines
   where
-    args = ([], [0], False)
+    layoutLines = foldM layout args (lines str)
+    args = ([], [], False)
 
 
 layout :: ([String], [Int], Bool)
@@ -56,10 +56,10 @@ layout (x, y, z) str = runParser layoutParser str
 
 
 calcIndent :: [Int] -> Int -> ([Int], String)
-calcIndent indentLvls curr = (newIndentLvls, closeContexts +++ sep)
+calcIndent indentLvls curr = (newIndentLvls, joinWords [closeContexts, sep])
   where
-    closeContexts = mconcat (" }" <$ extra)
-    sep = when (all (== curr) (safeHead indentLvls)) "; "
+    closeContexts = fold ("}; " <$ extra)
+    sep = when (any (== curr) (safeHead indentLvls)) "; "
     (extra, newIndentLvls) = span (curr <) indentLvls
 
 

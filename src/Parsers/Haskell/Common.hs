@@ -1,10 +1,12 @@
 module Parsers.Haskell.Common where
 
+import Data.Foldable              (Foldable (fold))
 import Parser                     (Parser, withTransform)
-import ParserCombinators          (IsMatch (is, isNot, oneOf), maybeWithin,
-                                   someSepBy, (<|>), (|*))
-import Parsers.Char               (alphaNum, char, colon, dot, lower, quote,
-                                   underscore, upper)
+import ParserCombinators          (IsMatch (inverse, is, isNot, noneOf, oneOf),
+                                   maybeWithin, someSepBy, withinBoth, (<|>),
+                                   (>>>), (|*), (|+), (|?))
+import Parsers.Char               (alphaNum, char, colon, dot, lower, newLine,
+                                   quote, underscore, upper)
 import Parsers.Number             (double, int)
 import Parsers.String             (spacing, withinDoubleQuotes, withinQuotes)
 import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
@@ -49,10 +51,32 @@ idChar :: Parser Char
 idChar = alphaNum <|> underscore <|> quote
 
 opSymbol :: Parser Char
-opSymbol = oneOf
-    [ '!', '#', '$', '%', '&', '⋆', '+', '.', '/',
-      '<', '=', '>', '?', '@', '\\', '|', '^', '|',
-      '-', '~']
+opSymbol = oneOf symbolChars
 
 token :: Parser a -> Parser a
-token = withTransform $ maybeWithin spacing
+token = withTransform $ maybeWithin (anyComment |+) . maybeWithin spacing
+
+
+anyComment :: Parser String
+anyComment = lineComment <|> blockComment <|> pragma
+
+lineComment :: Parser String
+lineComment = is "--" *> (pure <$> newLine <|>
+                          noneOf symbolChars >>> (inverse newLine |?))
+
+
+blockComment :: Parser String
+blockComment = fold <$> withinBoth (is "{-") (is "-}") (isNot "#" *>
+                                   ((isNot "-" *> isNot "}") |*))
+
+
+pragma :: Parser String
+pragma = fold <$> withinBoth (is "{-#") (is "#-}")
+                             (((isNot "#" *> isNot "-" *> isNot "}") |*))
+
+
+symbolChars :: [Char]
+symbolChars =
+     ['!', '#', '$', '%', '&', '⋆', '+', '.', '/',
+      '<', '=', '>', '?', '@', '\\', '|', '^', '|',
+      '-', '~']

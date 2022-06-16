@@ -2,13 +2,13 @@ module CommandLine.Process where
 
 import CommandLine.Options   (Opts (..))
 import Data.Maybe            (fromMaybe)
-import Lexers.Haskell.Layout (ammendLayout)
+import Lexers.Haskell.Layout (adaptLayout)
 import System.FilePath       (replaceBaseName, takeBaseName)
 
 
 process :: Opts -> IO ()
 process Opts {sourcePath, targetPath} = readFile sourcePath >>=
-                                        emitError . ammendLayout >>=
+                                        emitError . adaptLayout >>=
                                         writeFile targetPath'
 
   where
