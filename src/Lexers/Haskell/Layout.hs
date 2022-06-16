@@ -4,22 +4,23 @@ module Lexers.Haskell.Layout where
 import Parser
 import ParserCombinators
 import Parsers.Char
-import Parsers.String
 
 import Control.Monad    (foldM)
 import Data.Foldable    (Foldable (fold))
 import Data.Monoid.HT   (when)
 import Data.Tuple.Extra (fst3)
+import Parsers.String   (word)
 import Utils.Foldable   (hasNone, hasSome)
 import Utils.List       (safeHead)
 
 
 layoutBegin :: Parser String
-layoutBegin = within spacing $ oneOf layoutTokens
+layoutBegin = oneOf layoutTokens
 
 
 otherText :: Parser String
-otherText = foldr notContains string layoutTokens
+otherText = mconcat <$>
+           (((word <&> noneOf layoutTokens) >>> (space |*)) |*)
 
 
 
@@ -29,7 +30,6 @@ ammendLayout str = unlines . fst3 <$> foldM layout args (lines str)
     args = ([], [0], False)
 
 
--- layout :: (String, [Int], Bool) -> String -> Either ParseError (String, [Int], Bool)
 layout :: ([String], [Int], Bool)
           -> String
           -> Either ParseError ([String], [Int], Bool)
@@ -47,7 +47,7 @@ layout (x, y, z) str = runParser layoutParser str
          let (newIndents, beginSep) = calcIndent indents $ length spaces'
          let endSep = when (hasSome layoutText) "{"
          let indents' = when (hasSome rest) [contextIndent] ++ newIndents
-         let text = x ++ [spaces' ++ beginSep ++ start ++
+         let text = x ++ [spaces' ++ beginSep ++ start ++ fold layoutText ++
                           endSep ++  spaces'' ++ rest]
          pure (text, indents', layoutNextLine)
 
@@ -62,4 +62,4 @@ calcIndent indentLvls curr = (newIndentLvls, closeContexts ++ sep)
 
 
 layoutTokens :: [String]
-layoutTokens = (" " ++) <$> ["where", "let", "do", "of"]
+layoutTokens = ["where", "let", "do", "of"]
