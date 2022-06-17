@@ -14,24 +14,29 @@ data ModuleDef
       , imports :: [ModuleImport]
       , defs    :: [InternalDef]
       }
+  deriving (Show)
 
 newtype ModuleExport
   = ModuleExport [ModuleExportDef]
+  deriving (Show)
 
 data ModuleExportDef
   = FnExport Var
   | DataExport TypeVar
   | FullDataExport TypeVar
   | FilteredDataExport TypeVar [Var]
+  deriving (Show)
 
 data ModuleImport
   = ModuleImport Module [ModuleImportDef]
+  deriving (Show)
 
 data ModuleImportDef
   = FnImport Var
   | DataImport TypeVar
   | FullDataImport TypeVar
   | FilteredDataImport TypeVar [Var]
+  deriving (Show)
 
 data InternalDef
   = TypeDef' TypeDef
@@ -40,3 +45,4 @@ data InternalDef
   | FnDefOrSig' FnDefOrSig
   | ClassDef' ClassDef
   | InstanceDef' InstanceDef
+  deriving (Show)

@@ -55,6 +55,7 @@ library
       Utils.Foldable
       Utils.Functor
       Utils.List
+      Utils.Monad
       Utils.String
   other-modules:
       Paths_haskala

@@ -6,7 +6,7 @@ import Utils.Foldable (hasSome, wrapMaybe)
 
 
 wrap :: String -> String -> String -> String
-wrap beg end x = when (hasSome x) beg ++ x ++ end
+wrap beg end x = when (hasSome x) $ beg ++ x ++ end
 
 wrapBoth :: String -> String -> String
 wrapBoth x = wrap x x

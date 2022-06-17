@@ -4,7 +4,7 @@ module Parsers.Haskell.ModuleDef where
 import Parsers.Haskell.ClassDef      (classDef, instanceDef)
 import Parsers.Haskell.Common        (module', var)
 import Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
-import Parsers.Haskell.FnDef         (fnDef, fnSig, withinContext)
+import Parsers.Haskell.FnDef         (fnDef, fnSig, withinContextTupled)
 import Parsers.Haskell.Type          (typeVar)
 import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (ModuleDef),
                                       ModuleExport (ModuleExport),
@@ -13,17 +13,18 @@ import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (ModuleDef),
                                       ModuleImportDef (DataImport, FilteredDataImport, FnImport, FullDataImport))
 
 import Parser                    (Parser)
-import ParserCombinators         (IsMatch (is), anySepBy, (<|>), (|*), (|?))
+import ParserCombinators         (IsMatch (is), anySepBy, (<|>), (|?))
 import Parsers.Char              (comma)
 import Parsers.String            (withinParens)
 import SyntaxTrees.Haskell.FnDef (FnDefOrSig (Def, Sig))
 
 
 moduleDef :: Parser ModuleDef
-moduleDef = ModuleDef <$> (is "module" *> module')
-                      <*> (moduleExport |?)
-                      <*> (moduleImport |*)
-                      <*> withinContext internalDef
+moduleDef = uncurry <$>
+              (ModuleDef <$> (is "module" *> module')
+                         <*  is "where"
+                         <*> (moduleExport |?))
+                         <*> withinContextTupled moduleImport internalDef
 
 
 

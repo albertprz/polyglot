@@ -44,7 +44,7 @@ unNamedFnSig tpe n = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
 
 
 fnDefOrSigs :: [H.FnDefOrSig] -> [(Maybe H.FnSig, Maybe [H.FnDef])]
-fnDefOrSigs defsOrSigs = nubBy dedupFn $ mergeUnion sigs groupedDefs
+fnDefOrSigs defsOrSigs =  nubBy dedupFn $ mergeUnion sigs groupedDefs
 
   where
     dedupFn x y = ((.name) <$> fst x) == ((.name) <$> fst y)
@@ -60,14 +60,14 @@ fnDefOrSigs defsOrSigs = nubBy dedupFn $ mergeUnion sigs groupedDefs
 
 fnDefs :: (Maybe H.FnSig, Maybe [H.FnDef]) -> S.MethodDef
 fnDefs (x, Just [y])
-  | (allVars . (.args)) y = simpleFnDef x y
+  | (allVars . (.args)) y =  simpleFnDef x y
 fnDefs (x, y) = fnDef x y
 
 fnDef :: Maybe H.FnSig -> Maybe [H.FnDef] -> S.MethodDef
 fnDef sig defs = S.MethodDef [] name fnSig (fnDefToFnBody <$> defs)
   where
     n = maybe 0 (length . (.args)) $ (listToMaybe . fold) defs
-    fnSig = maybe emptyFnSig (`unNamedFnSig` n) $ (.type') <$> sig
+    fnSig =  (`unNamedFnSig` n) . (.type') <$> sig
     name = var $ maybe ((.name) . head $ fromMaybe [] defs) (.name) sig
 
 simpleFnDef :: Maybe H.FnSig -> H.FnDef -> S.MethodDef
@@ -75,7 +75,7 @@ simpleFnDef sig def = S.MethodDef [] name fnSig (Just $ simpleFnDefToFnBody def)
   where
     name = var $ (.name) def
     args = extractVars $ (.args) def
-    fnSig = maybe emptyFnSig (`namedFnSig` args) $ (.type') <$> sig
+    fnSig = (`namedFnSig` args) . (.type') <$> sig
 
 
 simpleFnDefToFnBody :: H.FnDef -> S.FnBody

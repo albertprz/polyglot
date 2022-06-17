@@ -104,6 +104,12 @@ patternGuard :: Parser PatternGuard
 patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>
                SimpleGuard  <$> fnBody
 
+statements :: Parser a -> Parser [a]
+statements parser = fold <$> someSepBy (is ";") (maybeToList <$> (parser |?))
+
 withinContext :: Parser a -> Parser [a]
-withinContext parser = fold <$> (withinCurlyBrackets $ someSepBy (is ";")
-                        (maybeToList <$> (parser |?)))
+withinContext = withinCurlyBrackets . statements
+
+withinContextTupled :: Parser a1 -> Parser a2 -> Parser ([a1], [a2])
+withinContextTupled p1 p2 = withinCurlyBrackets $
+                               (,) <$> statements p1 <*> statements p2

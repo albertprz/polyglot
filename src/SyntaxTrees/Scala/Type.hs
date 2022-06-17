@@ -1,6 +1,7 @@
 module SyntaxTrees.Scala.Type where
 
 import SyntaxTrees.Scala.Common (Modifier, TypeClass, Var)
+import Utils.Foldable           (wrapMaybe)
 import Utils.String
 
 
@@ -75,7 +76,7 @@ instance Show ArgList where
   show (ArgList x) = wrapParensCsv x
 
 instance Show UsingArgList where
-  show (UsingArgList x) = wrapParens $ "using" +++ str ", " x
+  show (UsingArgList x) = wrapParens $ "using" `joinMaybe` (wrapMaybe $ str ", " x)
 
 instance Show ArgField where
   show (ArgField x y z) = joinWords [str " " x, show y ++ ":", show z]

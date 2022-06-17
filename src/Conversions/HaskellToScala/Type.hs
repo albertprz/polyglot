@@ -52,6 +52,7 @@ type' (H.ClassScope x y)      = S.ClassScope (classConstraint <$> x) (type' y)
 
 
 typeSplit :: Int -> H.Type -> ([S.Type], S.Type)
+typeSplit 0 tpe = ([], type' tpe)
 typeSplit n tpe = (args, S.CtorTypeApply S.Arrow ret)
   where
     (args, ret) = splitAt n $ type' <$> extractTypes tpe

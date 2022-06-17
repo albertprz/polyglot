@@ -1,5 +1,6 @@
 module SyntaxTrees.Scala.FnDef where
 
+import Data.Foldable             (Foldable (fold))
 import Data.Monoid.HT            (when)
 import SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier, Var, VarOp)
 import SyntaxTrees.Scala.Pattern (Pattern)
@@ -28,7 +29,7 @@ data MethodDef
   = MethodDef
       { qualifiers :: [Modifier]
       , name       :: Var
-      , sig        :: FnSig
+      , sig        :: Maybe FnSig
       , body       :: Maybe FnBody
       }
 
@@ -118,12 +119,12 @@ instance Show FnSig where
 instance Show ValDef where
   show (ValDef x y z t) = joinWords [str " " x,
                                      "val",
-                                     showDef y z t]
+                                     showVal y z t]
 
 instance Show MethodDef where
   show (MethodDef x y z t) = joinWords [str " " x,
                                         "def",
-                                        showDef y (Just z) t]
+                                        showDef y z t]
 
 instance Show GivenDef where
   show (GivenDef x y z t u v) = joinWords [str " " x,
@@ -141,7 +142,7 @@ instance Show GivenDef where
 
 instance Show FnBody where
   show (FnApply x y)      = joinWords [show x, wrapParensCsv y]
-  show (InfixFnApply x y) = str (show x) y
+  show (InfixFnApply x y) = str (wrapSpaces $ show x) y
   show (LambdaExpr x y)   = joinWords [wrapParensCsv x, "=>", show y]
   show (LetExpr x y)      = wrapLetContext x y
   show (Tuple x)          = wrapParensCsv x
@@ -184,6 +185,10 @@ instance Show InternalFnDef where
   show (FnGiven x)  = show x
 
 
-showDef :: (Show a, Show b, Show c) => a -> Maybe b -> Maybe c -> String
-showDef x y z = show x ++  ":" `joinMaybe` y
+showVal :: Var -> Maybe Type -> Maybe FnBody -> String
+showVal x y z = show x ++  ":" `joinMaybe` y
+                       +++ "=" `joinMaybe` z
+
+showDef :: Var -> Maybe FnSig -> Maybe FnBody -> String
+showDef x y z = show x ++ (fold $ show <$> y)
                        +++ "=" `joinMaybe` z

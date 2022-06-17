@@ -1,5 +1,6 @@
 module SyntaxTrees.Scala.PackageDef where
 
+import Data.List                 (intercalate)
 import SyntaxTrees.Scala.Common  (Package, Var)
 import SyntaxTrees.Scala.DataDef (InternalDef)
 import SyntaxTrees.Scala.Type    (TypeVar)
@@ -29,14 +30,15 @@ data PackageMember
 
 instance Show PackageDef where
   show (PackageDef x y z) = joinLines ["package" +++ show x,
-                                      unlines (show <$> y),
+                                      intercalate "\n" (show <$> y),
                                       joinLines (show <$> z)]
 
 instance Show PackageImport where
-  show (PackageImport x y) = "import" +++ show x ++ show y
+  show (PackageImport x y) = "import" +++ show x ++ "." ++ show y
 
 instance Show PackageImportDef where
   show FullImport                 = "_"
+  show (MembersImport [x])        = show x
   show (MembersImport x)          = wrapCurlyCsv x
   show (FullObjectImport x)       = show x ++ "." ++ "_"
   show (FilteredObjectImport x y) = show x ++ "." ++ wrapCurlyCsv y
