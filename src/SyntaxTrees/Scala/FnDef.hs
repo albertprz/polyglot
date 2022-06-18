@@ -113,8 +113,8 @@ data WhenExpr
 instance Show FnSig where
   show (FnSig x y z t) = joinWords [wrapSquareCsv x,
                                     str " " y,
-                                    str " " z,
-                                    ":" `joinMaybe` t]
+                                    str " " z]
+                         ++ ":" `joinMaybe` t
 
 instance Show ValDef where
   show (ValDef x y z t) = joinWords [str " " x,
@@ -190,5 +190,5 @@ showVal x y z = show x ++  ":" `joinMaybe` y
                        +++ "=" `joinMaybe` z
 
 showDef :: Var -> Maybe FnSig -> Maybe FnBody -> String
-showDef x y z = show x ++ (fold $ show <$> y)
+showDef x y z = show x +++ (fold $ show <$> y)
                        +++ "=" `joinMaybe` z

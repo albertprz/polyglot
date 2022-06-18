@@ -37,11 +37,12 @@ instance Show PackageImport where
   show (PackageImport x y) = "import" +++ show x ++ "." ++ show y
 
 instance Show PackageImportDef where
-  show FullImport                 = "_"
-  show (MembersImport [x])        = show x
-  show (MembersImport x)          = wrapCurlyCsv x
-  show (FullObjectImport x)       = show x ++ "." ++ "_"
-  show (FilteredObjectImport x y) = show x ++ "." ++ wrapCurlyCsv y
+  show FullImport                   = "_"
+  show (MembersImport [x])          = show x
+  show (MembersImport x)            = wrapCurlyCsv x
+  show (FullObjectImport x)         = show x ++ "." ++ "_"
+  show (FilteredObjectImport x [y]) = show x ++ "." ++ show y
+  show (FilteredObjectImport x y)   = show x ++ "." ++ wrapCurlyCsv y
 
 instance Show PackageMember where
   show (VarMember x)  = show x

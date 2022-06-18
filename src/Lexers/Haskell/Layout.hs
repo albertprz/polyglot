@@ -2,17 +2,18 @@ module Lexers.Haskell.Layout where
 
 
 import Parser            (ParseError, Parser, check, runParser)
-import ParserCombinators (IsMatch (oneOf), (>>>), (|*), (|?))
+import ParserCombinators (IsMatch (isNot, oneOf), (<|>), (>>>), (|*), (|+),
+                          (|?))
 import Parsers.Char      (space)
 
 import Control.Monad    (foldM)
 import Data.Foldable    (Foldable (fold))
 import Data.Monoid.HT   (when)
 import Data.Tuple.Extra (fst3)
-import Parsers.String   (word)
+import Parsers.String   (withinDoubleQuotes, withinQuotes, word)
 import Utils.Foldable   (hasNone, hasSome)
 import Utils.List       (safeHead)
-import Utils.String     (joinWords)
+import Utils.String     (joinWords, wrapDoubleQuotes, wrapQuotes)
 
 
 layoutBegin :: Parser String
@@ -21,12 +22,16 @@ layoutBegin = oneOf layoutTokens
 
 otherText :: Parser String
 otherText = mconcat <$>
-           (((check "" (`notElem` layoutTokens) word) >>> (space |*)) |*)
+           (((check "" (`notElem` layoutTokens) lexeme) >>> (space |*)) |*)
 
+lexeme :: Parser String
+lexeme = wrapDoubleQuotes <$> withinDoubleQuotes (isNot '"'  |+) <|>
+         wrapQuotes       <$> withinQuotes       (isNot '\'' |+) <|>
+         word
 
 
 adaptLayout :: String -> Either ParseError String
-adaptLayout str = (++ " }") . unlines . fst3 <$> layoutLines
+adaptLayout str = (++ "}") . unlines . fst3 <$> layoutLines
   where
     layoutLines = foldM layout args (lines str)
     args = ([], [], False)
@@ -48,10 +53,11 @@ layout (x, y, z) str = runParser layoutParser str
          let contextIndent = length $ spaces' ++ start ++ fold layoutText ++ spaces''
          let (newIndents, beginSep) = calcIndent indents $ length spaces'
          let endSep = when (hasSome layoutText) " {"
-         let indents' = when (hasSome rest) [contextIndent] ++ newIndents
+         let indents' = when (hasSome layoutText && hasSome rest)
+                        [contextIndent] ++ newIndents
          let text = x ++ [spaces' ++ beginSep ++ start ++ fold layoutText ++
                           endSep ++  spaces'' ++ rest]
-         pure (text, indents', layoutNextLine)
+         pure $ (text, indents', layoutNextLine)
 
 
 

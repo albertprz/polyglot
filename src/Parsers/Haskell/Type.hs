@@ -42,7 +42,7 @@ classConstraint typeParser = ClassConstraint <$> class' <*> (typeParser |+)
 
 
 type' :: Parser Type
-type' = maybeWithinParens $ typeScope <|> classScope <|> type''
+type' = typeScope <|> classScope <|> maybeWithinParens (type'')
   where
     type'' = arrow <|> typeApply <|> elem'
 

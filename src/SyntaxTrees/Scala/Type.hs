@@ -76,7 +76,8 @@ instance Show ArgList where
   show (ArgList x) = wrapParensCsv x
 
 instance Show UsingArgList where
-  show (UsingArgList x) = wrapParens $ "using" `joinMaybe` (wrapMaybe $ str ", " x)
+  show (UsingArgList x) = wrapParens $ "using" `joinMaybe` (Wrapper <$>
+                                                            wrapMaybe ( str ", " x))
 
 instance Show ArgField where
   show (ArgField x y z) = joinWords [str " " x, show y ++ ":", show z]
@@ -86,3 +87,9 @@ instance Show UsingArgField where
 
 instance Show ClassConstraint where
   show (ClassConstraint x y) = show x ++ wrapSquareCsv y
+
+data Wrapper
+  = Wrapper String
+
+instance Show Wrapper where
+  show (Wrapper x) = x

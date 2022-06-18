@@ -1,14 +1,15 @@
 module Parsers.Haskell.Common where
 
 import Data.Foldable              (Foldable (fold))
-import Parser                     (Parser, withTransform)
+import Parser                     (Parser, check, withTransform)
 import ParserCombinators          (IsMatch (inverse, is, isNot, noneOf, oneOf),
-                                   maybeWithin, someSepBy, withinBoth, (<|>),
-                                   (>>>), (|*), (|+), (|?))
+                                   maybeWithin, someSepBy, within, withinBoth,
+                                   (<|>), (>>>), (|*), (|+), (|?))
 import Parsers.Char               (alphaNum, char, colon, dot, lower, newLine,
                                    quote, underscore, upper)
 import Parsers.Number             (double, int)
-import Parsers.String             (spacing, withinDoubleQuotes, withinQuotes)
+import Parsers.String             (spacing, withinDoubleQuotes, withinParens,
+                                   withinQuotes)
 import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
                                    Literal (..), Module (..), Var (..),
                                    VarOp (..))
@@ -23,16 +24,18 @@ literal = UnitLit <$ is "()" <|>
 
 
 var :: Parser Var
-var = Var <$> ident lower
+var = Var <$> check "" (`notElem` reservedKeyWords)
+                    (ident lower <|> withinParens (operator opSymbol))
 
 ctor :: Parser Ctor
-ctor = Ctor <$> ident upper
+ctor = Ctor <$> (ident upper <|> withinParens (operator colon))
 
 varOp :: Parser VarOp
-varOp = VarOp <$> operator opSymbol
+varOp = VarOp <$> check "" (`notElem` reservedSymbols)
+                        (operator opSymbol <|> withinBackQuotes (ident lower))
 
 ctorOp :: Parser CtorOp
-ctorOp = CtorOp <$> operator colon
+ctorOp = CtorOp <$> (operator colon <|> withinBackQuotes (ident upper))
 
 class' :: Parser Class
 class' = Class <$> ident upper
@@ -80,3 +83,19 @@ symbolChars =
      ['!', '#', '$', '%', '&', '⋆', '+', '.', '/',
       '<', '=', '>', '?', '@', '\\', '|', '^', '|',
       '-', '~']
+
+
+reservedKeyWords :: [String]
+reservedKeyWords = ["case","class","data","default","deriving",
+                    "do","else","forall" ,"if","import","in",
+                    "infix","infixl","infixr","instance",
+                    "let","module" ,"newtype","of","qualified",
+                    "then","type","where","_" ,"foreign",
+                    "ccall","as","safe","unsafe"]
+
+reservedSymbols :: [String]
+reservedSymbols = ["..","::","=","\\","|","<-","->","@","~","=>","[","]"]
+
+
+withinBackQuotes :: Parser b -> Parser b
+withinBackQuotes = within (is '`')

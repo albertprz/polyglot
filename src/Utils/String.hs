@@ -23,6 +23,12 @@ wrapCurly = wrap "{" "}"
 wrapSpaces :: String -> String
 wrapSpaces = wrap " " " "
 
+wrapQuotes :: String -> String
+wrapQuotes = wrap "'" "'"
+
+wrapDoubleQuotes :: String -> String
+wrapDoubleQuotes = wrap "\"" "\""
+
 
 wrapParensCsv :: Show a => [a] -> String
 wrapParensCsv = wrapParens . str ", "

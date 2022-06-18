@@ -13,10 +13,14 @@ import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (ModuleDef),
                                       ModuleImportDef (DataImport, FilteredDataImport, FnImport, FullDataImport))
 
 import Parser                    (Parser)
-import ParserCombinators         (IsMatch (is), anySepBy, (<|>), (|?))
+import ParserCombinators         (IsMatch (is), anySepBy, maybeWithin, (<|>),
+                                  (|?))
 import Parsers.Char              (comma)
-import Parsers.String            (withinParens)
+import Parsers.String            (spacing, withinParens)
 import SyntaxTrees.Haskell.FnDef (FnDefOrSig (Def, Sig))
+
+
+-- TODO: Qualified imports
 
 
 moduleDef :: Parser ModuleDef
@@ -42,16 +46,16 @@ moduleExportDef = FnExport            <$> var                   <|>
 
 moduleImport :: Parser ModuleImport
 moduleImport = ModuleImport <$> (is "import" *> module')
-                            <*> withinParens (anySepBy comma moduleImportDef)
+                            <*> withinParens (anySepBy comma $ maybeWithin spacing moduleImportDef)
 
 
 moduleImportDef :: Parser ModuleImportDef
 moduleImportDef = FnImport            <$> var                   <|>
-                  DataImport          <$> typeVar               <|>
                   FullDataImport      <$> typeVar
                                       <* withinParens (is "..") <|>
                   FilteredDataImport  <$> typeVar
-                                      <*> withinParens (anySepBy comma var)
+                                      <*> withinParens (anySepBy comma var) <|>
+                  DataImport          <$> typeVar
 
 
 

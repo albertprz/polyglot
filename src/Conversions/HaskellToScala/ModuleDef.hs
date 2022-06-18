@@ -10,7 +10,8 @@ import Conversions.HaskellToScala.DataDef  (dataDef, newtypeDef, typeDef)
 import Conversions.HaskellToScala.FnDef    (fnDefOrSigs, fnDefs)
 import Conversions.HaskellToScala.Type     (typeVar)
 
-import Data.Maybe (mapMaybe)
+import Data.Maybe     (mapMaybe, maybeToList)
+import Utils.Foldable (wrapMaybe)
 
 
 
@@ -25,9 +26,9 @@ moduleImport (H.ModuleImport x y) =
   S.PackageImport (module' x) <$> moduleImportDefs y
 
 moduleImportDefs :: [H.ModuleImportDef] -> [S.PackageImportDef]
-moduleImportDefs importDefs = combined : singles
+moduleImportDefs importDefs = maybeToList combined ++ singles
   where
-    combined = S.MembersImport $ mapMaybe singleImportDef importDefs
+    combined = S.MembersImport <$> wrapMaybe (mapMaybe singleImportDef importDefs)
     singles = mapMaybe complexImportDef importDefs
 
 
@@ -35,7 +36,7 @@ complexImportDef :: H.ModuleImportDef -> Maybe S.PackageImportDef
 complexImportDef (H.FullDataImport x)       =
   Just $ S.FullObjectImport $ typeVar x
 complexImportDef (H.FilteredDataImport x y) =
-  Just $ S.FilteredObjectImport (typeVar x) (S.VarMember . var <$> y)
+  S.FilteredObjectImport (typeVar x) <$> wrapMaybe (S.VarMember . var <$> y)
 complexImportDef _ = Nothing
 
 
