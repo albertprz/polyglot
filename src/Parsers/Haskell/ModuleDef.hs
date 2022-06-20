@@ -2,7 +2,7 @@ module Parsers.Haskell.ModuleDef where
 
 
 import Parsers.Haskell.ClassDef      (classDef, instanceDef)
-import Parsers.Haskell.Common        (module', var)
+import Parsers.Haskell.Common        (module', opSymbol, operator, var)
 import Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
 import Parsers.Haskell.FnDef         (fnDef, fnSig, withinContextTupled)
 import Parsers.Haskell.Type          (typeVar)
@@ -12,12 +12,13 @@ import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (ModuleDef),
                                       ModuleImport (ModuleImport),
                                       ModuleImportDef (DataImport, FilteredDataImport, FnImport, FullDataImport))
 
-import Parser                    (Parser)
-import ParserCombinators         (IsMatch (is), anySepBy, maybeWithin, (<|>),
-                                  (|?))
-import Parsers.Char              (comma)
-import Parsers.String            (spacing, withinParens)
-import SyntaxTrees.Haskell.FnDef (FnDefOrSig (Def, Sig))
+import Parser                     (Parser)
+import ParserCombinators          (IsMatch (is), anySepBy, maybeWithin, (<|>),
+                                   (|?))
+import Parsers.Char               (comma)
+import Parsers.String             (spacing, withinParens)
+import SyntaxTrees.Haskell.Common (Var (Var))
+import SyntaxTrees.Haskell.FnDef  (FnDefOrSig (Def, Sig))
 
 
 -- TODO: Qualified imports
@@ -26,8 +27,8 @@ import SyntaxTrees.Haskell.FnDef (FnDefOrSig (Def, Sig))
 moduleDef :: Parser ModuleDef
 moduleDef = uncurry <$>
               (ModuleDef <$> (is "module" *> module')
-                         <*  is "where"
-                         <*> (moduleExport |?))
+                         <*> (moduleExport |?)
+                         <*  is "where")
                          <*> withinContextTupled moduleImport internalDef
 
 
@@ -37,10 +38,10 @@ moduleExport = ModuleExport <$> withinParens (anySepBy comma moduleExportDef)
 
 
 moduleExportDef :: Parser ModuleExportDef
-moduleExportDef = FnExport            <$> var                   <|>
-                  DataExport          <$> typeVar               <|>
+moduleExportDef = FnExport            <$> var                    <|>
+                  DataExport          <$> typeVar                <|>
                   FullDataExport      <$> typeVar
-                                      <* withinParens (is "..") <|>
+                                      <*  withinParens (is "..") <|>
                   FilteredDataExport  <$> typeVar
                                       <*> withinParens (anySepBy comma var)
 
@@ -50,9 +51,9 @@ moduleImport = ModuleImport <$> (is "import" *> module')
 
 
 moduleImportDef :: Parser ModuleImportDef
-moduleImportDef = FnImport            <$> var                   <|>
+moduleImportDef = FnImport            <$> var                    <|>
                   FullDataImport      <$> typeVar
-                                      <* withinParens (is "..") <|>
+                                      <*  withinParens (is "..") <|>
                   FilteredDataImport  <$> typeVar
                                       <*> withinParens (anySepBy comma var) <|>
                   DataImport          <$> typeVar

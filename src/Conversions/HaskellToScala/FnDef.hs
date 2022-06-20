@@ -98,6 +98,8 @@ fnDefToFnBody defs = match
 fnBody :: H.FnBody -> S.FnBody
 fnBody (H.FnApply x y)      = S.FnApply (fnBody x) (fnBody <$> y)
 fnBody (H.InfixFnApply x y) = S.InfixFnApply (fnOp x) (fnBody <$> y)
+fnBody (H.LeftOpSection x y) = S.LambdaExpr [S.Var "x"] (S.InfixFnApply (fnOp x) [S.FnVar' $ S.Var' $ S.Var "x", fnBody y])
+fnBody (H.RightOpSection x y) = S.LambdaExpr [S.Var "x"] (S.InfixFnApply (fnOp y) [fnBody x, S.FnVar' $ S.Var' $ S.Var "x"])
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (var <$> x) (fnBody y)
 fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
 fnBody (H.DoExpr x)         = S.ForExpr (doStep <$> init x) (extractDoStep $ last x)

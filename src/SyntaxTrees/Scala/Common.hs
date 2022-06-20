@@ -71,7 +71,7 @@ instance Show Literal where
   show (IntLit x)      = x
   show (FloatLit x)    = x
   show (CharLit x)     = x
-  show (StringLit x)   = x
+  show (StringLit x)   = show x
 
 
 instance Show Modifier where
@@ -84,3 +84,10 @@ instance Show Modifier where
   show Override  = "override"
   show Sealed    = "sealed"
   show Open      = "open"
+
+
+data Wrapper
+  = Wrapper String
+
+instance Show Wrapper where
+  show (Wrapper x) = x

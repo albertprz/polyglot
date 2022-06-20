@@ -174,7 +174,7 @@ showStructure  x y z t u v w r s = joinWords [x,
                                               str " " u,
                                               str " " v,
                                               joinList "derives" ", " w,
-                                              joinList "extends" ", " r ++ ":",
+                                              joinList "extends" ", " r,
                                               wrapSpacedBlock s]
 
 instance Show InternalDef where

@@ -33,6 +33,14 @@ data FnBody
       { fnOp :: FnOp
       , args :: [FnBody]
       }
+  | LeftOpSection
+      { fnOp :: FnOp
+      , arg  :: FnBody
+      }
+  | RigthOpSection
+      { arg  :: FnBody
+      , fnOp :: FnOp
+      }
   | LambdaExpr
       { vars :: [Var]
       , body :: FnBody
@@ -74,6 +82,11 @@ data FnVar
 data FnOp
   = VarOp' VarOp
   | CtorOp' CtorOp
+  deriving (Show)
+
+data OperatorPosition
+  = LeftPos
+  | RightPos
   deriving (Show)
 
 data DoStep

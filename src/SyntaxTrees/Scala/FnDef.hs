@@ -2,10 +2,11 @@ module SyntaxTrees.Scala.FnDef where
 
 import Data.Foldable             (Foldable (fold))
 import Data.Monoid.HT            (when)
-import SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier, Var, VarOp)
+import SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier, Var, VarOp,
+                                  Wrapper (..))
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
-import Utils.Foldable            (hasSome)
+import Utils.Foldable            (hasSome, wrapMaybe)
 import Utils.String
 
 
@@ -111,9 +112,10 @@ data WhenExpr
 
 
 instance Show FnSig where
-  show (FnSig x y z t) = joinWords [wrapSquareCsv x,
+  show (FnSig x y z t) = (" " `joinMaybe` (Wrapper <$> wrapMaybe
+                         (joinWords [wrapSquareCsv x,
                                     str " " y,
-                                    str " " z]
+                                    str " " z])))
                          ++ ":" `joinMaybe` t
 
 instance Show ValDef where
@@ -190,5 +192,5 @@ showVal x y z = show x ++  ":" `joinMaybe` y
                        +++ "=" `joinMaybe` z
 
 showDef :: Var -> Maybe FnSig -> Maybe FnBody -> String
-showDef x y z = show x +++ (fold $ show <$> y)
-                       +++ "=" `joinMaybe` z
+showDef x y z = show x ++ (fold $ show <$> y)
+                       +++ "=" `joinMaybe` (Wrapper . wrapSingleBlock <$> z)

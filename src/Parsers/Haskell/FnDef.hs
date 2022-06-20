@@ -2,6 +2,7 @@ module Parsers.Haskell.FnDef where
 
 import Data.Foldable             (Foldable (fold))
 import Data.Maybe                (maybeToList)
+import Data.Tuple.HT             (uncurry3)
 import Parser                    (Parser)
 import ParserCombinators         (IsMatch (is), sepByOp, someSepBy, (<|>), (|*),
                                   (|+), (|?))
@@ -15,7 +16,8 @@ import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
                                   FnSig (..), FnVar (..), Guard (..),
                                   GuardedFnBody (..), MaybeGuardedFnBody (..),
-                                  PatternGuard (..))
+                                  OperatorPosition (LeftPos), PatternGuard (..))
+import Utils.Tuple               (tuple3)
 
 
 fnSig :: Parser FnSig
@@ -36,6 +38,15 @@ fnBody = openForm
 
     infixFnApply = uncurry InfixFnApply <$> sepByOp fnOp (complexInfixForm <|>
                                                           singleForm)
+
+    leftOpSection = uncurry LeftOpSection <$>
+      withinParens ((,) <$> fnOp <*> delimitedForm)
+
+    rightOpSection = uncurry RightOpSection <$>
+      withinParens ((,) <$> delimitedForm <*> fnOp)
+
+    opSection = leftOpSection <|> rightOpSection
+
 
     lambdaExpr = LambdaExpr <$> (is '\\' *> someSepBy comma var)
                             <*> (is "->" *> openForm)
@@ -73,7 +84,7 @@ fnBody = openForm
 
     delimitedForm = singleForm <|> withinParens complexForm
 
-    singleForm = fnVar <|> literal' <|> tuple <|> list
+    singleForm = fnVar <|> literal' <|> tuple <|> list <|> opSection
 
     complexForm = infixFnApply <|> complexInfixForm
 

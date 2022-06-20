@@ -42,12 +42,15 @@ wrapCurlyCsv = wrapCurly . str ", "
 wrapLetContext :: (Show a, Show b) => [a] -> b -> String
 wrapLetContext x y = wrapCurly $ wrapBoth "\n\n" (str "\n" x) ++ show y
 
+
 wrapBlock :: Show a => [a] -> String
 wrapBlock x = wrapCurly $ wrapBoth "\n" $ str "\n" x
 
 wrapSpacedBlock :: Show a => [a] -> String
 wrapSpacedBlock x = wrapCurly $ wrapBoth "\n\n" $ str "\n\n" x
 
+wrapSingleBlock :: Show a => a -> String
+wrapSingleBlock x = wrapCurly $ wrapBoth "\n" $ show x
 
 
 str :: Show a => String -> [a] -> String

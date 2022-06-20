@@ -13,7 +13,7 @@ var :: H.Var -> S.Var
 var (H.Var x) = S.Var x
 
 ctor :: H.Ctor -> S.Ctor
-ctor (H.Ctor x) = S.Ctor x
+ctor (H.Ctor x) = S.Ctor $ convertCtor x
 
 varOp :: H.VarOp -> S.VarOp
 varOp (H.VarOp x) = S.VarOp $ convertOp x
@@ -40,6 +40,12 @@ literal (H.StringLit x) = S.StringLit x
 convertOp :: String -> String
 convertOp x = filter (/= '`') $ Map.findWithDefault x x operatorMap
 
+convertCtor :: String -> String
+convertCtor x =  Map.findWithDefault x x ctorMap
+
 
 operatorMap :: Map String String
-operatorMap = Map.fromList [(":", "::"), ("++", "<>")]
+operatorMap = Map.fromList [(":", "::"), ("++", "<+>"), ("<>", "<+>")]
+
+ctorMap :: Map String String
+ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None")]

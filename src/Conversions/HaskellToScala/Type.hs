@@ -7,8 +7,10 @@ import qualified SyntaxTrees.Scala.Type   as S
 import Conversions.HaskellToScala.Common
 
 import Data.Char (toUpper)
+import Data.Map  (Map)
 import Data.Set  (Set)
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 
@@ -22,7 +24,7 @@ typeVar H.UnitType    = S.TypeVar "Unit"
 typeCtor :: H.TypeCtor -> S.TypeCtor
 typeCtor H.Arrow        = S.Arrow
 typeCtor H.TupleType    = S.TupleType
-typeCtor (H.TypeCtor x) = S.TypeCtor x
+typeCtor (H.TypeCtor x) = S.TypeCtor $ convertTypeCtor x
 typeCtor H.ListType     = S.TypeCtor "List"
 
 anyKindedType :: H.AnyKindedType -> S.Type
@@ -94,3 +96,9 @@ argList args argTypes =
 usingArgList :: [S.ClassConstraint] -> S.UsingArgList
 usingArgList constraints =
   S.UsingArgList $ (S.UsingArgField [] Nothing) <$> constraints
+
+convertTypeCtor :: String -> String
+convertTypeCtor x =  Map.findWithDefault x x typeCtorMap
+
+typeCtorMap :: Map String String
+typeCtorMap = Map.fromList [("Maybe", "Option")]

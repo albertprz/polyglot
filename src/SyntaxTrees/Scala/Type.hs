@@ -1,6 +1,6 @@
 module SyntaxTrees.Scala.Type where
 
-import SyntaxTrees.Scala.Common (Modifier, TypeClass, Var)
+import SyntaxTrees.Scala.Common (Modifier, TypeClass, Var, Wrapper (..))
 import Utils.Foldable           (wrapMaybe)
 import Utils.String
 
@@ -87,9 +87,3 @@ instance Show UsingArgField where
 
 instance Show ClassConstraint where
   show (ClassConstraint x y) = show x ++ wrapSquareCsv y
-
-data Wrapper
-  = Wrapper String
-
-instance Show Wrapper where
-  show (Wrapper x) = x

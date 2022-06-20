@@ -25,7 +25,7 @@ literal = UnitLit <$ is "()" <|>
 
 var :: Parser Var
 var = Var <$> check "" (`notElem` reservedKeyWords)
-                    (ident lower <|> withinParens (operator opSymbol))
+                    (withinParens (operator opSymbol) <|> ident lower)
 
 ctor :: Parser Ctor
 ctor = Ctor <$> (ident upper <|> withinParens (operator colon))
@@ -80,7 +80,7 @@ pragma = fold <$> withinBoth (is "{-#") (is "#-}")
 
 symbolChars :: [Char]
 symbolChars =
-     ['!', '#', '$', '%', '&', '⋆', '+', '.', '/',
+     ['!', '#', '$', '%', '&', '*', '+', '.', '/',
       '<', '=', '>', '?', '@', '\\', '|', '^', '|',
       '-', '~']
 

@@ -57,6 +57,7 @@ library
       Utils.List
       Utils.Monad
       Utils.String
+      Utils.Tuple
   other-modules:
       Paths_haskala
   hs-source-dirs:
