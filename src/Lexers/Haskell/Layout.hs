@@ -2,9 +2,9 @@ module Lexers.Haskell.Layout where
 
 
 import Parser            (ParseError, Parser, check, runParser)
-import ParserCombinators (IsMatch (isNot, oneOf), (<|>), (>>>), (|*), (|+),
+import ParserCombinators (IsMatch (is, isNot, oneOf), (<|>), (>>>), (|*), (|+),
                           (|?))
-import Parsers.Char      (space)
+import Parsers.Char      (char, space)
 
 import Control.Monad    (foldM)
 import Data.Foldable    (Foldable (fold))
@@ -20,7 +20,7 @@ import Utils.String     (joinWords, wrapDoubleQuotes, wrapQuotes)
 adaptLayout :: String -> Either ParseError String
 adaptLayout str = (++ "}") . unlines . fst3 <$> layoutLines
   where
-    layoutLines = foldM layout args ((filter (/= "") (lines str)) ++ pure "")
+    layoutLines = foldM layout args (filter (/= "") (lines str) ++ pure "")
     args = ([], [], False)
 
 
@@ -68,6 +68,6 @@ otherText = mconcat <$>
            (((check "" (`notElem` layoutTokens) lexeme) >>> (space |*)) |*)
 
 lexeme :: Parser String
-lexeme = wrapDoubleQuotes <$> withinDoubleQuotes (isNot '"'  |+) <|>
-         wrapQuotes       <$> withinQuotes       (isNot '\'' |+) <|>
+lexeme = wrapDoubleQuotes <$> withinDoubleQuotes (isNot '"'  |*) <|>
+         wrapQuotes . pure <$>  withinQuotes      (char <|> ((is '\\' |?) *> char)) <|>
          word

@@ -89,6 +89,7 @@ data FnOp
 
 data ForStep
   = ForBinding Var FnBody
+  | LetBinding [InternalFnDef]
   | Condition FnBody
 
 data CaseBinding
@@ -144,6 +145,7 @@ instance Show GivenDef where
 
 instance Show FnBody where
   show (FnApply x y)      = joinWords [show x, wrapParensCsv y]
+  show (InfixFnApply x [y]) = show y +++ show x
   show (InfixFnApply x y) = str (wrapSpaces $ show x) y
   show (LambdaExpr [] y)  = wrapParens $ show y
   show (LambdaExpr [x] y) = wrapParens $ joinWords [show x, "=>", show y]
@@ -166,6 +168,7 @@ instance Show FnBody where
 
 instance Show ForStep where
   show (ForBinding x y) = joinWords [show x, "<-", show y]
+  show (LetBinding x)   = unlines (drop 4 . show <$> x)
   show (Condition x)    = joinWords ["if", show x]
 
 instance Show CaseBinding where

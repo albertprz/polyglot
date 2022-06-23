@@ -35,8 +35,8 @@ instance Show PackageDef where
 
 instance Show PackageImport where
   show (PackageImport x y z) = joinWords ["import", show x,
-                                          "as" `joinMaybe` y,
-                                          foldMap (("." ++) . show) z]
+                                          "as" `joinMaybe` y] ++
+                                          foldMap (("." ++) . show) z
 
 instance Show PackageImportDef where
   show FullImport                   = "_"

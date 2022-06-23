@@ -10,7 +10,8 @@ import Parsers.Collections       (listOf, tupleOf)
 import Parsers.Haskell.Common    (ctor, ctorOp, literal, var, varOp)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
-import Parsers.String            (spacing, withinCurlyBrackets, withinParens)
+import Parsers.String            (maybeWithinParens, spacing, string,
+                                  withinCurlyBrackets, withinParens)
 import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
                                   FnSig (..), FnVar (..), Guard (..),
@@ -18,6 +19,8 @@ import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   PatternGuard (..))
 import Utils.String              (wrapCurly)
 
+-- TODO: Support Tuple definitions: (def1, def2)
+-- TODO: Support  dot accesor fns: (.name)
 -- TODO: Support parsing operators with different precedence
 
 fnSig :: Parser FnSig
@@ -33,10 +36,12 @@ fnDefOrSig = Def <$> fnDef <|>
 
 fnBody :: Parser FnBody
 fnBody = adaptFnBody `andThen` openForm
+
   where
     fnApply = FnApply <$> delimitedForm <*> (delimitedForm |+)
 
     infixFnApply = uncurry InfixFnApply <$> sepByOp fnOp (complexInfixForm <|>
+                                                withinParens complexInfixForm <|>
                                                           singleForm)
 
     leftOpSection = uncurry LeftOpSection <$>
@@ -44,6 +49,10 @@ fnBody = adaptFnBody `andThen` openForm
 
     rightOpSection = uncurry RightOpSection <$>
       withinParens ((,) <$> delimitedForm <*> fnOp)
+
+    postfixOpSection = uncurry PostFixOpSection <$>
+      withinParens ((,) <$> openForm <*> fnOp)
+
 
     opSection = leftOpSection <|> rightOpSection
 
@@ -85,6 +94,7 @@ fnBody = adaptFnBody `andThen` openForm
     delimitedForm = singleForm <|> withinParens complexForm
 
     singleForm = fnVar <|> literal' <|> tuple <|> list <|> opSection
+                       <|> postfixOpSection
 
     complexForm = infixFnApply <|> complexInfixForm
 
@@ -95,6 +105,7 @@ fnBody = adaptFnBody `andThen` openForm
 
 doStep :: Parser DoStep
 doStep = DoBinding <$> var <* is "<-" <*> fnBody <|>
+         LetBinding <$> (is "let" *> withinContext fnDefOrSig) <|>
          Body      <$> fnBody
 
 caseBinding :: Parser CaseBinding
@@ -118,15 +129,17 @@ patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>
 
 adaptFnBody :: Parser String
 adaptFnBody = do start <- otherText
-                 next <- ((is "where" >>> otherText) |?)
-                 pure $ maybe start ((wrapCurly start) ++) next
+                 next <- ((is "where" >>> string) |?)
+                 other <- ((is ";" >>> string) |?)
+                 let x = (maybe start ((wrapCurly start) ++) next) ++ fold other
+                 pure x
 
 
 
 otherText :: Parser String
 otherText = mconcat <$>
            (pure <$> (spacing |?) >>>
-            (((check "" (`notElem`  ["where"]) lexeme) >>> (spacing |?)) |*))
+            (((check "" (`notElem`  ["where", ";"]) lexeme) >>> (spacing |?)) |*))
 
 
 statements :: Parser a -> Parser [a]

@@ -28,7 +28,7 @@ data Literal
   | BoolLit Bool
   | IntLit String
   | FloatLit String
-  | CharLit String
+  | CharLit Char
   | StringLit String
 
 data Modifier
@@ -70,7 +70,7 @@ instance Show Literal where
   show (BoolLit False) = "false"
   show (IntLit x)      = x
   show (FloatLit x)    = x
-  show (CharLit x)     = x
+  show (CharLit x)     = show x
   show (StringLit x)   = show x
 
 

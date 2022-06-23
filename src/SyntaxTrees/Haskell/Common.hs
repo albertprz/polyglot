@@ -1,6 +1,6 @@
 module SyntaxTrees.Haskell.Common where
 
--- TODO: Support module and var qualified terms (a.b)
+-- TODO: Support module and var qualified terms: a.b
 
 newtype Var
   = Var String
@@ -31,6 +31,6 @@ data Literal
   | BoolLit Bool
   | IntLit String
   | FloatLit String
-  | CharLit String
+  | CharLit Char
   | StringLit String
   deriving (Eq, Show)

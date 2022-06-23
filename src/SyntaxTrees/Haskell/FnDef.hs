@@ -41,6 +41,10 @@ data FnBody
       { arg  :: FnBody
       , fnOp :: FnOp
       }
+  | PostFixOpSection
+      { arg  :: FnBody
+      , fnOp :: FnOp
+      }
   | LambdaExpr
       { vars :: [Var]
       , body :: FnBody
@@ -91,6 +95,7 @@ data OperatorPosition
 
 data DoStep
   = DoBinding Var FnBody
+  | LetBinding [FnDefOrSig]
   | Body FnBody
   deriving (Show)
 
