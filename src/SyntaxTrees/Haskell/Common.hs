@@ -1,5 +1,6 @@
 module SyntaxTrees.Haskell.Common where
 
+-- TODO: Support module and var qualified terms (a.b)
 
 newtype Var
   = Var String

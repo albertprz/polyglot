@@ -21,9 +21,11 @@ data Pattern
 
 
 instance Show Pattern where
+  show (CtorPattern x [])     = show x
   show (CtorPattern x y)      = show x +++ wrapParensCsv y
   show (InfixCtorPattern x y) = str (wrapSpaces $ show x) y
   show (AliasedPattern x y)   = show x +++ "@" +++ show y
+  show (TuplePattern [x])     = show x
   show (TuplePattern x)       = wrapParensCsv x
   show (VarPattern x)         = show x
   show (LitPattern x)         = show x

@@ -4,7 +4,7 @@ import Parser                      (Parser)
 import ParserCombinators           (IsMatch (is), anySepBy, manySepBy, sepByOp,
                                     (<|>), (|+), (|?))
 import Parsers.Char                (comma, underscore)
-import Parsers.Collections         (listOf)
+import Parsers.Collections         (listOf, tupleOf)
 import Parsers.Haskell.Common      (ctor, ctorOp, literal, token, var)
 import Parsers.String              (maybeWithinParens, withinCurlyBrackets,
                                     withinParens)
@@ -13,7 +13,7 @@ import SyntaxTrees.Haskell.Pattern (Pattern (..))
 
 
 pattern' :: Parser Pattern
-pattern' = maybeWithinParens pattern''
+pattern' = pattern'' <|> maybeWithinParens pattern''
   where
     ctor'       = CtorPattern <$> ctor <*> (ctorElem' |+)
     nullaryCtor = CtorPattern <$> ctor <*> pure []
@@ -30,15 +30,15 @@ pattern' = maybeWithinParens pattern''
     wildcard = Wildcard <$ token underscore
 
     list          = ListPattern <$> listOf pattern'
-    tuple         = TuplePattern <$> (withinParens $ manySepBy comma pattern')
+    tuple         = TuplePattern <$> (tupleOf pattern')
     recordField   = (,) <$> var <*> ((is "=" *> pattern'') |?)
     recordShape p = withinCurlyBrackets (anySepBy comma p)
 
     elem' = literal' <|> var' <|> wildcard <|> nullaryCtor <|>
             tuple <|> list <|> withinParens alias
 
-    ctorElem' = alias <|> elem' <|> withinParens ctor' <|>
-                withinParens infixCtor <|> record <|> recordWildcard
+    ctorElem' = record <|> recordWildcard <|> alias <|> elem' <|>
+                withinParens ctor' <|> withinParens infixCtor
 
     aliasElem' = elem' <|> record <|> recordWildcard <|>
                  ctor' <|> infixCtor

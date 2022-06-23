@@ -3,4 +3,5 @@
 output/
 target/
 stack.yaml.lock
+*.scala
 *~

@@ -15,7 +15,7 @@ data PackageDef
       }
 
 data PackageImport
-  = PackageImport Package PackageImportDef
+  = PackageImport Package (Maybe Package) (Maybe PackageImportDef)
 
 data PackageImportDef
   = FullImport
@@ -34,7 +34,9 @@ instance Show PackageDef where
                                       joinLines (show <$> z)]
 
 instance Show PackageImport where
-  show (PackageImport x y) = "import" +++ show x ++ "." ++ show y
+  show (PackageImport x y z) = joinWords ["import", show x,
+                                          "as" `joinMaybe` y,
+                                          foldMap (("." ++) . show) z]
 
 instance Show PackageImportDef where
   show FullImport                   = "_"

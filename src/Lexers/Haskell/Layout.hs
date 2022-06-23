@@ -16,24 +16,11 @@ import Utils.List       (safeHead)
 import Utils.String     (joinWords, wrapDoubleQuotes, wrapQuotes)
 
 
-layoutBegin :: Parser String
-layoutBegin = oneOf layoutTokens
-
-
-otherText :: Parser String
-otherText = mconcat <$>
-           (((check "" (`notElem` layoutTokens) lexeme) >>> (space |*)) |*)
-
-lexeme :: Parser String
-lexeme = wrapDoubleQuotes <$> withinDoubleQuotes (isNot '"'  |+) <|>
-         wrapQuotes       <$> withinQuotes       (isNot '\'' |+) <|>
-         word
-
 
 adaptLayout :: String -> Either ParseError String
 adaptLayout str = (++ "}") . unlines . fst3 <$> layoutLines
   where
-    layoutLines = foldM layout args (lines str)
+    layoutLines = foldM layout args ((filter (/= "") (lines str)) ++ pure "")
     args = ([], [], False)
 
 
@@ -71,3 +58,16 @@ calcIndent indentLvls curr = (newIndentLvls, joinWords [closeContexts, sep])
 
 layoutTokens :: [String]
 layoutTokens = ["where", "let", "do", "of"]
+
+layoutBegin :: Parser String
+layoutBegin = oneOf layoutTokens
+
+
+otherText :: Parser String
+otherText = mconcat <$>
+           (((check "" (`notElem` layoutTokens) lexeme) >>> (space |*)) |*)
+
+lexeme :: Parser String
+lexeme = wrapDoubleQuotes <$> withinDoubleQuotes (isNot '"'  |+) <|>
+         wrapQuotes       <$> withinQuotes       (isNot '\'' |+) <|>
+         word

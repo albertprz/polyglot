@@ -37,7 +37,7 @@ data FnBody
       { fnOp :: FnOp
       , arg  :: FnBody
       }
-  | RigthOpSection
+  | RightOpSection
       { arg  :: FnBody
       , fnOp :: FnOp
       }

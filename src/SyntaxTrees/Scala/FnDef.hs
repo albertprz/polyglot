@@ -112,7 +112,7 @@ data WhenExpr
 
 
 instance Show FnSig where
-  show (FnSig x y z t) = (" " `joinMaybe` (Wrapper <$> wrapMaybe
+  show (FnSig x y z t) = ("" `joinMaybe` (Wrapper <$> wrapMaybe
                          (joinWords [wrapSquareCsv x,
                                     str " " y,
                                     str " " z])))
@@ -145,8 +145,11 @@ instance Show GivenDef where
 instance Show FnBody where
   show (FnApply x y)      = joinWords [show x, wrapParensCsv y]
   show (InfixFnApply x y) = str (wrapSpaces $ show x) y
-  show (LambdaExpr x y)   = joinWords [wrapParensCsv x, "=>", show y]
+  show (LambdaExpr [] y)  = wrapParens $ show y
+  show (LambdaExpr [x] y) = wrapParens $ joinWords [show x, "=>", show y]
+  show (LambdaExpr x y)   = wrapParens $ joinWords [wrapParensCsv x, "=>", show y]
   show (LetExpr x y)      = wrapLetContext x y
+  show (Tuple [x])        = show x
   show (Tuple x)          = wrapParensCsv x
   show (FnVar' x)         = show x
   show (Literal' x)       = show x

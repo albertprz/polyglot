@@ -15,7 +15,7 @@ import Conversions.HaskellToScala.Type    (argList, classScopeSplit,
 
 import Data.Foldable    (Foldable (fold, toList))
 import Data.List        (nubBy)
-import Data.Maybe       (fromMaybe, listToMaybe, mapMaybe)
+import Data.Maybe       (fromMaybe, isJust, listToMaybe, mapMaybe)
 import Data.Tuple.Extra (uncurry3)
 import Utils.List       (groupTuplesByKey, mergeUnion)
 
@@ -44,10 +44,11 @@ unNamedFnSig tpe n = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
 
 
 fnDefOrSigs :: [H.FnDefOrSig] -> [(Maybe H.FnSig, Maybe [H.FnDef])]
-fnDefOrSigs defsOrSigs =  nubBy dedupFn $ mergeUnion sigs groupedDefs
+fnDefOrSigs defsOrSigs = nubBy dedupFn $ mergeUnion sigs groupedDefs
 
   where
-    dedupFn x y = ((.name) <$> fst x) == ((.name) <$> fst y)
+    dedupFn x y = any isJust [fst x, fst y] &&
+                  ((.name) <$> fst x) == ((.name) <$> fst y)
     defs = mapMaybe (\case (H.Def x) -> Just ((.name) x, x)
                            (H.Sig _) -> Nothing)
            defsOrSigs
@@ -94,12 +95,11 @@ fnDefToFnBody defs = match
 
 
 
-
 fnBody :: H.FnBody -> S.FnBody
 fnBody (H.FnApply x y)      = S.FnApply (fnBody x) (fnBody <$> y)
 fnBody (H.InfixFnApply x y) = S.InfixFnApply (fnOp x) (fnBody <$> y)
-fnBody (H.LeftOpSection x y) = S.LambdaExpr [S.Var "x"] (S.InfixFnApply (fnOp x) [S.FnVar' $ S.Var' $ S.Var "x", fnBody y])
-fnBody (H.RightOpSection x y) = S.LambdaExpr [S.Var "x"] (S.InfixFnApply (fnOp y) [fnBody x, S.FnVar' $ S.Var' $ S.Var "x"])
+fnBody (H.LeftOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp x) [S.FnVar' $ S.Var' $ S.Var "_", fnBody y])
+fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y) [fnBody x, S.FnVar' $ S.Var' $ S.Var "_"])
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (var <$> x) (fnBody y)
 fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
 fnBody (H.DoExpr x)         = S.ForExpr (doStep <$> init x) (extractDoStep $ last x)

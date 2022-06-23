@@ -2,7 +2,7 @@ module Parsers.Haskell.ModuleDef where
 
 
 import Parsers.Haskell.ClassDef      (classDef, instanceDef)
-import Parsers.Haskell.Common        (module', opSymbol, operator, var)
+import Parsers.Haskell.Common        (module', opSymbol, operator, token, var)
 import Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
 import Parsers.Haskell.FnDef         (fnDef, fnSig, withinContextTupled)
 import Parsers.Haskell.Type          (typeVar)
@@ -12,16 +12,15 @@ import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (ModuleDef),
                                       ModuleImport (ModuleImport),
                                       ModuleImportDef (DataImport, FilteredDataImport, FnImport, FullDataImport))
 
-import Parser                     (Parser)
-import ParserCombinators          (IsMatch (is), anySepBy, maybeWithin, (<|>),
-                                   (|?))
-import Parsers.Char               (comma)
-import Parsers.String             (spacing, withinParens)
-import SyntaxTrees.Haskell.Common (Var (Var))
-import SyntaxTrees.Haskell.FnDef  (FnDefOrSig (Def, Sig))
+import Data.Foldable             (Foldable (fold))
+import Data.Maybe                (isJust)
+import Parser                    (Parser)
+import ParserCombinators         (IsMatch (is), anySepBy, maybeWithin, (<|>),
+                                  (|?))
+import Parsers.Char              (comma)
+import Parsers.String            (spacing, withinParens)
+import SyntaxTrees.Haskell.FnDef (FnDefOrSig (Def, Sig))
 
-
--- TODO: Qualified imports
 
 
 moduleDef :: Parser ModuleDef
@@ -46,8 +45,13 @@ moduleExportDef = FnExport            <$> var                    <|>
                                       <*> withinParens (anySepBy comma var)
 
 moduleImport :: Parser ModuleImport
-moduleImport = ModuleImport <$> (is "import" *> module')
-                            <*> withinParens (anySepBy comma $ maybeWithin spacing moduleImportDef)
+moduleImport = ModuleImport <$> (token (is "import") *>
+                                 (isJust <$> (is "qualified" |?)))
+                            <*> module'
+                            <*> ((is "as" *> module') |?)
+                            <*> (fold <$> (defs |?))
+  where
+    defs = withinParens $ anySepBy comma $ maybeWithin spacing moduleImportDef
 
 
 moduleImportDef :: Parser ModuleImportDef

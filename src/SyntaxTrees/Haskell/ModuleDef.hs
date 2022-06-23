@@ -28,7 +28,7 @@ data ModuleExportDef
   deriving (Show)
 
 data ModuleImport
-  = ModuleImport Module [ModuleImportDef]
+  = ModuleImport Bool Module (Maybe Module) [ModuleImportDef]
   deriving (Show)
 
 data ModuleImportDef

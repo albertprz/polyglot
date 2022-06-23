@@ -10,16 +10,16 @@ import qualified Data.Map  as Map
 
 
 var :: H.Var -> S.Var
-var (H.Var x) = S.Var x
+var (H.Var x) = S.Var $ replaceNaming x
 
 ctor :: H.Ctor -> S.Ctor
-ctor (H.Ctor x) = S.Ctor $ convertCtor x
+ctor (H.Ctor x) = S.Ctor $ replaceNaming x
 
 varOp :: H.VarOp -> S.VarOp
-varOp (H.VarOp x) = S.VarOp $ convertOp x
+varOp (H.VarOp x) = S.VarOp $ replaceNaming x
 
 ctorOp :: H.CtorOp -> S.CtorOp
-ctorOp (H.CtorOp x) = S.CtorOp $ convertOp x
+ctorOp (H.CtorOp x) = S.CtorOp $ replaceNaming x
 
 class' :: H.Class -> S.TypeClass
 class' (H.Class x) = S.TypeClass x
@@ -37,15 +37,27 @@ literal (H.CharLit x)   = S.CharLit x
 literal (H.StringLit x) = S.StringLit x
 
 
-convertOp :: String -> String
-convertOp x = filter (/= '`') $ Map.findWithDefault x x operatorMap
 
-convertCtor :: String -> String
-convertCtor x =  Map.findWithDefault x x ctorMap
+replaceNaming :: String -> String
+replaceNaming x = find charMap <$> find globalMap x
 
+find :: Ord k => Map k k -> k -> k
+find x y = Map.findWithDefault y y x
 
-operatorMap :: Map String String
-operatorMap = Map.fromList [(":", "::"), ("++", "<+>"), ("<>", "<+>")]
+globalMap :: Map String String
+globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap
+
+charMap :: Map Char Char
+charMap = Map.fromList [('\'', '_'), ('$', '%'), ('.', '@')]
+
+varOpMap :: Map String String
+varOpMap = Map.fromList [("$", "<|"), (".", "^^"), ("++", "<+>"), ("<>", "<+>")]
+
+ctorOpMap :: Map String String
+ctorOpMap = Map.fromList [(":", "::")]
+
+varMap :: Map String String
+varMap = Map.fromList []
 
 ctorMap :: Map String String
 ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None")]

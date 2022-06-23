@@ -12,6 +12,7 @@ import Conversions.HaskellToScala.Type     (typeVar)
 
 import Data.Maybe     (mapMaybe, maybeToList)
 import Utils.Foldable (wrapMaybe)
+import Utils.Maybe    (cond)
 
 
 
@@ -21,9 +22,12 @@ moduleDef (H.ModuleDef x _ z t) =
 
 
 moduleImport :: H.ModuleImport -> [S.PackageImport]
-moduleImport (H.ModuleImport x []) = [S.PackageImport (module' x) S.FullImport]
-moduleImport (H.ModuleImport x y) =
-  S.PackageImport (module' x) <$> moduleImportDefs y
+moduleImport (H.ModuleImport x y z []) =
+  [S.PackageImport (module' y) (module' <$> z)
+   (cond (not x) S.FullImport)]
+moduleImport (H.ModuleImport x y z t) =
+  S.PackageImport (module' y) (module' <$> z) . (cond (not x))
+  <$> moduleImportDefs t
 
 moduleImportDefs :: [H.ModuleImportDef] -> [S.PackageImportDef]
 moduleImportDefs importDefs = maybeToList combined ++ singles

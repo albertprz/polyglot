@@ -2,23 +2,23 @@ module Parsers.Haskell.FnDef where
 
 import Data.Foldable             (Foldable (fold))
 import Data.Maybe                (maybeToList)
-import Data.Tuple.HT             (uncurry3)
-import Parser                    (Parser)
-import ParserCombinators         (IsMatch (is), sepByOp, someSepBy, (<|>), (|*),
-                                  (|+), (|?))
+import Lexers.Haskell.Layout     (lexeme)
+import Parser
+import ParserCombinators
 import Parsers.Char              (comma)
 import Parsers.Collections       (listOf, tupleOf)
 import Parsers.Haskell.Common    (ctor, ctorOp, literal, var, varOp)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
-import Parsers.String            (withinCurlyBrackets, withinParens)
+import Parsers.String            (spacing, withinCurlyBrackets, withinParens)
 import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
                                   FnSig (..), FnVar (..), Guard (..),
                                   GuardedFnBody (..), MaybeGuardedFnBody (..),
-                                  OperatorPosition (LeftPos), PatternGuard (..))
-import Utils.Tuple               (tuple3)
+                                  PatternGuard (..))
+import Utils.String              (wrapCurly)
 
+-- TODO: Support parsing operators with different precedence
 
 fnSig :: Parser FnSig
 fnSig = FnSig <$> (var <* is "::") <*> type'
@@ -32,7 +32,7 @@ fnDefOrSig = Def <$> fnDef <|>
              Sig <$> fnSig
 
 fnBody :: Parser FnBody
-fnBody = openForm
+fnBody = adaptFnBody `andThen` openForm
   where
     fnApply = FnApply <$> delimitedForm <*> (delimitedForm |+)
 
@@ -52,9 +52,9 @@ fnBody = openForm
                             <*> (is "->" *> openForm)
 
     letExpr = LetExpr <$> (is "let" *> withinContext fnDefOrSig)
-                      <*> (is "in"  *> fnBody)
+                      <*> (is "in"  *> openForm)
 
-    whereExpr = WhereExpr <$> withinCurlyBrackets fnBody <* is "where"
+    whereExpr = WhereExpr <$> withinCurlyBrackets openForm <* is "where"
                           <*> withinContext fnDefOrSig
 
     ifExpr = IfExpr <$> (is "if"   *> openForm)
@@ -114,6 +114,20 @@ guard = Guard     <$> (is "|" *> someSepBy comma patternGuard) <|>
 patternGuard :: Parser PatternGuard
 patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>
                SimpleGuard  <$> fnBody
+
+
+adaptFnBody :: Parser String
+adaptFnBody = do start <- otherText
+                 next <- ((is "where" >>> otherText) |?)
+                 pure $ maybe start ((wrapCurly start) ++) next
+
+
+
+otherText :: Parser String
+otherText = mconcat <$>
+           (pure <$> (spacing |?) >>>
+            (((check "" (`notElem`  ["where"]) lexeme) >>> (spacing |?)) |*))
+
 
 statements :: Parser a -> Parser [a]
 statements parser = fold <$> someSepBy (is ";") (maybeToList <$> (parser |?))
