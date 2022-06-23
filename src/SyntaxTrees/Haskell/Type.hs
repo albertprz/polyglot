@@ -1,6 +1,6 @@
 module SyntaxTrees.Haskell.Type where
 
-import SyntaxTrees.Haskell.Common (Class)
+import SyntaxTrees.Haskell.Common (Class, Module, QClass)
 
 
 newtype TypeParam
@@ -21,19 +21,28 @@ data TypeCtor
 
 data AnyKindedType
   = TypeValue Type
-  | TypeFn TypeCtor
+  | TypeFn QTypeCtor
   deriving (Show)
 
 data ClassConstraint
-  = ClassConstraint Class [Type]
+  = ClassConstraint QClass [Type]
   deriving (Show)
 
 data Type
-  = CtorTypeApply TypeCtor [Type]
+  = CtorTypeApply QTypeCtor [Type]
   | ParamTypeApply TypeParam [Type]
   | NestedTypeApply Type [Type]
-  | TypeVar' TypeVar
+  | TypeVar' QTypeVar
   | TypeParam' TypeParam
   | TypeScope [TypeParam] Type
   | ClassScope [ClassConstraint] Type
+  deriving (Show)
+
+
+data QTypeVar
+  = QTypeVar (Maybe Module) TypeVar
+  deriving (Show)
+
+data QTypeCtor
+  = QTypeCtor (Maybe Module) TypeCtor
   deriving (Show)

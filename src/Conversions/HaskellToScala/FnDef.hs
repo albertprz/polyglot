@@ -7,7 +7,8 @@ import qualified SyntaxTrees.Scala.Common   as S
 import qualified SyntaxTrees.Scala.FnDef    as S
 import qualified SyntaxTrees.Scala.Pattern  as S
 
-import Conversions.HaskellToScala.Common  (ctor, ctorOp, literal, var, varOp)
+import Conversions.HaskellToScala.Common  (literal, qCtor, qCtorOp, qVar,
+                                           qVarOp, var)
 import Conversions.HaskellToScala.Pattern (allVars, extractVars, pattern')
 import Conversions.HaskellToScala.Type    (argList, classScopeSplit,
                                            findTypeParams, typeParam, typeSplit,
@@ -90,7 +91,7 @@ fnDefToFnBody defs = match
     caseBodies =  (maybeGuardeBody . (.body)) <$> defs
     cases = uncurry3 S.CaseBinding <$> zip3 casePatterns (repeat Nothing)
                                               caseBodies
-    tuple x = S.Tuple $ (S.FnVar' . S.Var' . S.Var) <$> x
+    tuple x = S.Tuple $ (S.FnVar' . S.Var' . S.QVar Nothing . S.Var) <$> x
     n = (length . (.args)) (head defs)
 
 
@@ -98,8 +99,8 @@ fnDefToFnBody defs = match
 fnBody :: H.FnBody -> S.FnBody
 fnBody (H.FnApply x y)      = S.FnApply (fnBody x) (fnBody <$> y)
 fnBody (H.InfixFnApply x y) = S.InfixFnApply (fnOp x) (fnBody <$> y)
-fnBody (H.LeftOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp x) [S.FnVar' $ S.Var' $ S.Var "_", fnBody y])
-fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y) [fnBody x, S.FnVar' $ S.Var' $ S.Var "_"])
+fnBody (H.LeftOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp x) [S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_", fnBody y])
+fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y) [fnBody x, S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_"])
 fnBody (H.PostFixOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y) [fnBody x])
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (var <$> x) (fnBody y)
 fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
@@ -110,7 +111,8 @@ fnBody (H.Tuple x)          = S.Tuple $ fnBody <$> x
 fnBody (H.FnVar' x)         = S.FnVar' $ fnVar x
 fnBody (H.Literal' x)       = S.Literal' $ literal x
 
-fnBody (H.List x)        = S.FnApply (S.FnVar' $ S.Ctor' $ S.Ctor "List")
+fnBody (H.List x)        = S.FnApply
+        (S.FnVar' $ S.Ctor' $ S.QCtor Nothing $ S.Ctor "List")
                                      (fnBody <$> x)
 fnBody (H.LetExpr x y)   = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs x)
                                      (fnBody y)
@@ -139,7 +141,8 @@ maybeGuardeBody (H.Standard x) = fnBody x
 guardedBody :: H.GuardedFnBody -> S.CaseBinding
 guardedBody (H.GuardedFnBody (H.Guard x) body)
       | all (\case (H.SimpleGuard _) -> True; _ -> False ) x =
-        S.CaseBinding S.Wildcard (Just $ S.InfixFnApply (S.VarOp' $ S.VarOp "&&") $
+        S.CaseBinding S.Wildcard (Just $ S.InfixFnApply
+                        (S.VarOp' $ S.QVarOp Nothing $ S.VarOp "&&") $
         mapMaybe (\case (H.SimpleGuard y) -> Just (fnBody y); _ -> Nothing) x)
                 (fnBody body)
 
@@ -162,13 +165,13 @@ patternGuard (H.SimpleGuard x) body =
 
 
 fnVar :: H.FnVar -> S.FnVar
-fnVar (H.Var' x)  = S.Var' $ var x
-fnVar (H.Ctor' x) = S.Ctor' $ ctor x
+fnVar (H.Var' x)  = S.Var' $ qVar x
+fnVar (H.Ctor' x) = S.Ctor' $ qCtor x
 
 
 fnOp :: H.FnOp -> S.FnOp
-fnOp (H.VarOp' x)  = S.VarOp' $ varOp x
-fnOp (H.CtorOp' x) = S.CtorOp' $ ctorOp x
+fnOp (H.VarOp' x)  = S.VarOp' $ qVarOp x
+fnOp (H.CtorOp' x) = S.CtorOp' $ qCtorOp x
 
 
 extractDoStep :: H.DoStep -> S.FnBody

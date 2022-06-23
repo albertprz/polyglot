@@ -1,11 +1,11 @@
 module Parsers.Haskell.Pattern where
 
 import Parser                      (Parser)
-import ParserCombinators           (IsMatch (is), anySepBy, manySepBy, sepByOp,
-                                    (<|>), (|+), (|?))
+import ParserCombinators           (IsMatch (is), anySepBy, sepByOp, (<|>),
+                                    (|+), (|?))
 import Parsers.Char                (comma, underscore)
 import Parsers.Collections         (listOf, tupleOf)
-import Parsers.Haskell.Common      (ctor, ctorOp, literal, token, var)
+import Parsers.Haskell.Common      (literal, qCtor, qCtorOp, token, var)
 import Parsers.String              (maybeWithinParens, withinCurlyBrackets,
                                     withinParens)
 import SyntaxTrees.Haskell.Common  ()
@@ -15,12 +15,12 @@ import SyntaxTrees.Haskell.Pattern (Pattern (..))
 pattern' :: Parser Pattern
 pattern' = pattern'' <|> maybeWithinParens pattern''
   where
-    ctor'       = CtorPattern <$> ctor <*> (ctorElem' |+)
-    nullaryCtor = CtorPattern <$> ctor <*> pure []
-    infixCtor   = uncurry InfixCtorPattern <$> sepByOp ctorOp (ctor' <|> ctorElem')
+    ctor'       = CtorPattern <$> qCtor <*> (ctorElem' |+)
+    nullaryCtor = CtorPattern <$> qCtor <*> pure []
+    infixCtor   = uncurry InfixCtorPattern <$> sepByOp qCtorOp (ctor' <|> ctorElem')
 
-    record = RecordPattern <$> ctor <*> recordShape recordField
-    recordWildcard = WildcardRecordPattern <$> ctor
+    record = RecordPattern <$> qCtor <*> recordShape recordField
+    recordWildcard = WildcardRecordPattern <$> qCtor
                                            <*> recordShape
                                            (recordField <* (comma |?) <* is "..")
 

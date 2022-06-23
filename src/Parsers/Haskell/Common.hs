@@ -11,8 +11,9 @@ import Parsers.Number             (double, int)
 import Parsers.String             (spacing, withinDoubleQuotes, withinParens,
                                    withinQuotes)
 import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
-                                   Literal (..), Module (..), Var (..),
-                                   VarOp (..))
+                                   Literal (..), Module (..), QClass (QClass),
+                                   QCtor (..), QCtorOp (..), QVar (..),
+                                   QVarOp (..), Var (..), VarOp (..))
 
 literal :: Parser Literal
 literal = UnitLit <$ is "()" <|>
@@ -44,12 +45,31 @@ class' = Class <$> ident upper
 module' :: Parser Module
 module' = Module <$> someSepBy dot (ident upper)
 
+
+qVar :: Parser QVar
+qVar = uncurry QVar <$> qTerm var
+
+qCtor :: Parser QCtor
+qCtor = uncurry QCtor <$> qTerm ctor
+
+qVarOp :: Parser QVarOp
+qVarOp = uncurry QVarOp <$> qTerm varOp
+
+qCtorOp :: Parser QCtorOp
+qCtorOp = uncurry QCtorOp <$> qTerm ctorOp
+
+qClass :: Parser QClass
+qClass = uncurry QClass <$> qTerm class'
+
+
 ident :: Parser Char -> Parser String
 ident start = token $ (:) <$> start <*> (idChar |*)
 
 operator :: Parser Char -> Parser String
 operator start = token $ (:) <$> start
                              <*> ((opSymbol <|> colon) |*)
+
+
 
 idChar :: Parser Char
 idChar = alphaNum <|> underscore <|> quote
@@ -59,6 +79,9 @@ opSymbol = oneOf symbolChars
 
 token :: Parser a -> Parser a
 token = withTransform $ maybeWithin (anyComment |+) . maybeWithin spacing
+
+qTerm :: Parser a -> Parser (Maybe Module, a)
+qTerm x = (,) <$> ((module' <* dot) |?) <*> x
 
 
 anyComment :: Parser String

@@ -1,6 +1,5 @@
 module SyntaxTrees.Haskell.Common where
 
--- TODO: Support module and var qualified terms: a.b
 
 newtype Var
   = Var String
@@ -33,4 +32,25 @@ data Literal
   | FloatLit String
   | CharLit Char
   | StringLit String
+  deriving (Eq, Show)
+
+
+data QVar
+  = QVar (Maybe Module) Var
+  deriving (Eq, Show)
+
+data QCtor
+  = QCtor (Maybe Module) Ctor
+  deriving (Eq, Show)
+
+data QVarOp
+  = QVarOp (Maybe Module) VarOp
+  deriving (Eq, Show)
+
+data QCtorOp
+  = QCtorOp (Maybe Module) CtorOp
+  deriving (Eq, Show)
+
+data QClass
+  = QClass (Maybe Module) Class
   deriving (Eq, Show)

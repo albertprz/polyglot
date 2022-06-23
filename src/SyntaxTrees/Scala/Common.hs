@@ -43,6 +43,21 @@ data Modifier
   | Open
 
 
+data QVar
+  = QVar (Maybe Package) Var
+
+data QCtor
+  = QCtor (Maybe Package) Ctor
+
+data QVarOp
+  = QVarOp (Maybe Package) VarOp
+
+data QCtorOp
+  = QCtorOp (Maybe Package) CtorOp
+
+data QTypeClass
+  = QTypeClass (Maybe Package) TypeClass
+
 
 instance Show Var where
   show (Var x) = x
@@ -86,8 +101,28 @@ instance Show Modifier where
   show Open      = "open"
 
 
+
+instance Show QVar where
+  show (QVar x y) = showQualified x y
+
+instance Show QCtor where
+  show (QCtor x y) = showQualified x y
+
+instance Show QVarOp where
+  show (QVarOp x y) = showQualified x y
+
+instance Show QCtorOp where
+  show (QCtorOp x y) = showQualified x y
+
+instance Show QTypeClass where
+  show (QTypeClass x y) = showQualified x y
+
+
 data Wrapper
   = Wrapper String
 
 instance Show Wrapper where
   show (Wrapper x) = x
+
+showQualified :: (Show a, Show b) => Maybe a -> b -> String
+showQualified x y = foldMap ((++ ".") . show) x ++ show y

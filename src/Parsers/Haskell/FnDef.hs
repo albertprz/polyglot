@@ -7,11 +7,11 @@ import Parser
 import ParserCombinators
 import Parsers.Char              (comma)
 import Parsers.Collections       (listOf, tupleOf)
-import Parsers.Haskell.Common    (ctor, ctorOp, literal, var, varOp)
+import Parsers.Haskell.Common    (literal, qCtor, qCtorOp, qVar, qVarOp, var)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
-import Parsers.String            (maybeWithinParens, spacing, string,
-                                  withinCurlyBrackets, withinParens)
+import Parsers.String            (spacing, string, withinCurlyBrackets,
+                                  withinParens)
 import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
                                   FnSig (..), FnVar (..), Guard (..),
@@ -20,7 +20,8 @@ import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
 import Utils.String              (wrapCurly)
 
 -- TODO: Support Tuple definitions: (def1, def2)
--- TODO: Support  dot accesor fns: (.name)
+-- TODO: Support field accesor fns: (.name)
+-- TODO: Support field acces : a.name
 -- TODO: Support parsing operators with different precedence
 
 fnSig :: Parser FnSig
@@ -81,11 +82,11 @@ fnBody = adaptFnBody `andThen` openForm
 
     list = List <$> listOf openForm
 
-    fnOp = VarOp' <$> varOp <|>
-           CtorOp' <$> ctorOp
+    fnOp = VarOp' <$> qVarOp <|>
+           CtorOp' <$> qCtorOp
 
-    fnVar = FnVar' . Var' <$> var <|>
-            FnVar' . Ctor' <$> ctor
+    fnVar = FnVar' . Var' <$> qVar <|>
+            FnVar' . Ctor' <$> qCtor
 
     literal' = Literal' <$> literal
 

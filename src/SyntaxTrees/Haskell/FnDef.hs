@@ -1,6 +1,6 @@
 module SyntaxTrees.Haskell.FnDef where
 
-import SyntaxTrees.Haskell.Common  (Ctor, CtorOp, Literal, Var, VarOp)
+import SyntaxTrees.Haskell.Common  (Literal, QCtor, QCtorOp, QVar, QVarOp, Var)
 import SyntaxTrees.Haskell.Pattern (Pattern)
 import SyntaxTrees.Haskell.Type    (Type)
 
@@ -79,13 +79,13 @@ data FnBody
   deriving (Show)
 
 data FnVar
-  = Var' Var
-  | Ctor' Ctor
+  = Var' QVar
+  | Ctor' QCtor
   deriving (Show)
 
 data FnOp
-  = VarOp' VarOp
-  | CtorOp' CtorOp
+  = VarOp' QVarOp
+  | CtorOp' QCtorOp
   deriving (Show)
 
 data OperatorPosition

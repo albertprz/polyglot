@@ -1,15 +1,15 @@
 module SyntaxTrees.Scala.Pattern where
 
-import SyntaxTrees.Scala.Common (Ctor, CtorOp, Literal, Var)
+import SyntaxTrees.Scala.Common (Literal, QCtor, QCtorOp, Var)
 import Utils.String
 
 data Pattern
   = CtorPattern
-      { ctor   :: Ctor
+      { ctor   :: QCtor
       , fields :: [Pattern]
       }
   | InfixCtorPattern
-      { ctorOp :: CtorOp
+      { ctorOp :: QCtorOp
       , fields :: [Pattern]
       }
   | AliasedPattern Var Pattern

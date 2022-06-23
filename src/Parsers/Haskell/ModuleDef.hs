@@ -2,7 +2,7 @@ module Parsers.Haskell.ModuleDef where
 
 
 import Parsers.Haskell.ClassDef      (classDef, instanceDef)
-import Parsers.Haskell.Common        (module', opSymbol, operator, token, var)
+import Parsers.Haskell.Common        (module', token, var)
 import Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
 import Parsers.Haskell.FnDef         (fnDef, fnSig, withinContextTupled)
 import Parsers.Haskell.Type          (typeVar)

@@ -24,6 +24,7 @@ ctorOp (H.CtorOp x) = S.CtorOp $ replaceNaming x
 class' :: H.Class -> S.TypeClass
 class' (H.Class x) = S.TypeClass x
 
+
 module' :: H.Module -> S.Package
 module' (H.Module x) = S.Package $ (toLower <$>) <$> init x ++ [last x]
 
@@ -38,6 +39,22 @@ literal (H.StringLit x) = S.StringLit x
 
 
 
+qVar :: H.QVar -> S.QVar
+qVar (H.QVar x y) = S.QVar (module' <$> x) (var y)
+
+qVarOp :: H.QVarOp -> S.QVarOp
+qVarOp (H.QVarOp x y) = S.QVarOp (module' <$> x) (varOp y)
+
+qCtor :: H.QCtor -> S.QCtor
+qCtor (H.QCtor x y) = S.QCtor (module' <$> x) (ctor y)
+
+qCtorOp :: H.QCtorOp -> S.QCtorOp
+qCtorOp (H.QCtorOp x y) = S.QCtorOp (module' <$> x) (ctorOp y)
+
+qClass :: H.QClass -> S.QTypeClass
+qClass (H.QClass x y) = S.QTypeClass (module' <$> x) (class' y)
+
+
 replaceNaming :: String -> String
 replaceNaming x = find charMap <$> find globalMap x
 
@@ -48,13 +65,13 @@ globalMap :: Map String String
 globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap
 
 charMap :: Map Char Char
-charMap = Map.fromList [('\'', '_'), ('$', '%'), ('.', '@')]
+charMap = Map.fromList [('\'', '_'), ('$', '%'), ('.', '|')]
 
 varOpMap :: Map String String
-varOpMap = Map.fromList [("$", "<|"), (".", "^^"), ("++", "<+>"), ("<>", "<+>")]
+varOpMap = Map.fromList [("$", "<|:"), (".", "|:"), ("++", "<+>"), ("<>", "<+>")]
 
 ctorOpMap :: Map String String
-ctorOpMap = Map.fromList [(":", "::")]
+ctorOpMap = Map.fromList [(":", "::"), ("::", ":")]
 
 varMap :: Map String String
 varMap = Map.fromList []

@@ -1,6 +1,7 @@
 module SyntaxTrees.Scala.Type where
 
-import SyntaxTrees.Scala.Common (Modifier, TypeClass, Var, Wrapper (..))
+import SyntaxTrees.Scala.Common (Modifier, Package, QTypeClass, TypeClass, Var,
+                                 Wrapper (..), showQualified)
 import Utils.Foldable           (wrapMaybe)
 import Utils.String
 
@@ -18,10 +19,10 @@ data TypeCtor
   | TupleType
 
 data Type
-  = CtorTypeApply TypeCtor [Type]
+  = CtorTypeApply QTypeCtor [Type]
   | ParamTypeApply TypeParam [Type]
   | NestedTypeApply Type [Type]
-  | TypeVar' TypeVar
+  | TypeVar' QTypeVar
   | TypeParam' TypeParam
   | ExistentialType
   | TypeScope [TypeParam] Type
@@ -29,7 +30,7 @@ data Type
 
 
 data ClassConstraint
-  = ClassConstraint TypeClass [Type]
+  = ClassConstraint QTypeClass [Type]
 
 newtype ArgList
   = ArgList [ArgField]
@@ -52,6 +53,12 @@ data UsingArgField
       , type'     :: ClassConstraint
       }
 
+data QTypeVar
+  = QTypeVar (Maybe Package) TypeVar
+
+data QTypeCtor
+  = QTypeCtor (Maybe Package) TypeCtor
+
 
 instance Show TypeParam where
   show (TypeParam x) = x
@@ -59,10 +66,15 @@ instance Show TypeParam where
 instance Show TypeVar where
   show (TypeVar x) = x
 
+instance Show TypeCtor where
+  show (TypeCtor x) = x
+  show Arrow        = "->"
+  show TupleType    = "()"
+
 instance Show Type where
-  show (CtorTypeApply (TypeCtor x) y) = x ++ wrapSquareCsv y
-  show (CtorTypeApply Arrow x)        = str (wrapSpaces "->") x
-  show (CtorTypeApply TupleType x)    = wrapParensCsv x
+  show (CtorTypeApply x@(QTypeCtor _ (TypeCtor _)) z) = show x ++ wrapSquareCsv z
+  show (CtorTypeApply (QTypeCtor _ Arrow) x)        = str (wrapSpaces "->") x
+  show (CtorTypeApply (QTypeCtor _ TupleType) x)    = wrapParensCsv x
   show (ParamTypeApply x y) = show x ++ wrapSquareCsv y
   show (NestedTypeApply x y) = show x ++ wrapSquareCsv y
   show (TypeVar' x) = show x
@@ -87,3 +99,10 @@ instance Show UsingArgField where
 
 instance Show ClassConstraint where
   show (ClassConstraint x y) = show x ++ wrapSquareCsv y
+
+
+instance Show QTypeVar where
+  show (QTypeVar x y) = showQualified x y
+
+instance Show QTypeCtor where
+  show (QTypeCtor x y) = showQualified x y

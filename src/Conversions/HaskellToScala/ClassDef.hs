@@ -25,5 +25,5 @@ instanceDef (H.InstanceDef x (H.Class y) z t) =
   S.GivenDef [] Nothing
         (mconcat ((typeParam <$>) . toList . findAnyKindedTypeParams <$> z))
         [usingArgList $ classConstraint <$> x]
-        (S.CtorTypeApply (S.TypeCtor y) $ anyKindedType <$> z)
+        (S.CtorTypeApply (S.QTypeCtor Nothing $ S.TypeCtor y) $ anyKindedType <$> z)
         (fnDefs <$> fnDefOrSigs t)

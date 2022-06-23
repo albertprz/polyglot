@@ -2,12 +2,15 @@ module SyntaxTrees.Scala.FnDef where
 
 import Data.Foldable             (Foldable (fold))
 import Data.Monoid.HT            (when)
-import SyntaxTrees.Scala.Common  (Ctor, CtorOp, Literal, Modifier, Var, VarOp,
-                                  Wrapper (..))
+import SyntaxTrees.Scala.Common  (Literal, Modifier, QCtor, QCtorOp, QVar,
+                                  QVarOp, Var, Wrapper (..))
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
-import Utils.Foldable            (hasSome, wrapMaybe)
-import Utils.String
+
+import Utils.Foldable (hasSome, wrapMaybe)
+import Utils.String   (joinMaybe, joinWords, str, wrapBlock, wrapLetContext,
+                       wrapParens, wrapParensCsv, wrapSingleBlock,
+                       wrapSpacedBlock, wrapSpaces, wrapSquareCsv, (+++))
 
 
 data FnSig
@@ -80,12 +83,12 @@ data FnBody
   | Literal' Literal
 
 data FnVar
-  = Var' Var
-  | Ctor' Ctor
+  = Var' QVar
+  | Ctor' QCtor
 
 data FnOp
-  = VarOp' VarOp
-  | CtorOp' CtorOp
+  = VarOp' QVarOp
+  | CtorOp' QCtorOp
 
 data ForStep
   = ForBinding Var FnBody

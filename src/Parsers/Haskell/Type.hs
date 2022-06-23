@@ -5,12 +5,13 @@ import ParserCombinators          (IsMatch (is), manySepBy, someSepBy, (<|>),
                                    (|+))
 import Parsers.Char               (comma, dot, lower, upper)
 import Parsers.Collections        (tupleOf)
-import Parsers.Haskell.Common     (class', ident)
+import Parsers.Haskell.Common     (class', ident, qClass, qTerm)
 import Parsers.Number             ()
 import Parsers.String             (maybeWithinParens, withinParens,
                                    withinSquareBrackets)
 import SyntaxTrees.Haskell.Common ()
 import SyntaxTrees.Haskell.Type   (AnyKindedType (..), ClassConstraint (..),
+                                   QTypeCtor (QTypeCtor), QTypeVar (QTypeVar),
                                    Type (..), TypeCtor (..), TypeParam (..),
                                    TypeVar (..))
 
@@ -23,13 +24,13 @@ typeVar = TypeVar  <$> ident upper <|>
 
 typeCtor :: Parser TypeCtor
 typeCtor = TypeCtor  <$> ident upper <|>
-           Arrow     <$  is "(->)" <|>
-           TupleType <$  is "(,)" <|>
+           Arrow     <$  is "(->)"   <|>
+           TupleType <$  is "(,)"    <|>
            ListType  <$  is "[]"
 
 anyKindedType :: Parser AnyKindedType
-anyKindedType = TypeValue <$> type' <|>
-                TypeFn    <$> typeCtor
+anyKindedType = TypeValue <$> type'     <|>
+                TypeFn    <$> qTypeCtor
 
 
 classConstraints :: Parser Type -> Parser [ClassConstraint]
@@ -37,7 +38,7 @@ classConstraints typeParser = tupleOf (classConstraint typeParser) <|>
                 pure <$> classConstraint typeParser
 
 classConstraint :: Parser Type -> Parser ClassConstraint
-classConstraint typeParser = ClassConstraint <$> class' <*> (typeParser |+)
+classConstraint typeParser = ClassConstraint <$> qClass <*> (typeParser |+)
 
 
 
@@ -46,15 +47,18 @@ type' = typeScope <|> classScope <|> type'' <|> maybeWithinParens (type'')
   where
     type'' = arrow <|> typeApply <|> elem'
 
-    typeApply = CtorTypeApply   <$> typeCtor <*> (typeApplyElem |+) <|>
+    typeApply = CtorTypeApply   <$> qTypeCtor <*> (typeApplyElem |+) <|>
                 ParamTypeApply  <$> typeParam <*> (typeApplyElem |+) <|>
                 NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
 
-    arrow = CtorTypeApply Arrow     <$> manySepBy (is "->") arrowElem
-    tuple = CtorTypeApply TupleType <$> (withinParens $ manySepBy comma type'')
-    list  = CtorTypeApply ListType  <$> (pure <$> withinSquareBrackets type'')
+    arrow = CtorTypeApply (QTypeCtor Nothing Arrow)
+            <$> manySepBy (is "->") arrowElem
+    tuple = CtorTypeApply (QTypeCtor Nothing TupleType)
+            <$> (withinParens $ manySepBy comma type'')
+    list  = CtorTypeApply (QTypeCtor Nothing ListType)
+            <$> (pure <$> withinSquareBrackets type'')
 
-    typeVar'   = TypeVar'   <$> typeVar
+    typeVar'   = TypeVar'   <$> qTypeVar
     typeParam' = TypeParam' <$> typeParam
 
     typeScope = TypeScope <$> (is "forall" *> someSepBy dot typeParam <* dot)
@@ -71,3 +75,9 @@ type' = typeScope <|> classScope <|> type'' <|> maybeWithinParens (type'')
 
     elem' = typeVar' <|> typeParam' <|> tuple <|> list <|>
             withinParens (typeScope <|> classScope)
+
+qTypeVar :: Parser QTypeVar
+qTypeVar = uncurry QTypeVar <$> qTerm typeVar
+
+qTypeCtor :: Parser QTypeCtor
+qTypeCtor = uncurry QTypeCtor <$> qTerm typeCtor

@@ -29,25 +29,27 @@ typeCtor H.ListType     = S.TypeCtor "List"
 
 anyKindedType :: H.AnyKindedType -> S.Type
 anyKindedType (H.TypeValue x) = type' x
-anyKindedType (H.TypeFn x@(H.TypeCtor _)) = S.CtorTypeApply (typeCtor x)
-                                             [S.ExistentialType]
-anyKindedType (H.TypeFn H.ListType) = S.CtorTypeApply (S.TypeCtor "List")
-                                             [S.ExistentialType]
-anyKindedType (H.TypeFn H.Arrow) = S.CtorTypeApply (S.TypeCtor "Function2")
+anyKindedType (H.TypeFn (H.QTypeCtor _ H.ListType)) =
+  S.CtorTypeApply (S.QTypeCtor Nothing $ S.TypeCtor "List") [S.ExistentialType]
+anyKindedType (H.TypeFn (H.QTypeCtor _ H.Arrow)) =
+  S.CtorTypeApply (S.QTypeCtor Nothing $ S.TypeCtor "Function2")
                                              [S.ExistentialType, S.ExistentialType]
-anyKindedType (H.TypeFn H.TupleType) = S.CtorTypeApply (S.TypeCtor "Tuple2")
+anyKindedType (H.TypeFn (H.QTypeCtor _ H.TupleType)) =
+  S.CtorTypeApply (S.QTypeCtor Nothing $ S.TypeCtor "Tuple2")
                                              [S.ExistentialType, S.ExistentialType]
+anyKindedType (H.TypeFn x@(H.QTypeCtor _ _)) = S.CtorTypeApply (qTypeCtor x)
+                                             [S.ExistentialType]
 
 
 classConstraint :: H.ClassConstraint -> S.ClassConstraint
-classConstraint (H.ClassConstraint x y) = S.ClassConstraint (class' x) (type' <$> y)
+classConstraint (H.ClassConstraint x y) = S.ClassConstraint (qClass x) (type' <$> y)
 
 
 type' :: H.Type -> S.Type
-type' (H.CtorTypeApply x y)   = S.CtorTypeApply (typeCtor x) (type' <$> y)
+type' (H.CtorTypeApply x y)   = S.CtorTypeApply (qTypeCtor x) (type' <$> y)
 type' (H.ParamTypeApply x y)  = S.ParamTypeApply (typeParam x) (type' <$> y)
 type' (H.NestedTypeApply x y) = S.NestedTypeApply (type' x) (type' <$> y)
-type' (H.TypeVar' x)          = S.TypeVar' $ typeVar x
+type' (H.TypeVar' x)          = S.TypeVar' $ qTypeVar x
 type' (H.TypeParam' x)        = S.TypeParam' $ typeParam x
 type' (H.TypeScope x y)       = S.TypeScope (typeParam <$> x) (type' y)
 type' (H.ClassScope x y)      = S.ClassScope (classConstraint <$> x) (type' y)
@@ -55,7 +57,7 @@ type' (H.ClassScope x y)      = S.ClassScope (classConstraint <$> x) (type' y)
 
 typeSplit :: Int -> H.Type -> ([S.Type], S.Type)
 typeSplit 0 tpe = ([], type' tpe)
-typeSplit n tpe = (args, S.CtorTypeApply S.Arrow ret)
+typeSplit n tpe = (args, S.CtorTypeApply (S.QTypeCtor Nothing S.Arrow) ret)
   where
     (args, ret) = splitAt n $ type' <$> extractTypes tpe
 
@@ -82,10 +84,10 @@ findTypeParams (H.ClassScope _ y)      = findTypeParams y
 
 
 extractTypes :: H.Type -> [H.Type]
-extractTypes (H.CtorTypeApply H.Arrow y) = y
-extractTypes (H.TypeScope _ y)           = extractTypes y
-extractTypes (H.ClassScope _ y)          = extractTypes y
-extractTypes _                           = []
+extractTypes (H.CtorTypeApply (H.QTypeCtor _ H.Arrow) y) = y
+extractTypes (H.TypeScope _ y)                           = extractTypes y
+extractTypes (H.ClassScope _ y)                          = extractTypes y
+extractTypes _                                           = []
 
 
 argList :: [S.Var] -> [S.Type] -> S.ArgList
@@ -96,6 +98,14 @@ argList args argTypes =
 usingArgList :: [S.ClassConstraint] -> S.UsingArgList
 usingArgList constraints =
   S.UsingArgList $ (S.UsingArgField [] Nothing) <$> constraints
+
+
+qTypeVar :: H.QTypeVar -> S.QTypeVar
+qTypeVar (H.QTypeVar x y) = S.QTypeVar (module' <$> x) (typeVar y)
+
+qTypeCtor :: H.QTypeCtor -> S.QTypeCtor
+qTypeCtor (H.QTypeCtor x y) = S.QTypeCtor (module' <$> x) (typeCtor y)
+
 
 convertTypeCtor :: String -> String
 convertTypeCtor x =  Map.findWithDefault x x typeCtorMap
