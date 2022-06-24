@@ -13,7 +13,7 @@ import SyntaxTrees.Haskell.Pattern (Pattern (..))
 
 
 pattern' :: Parser Pattern
-pattern' = pattern'' <|> maybeWithinParens pattern''
+pattern' =  pattern'' <|> maybeWithinParens pattern''
   where
     ctor'       = CtorPattern <$> qCtor <*> (ctorElem' |+)
     nullaryCtor = CtorPattern <$> qCtor <*> pure []
@@ -35,6 +35,7 @@ pattern' = pattern'' <|> maybeWithinParens pattern''
     recordShape p = withinCurlyBrackets (anySepBy comma p)
 
     elem' = literal' <|> var' <|> wildcard <|> nullaryCtor <|>
+            withinParens nullaryCtor <|>
             tuple <|> list <|> withinParens alias
 
     ctorElem' = record <|> recordWildcard <|> alias <|> elem' <|>

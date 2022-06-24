@@ -150,8 +150,8 @@ instance Show GivenDef where
 
 instance Show FnBody where
   show (FnApply x y)      = joinWords [show x, wrapParensCsv y]
-  show (InfixFnApply x [y]) = show y +++ show x
-  show (InfixFnApply x y) = str (wrapSpaces $ show x) y
+  show (InfixFnApply x [y]) = showForInfix y +++ show x
+  show (InfixFnApply x y) = str (wrapSpaces $ show x) (Wrapper . showForInfix <$> y)
   show (LambdaExpr [] y)  = wrapParens $ show y
   show (LambdaExpr [x] y) = wrapParens $ joinWords [show x, "=>", show y]
   show (LambdaExpr x y)   = wrapParens $ joinWords [wrapParensCsv x, "=>", show y]
@@ -197,6 +197,11 @@ instance Show InternalFnDef where
   show (FnVal x)    = show x
   show (FnMethod x) = show x
   show (FnGiven x)  = show x
+
+
+showForInfix :: FnBody -> String
+showForInfix x@(InfixFnApply _ _) = wrapParens $ show x
+showForInfix x                    = show x
 
 
 showVal :: Var -> Maybe Type -> Maybe FnBody -> String

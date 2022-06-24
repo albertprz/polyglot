@@ -149,7 +149,7 @@ guardedBody (H.GuardedFnBody (H.Guard x) body)
       | otherwise = S.CaseBinding S.Wildcard Nothing $
                                 foldr patternGuard (fnBody body) x
 
-guardedBody (H.GuardedFnBody (H.Otherwise) body) =
+guardedBody (H.GuardedFnBody H.Otherwise body) =
   S.CaseBinding S.Wildcard Nothing $ fnBody body
 
 patternGuard :: H.PatternGuard -> S.FnBody -> S.FnBody

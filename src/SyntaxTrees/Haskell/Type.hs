@@ -1,6 +1,6 @@
 module SyntaxTrees.Haskell.Type where
 
-import SyntaxTrees.Haskell.Common (Class, Module, QClass)
+import SyntaxTrees.Haskell.Common (Module, QClass)
 
 
 newtype TypeParam

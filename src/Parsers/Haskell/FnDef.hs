@@ -19,10 +19,9 @@ import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   PatternGuard (..))
 import Utils.String              (wrapCurly)
 
--- TODO: Review field accesor fns interaction with (.) operator: (.name)
 -- TODO: Review fn guards: (| x == 1)
 -- TODO: Support Tuple definitions: (def1, def2)
--- TODO: Support Lambda Case exprs : \case
+-- TODO: Support Lambda Case exprs : (\case)
 -- TODO: Support parsing operators with different precedence
 
 fnSig :: Parser FnSig

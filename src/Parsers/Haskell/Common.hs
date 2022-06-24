@@ -49,6 +49,8 @@ class' = Class <$> ident upper
 module' :: Parser Module
 module' = Module <$> someSepBy dot (ident upper)
 
+module'' :: Parser Module
+module'' = Module <$> someSepBy dot (nonTokenIdent upper)
 
 qVar :: Parser QVar
 qVar = uncurry QVar <$> qTerm var
@@ -74,6 +76,9 @@ operator start = token $ (:) <$> start
                              <*> ((opSymbol <|> colon) |*)
 
 
+nonTokenIdent :: Parser Char -> Parser String
+nonTokenIdent start = (:) <$> start <*> (idChar |*)
+
 
 idChar :: Parser Char
 idChar = alphaNum <|> underscore <|> quote
@@ -84,13 +89,14 @@ opSymbol = oneOf symbolChars
 token :: Parser a -> Parser a
 token = withTransform $ maybeWithin (anyComment |+) . maybeWithin spacing
 
+
 qTerm :: Parser a -> Parser (Maybe Module, a)
-qTerm x = (,) <$> ((module' <* dot) |?) <*> x
+qTerm x =  token $ (,) <$> ((module'' <* dot) |?) <*> x
 
 
 qTerm' :: (String -> b) -> Parser (Maybe Module, b)
-qTerm' fn = do Module xs <- module'
-               pure $ (Module <$> wrapMaybe (init xs), fn $ last xs)
+qTerm' fn = token $ do Module xs <- module''
+                       pure $ (Module <$> wrapMaybe (init xs), fn $ last xs)
 
 
 anyComment :: Parser String

@@ -2,8 +2,7 @@ module Lexers.Haskell.Layout where
 
 
 import Parser            (ParseError, Parser, check, runParser)
-import ParserCombinators (IsMatch (is, isNot, oneOf), (<|>), (>>>), (|*), (|+),
-                          (|?))
+import ParserCombinators (IsMatch (is, isNot, oneOf), (<|>), (>>>), (|*), (|?))
 import Parsers.Char      (char, space)
 
 import Control.Monad    (foldM)
