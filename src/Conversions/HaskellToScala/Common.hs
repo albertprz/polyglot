@@ -26,7 +26,7 @@ class' (H.Class x) = S.TypeClass x
 
 
 module' :: H.Module -> S.Package
-module' (H.Module x) = S.Package $ (toLower <$>) <$> init x ++ [last x]
+module' (H.Module x) = S.Package $ ((toLower <$>) . replaceNaming) <$> x
 
 
 literal :: H.Literal -> S.Literal
@@ -62,7 +62,8 @@ find :: Ord k => Map k k -> k -> k
 find x y = Map.findWithDefault y y x
 
 globalMap :: Map String String
-globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap
+globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap <> moduleMap
+
 
 charMap :: Map Char Char
 charMap = Map.fromList [('\'', '_'), ('$', '%'), ('.', '|')]
@@ -74,7 +75,10 @@ ctorOpMap :: Map String String
 ctorOpMap = Map.fromList [(":", "::"), ("::", ":")]
 
 varMap :: Map String String
-varMap = Map.fromList []
+varMap = Map.fromList [("type", "typex"), ("var", "varx")]
+
+moduleMap :: Map String String
+moduleMap = Map.fromList [("Type", "Typex"), ("Var", "Varx")]
 
 ctorMap :: Map String String
 ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None")]

@@ -1,6 +1,8 @@
 module Parsers.Haskell.Common where
 
-import Data.Foldable              (Foldable (fold))
+import Data.Foldable (Foldable (fold))
+
+
 import Parser                     (Parser, check, withTransform)
 import ParserCombinators          (IsMatch (inverse, is, isNot, noneOf, oneOf),
                                    maybeWithin, someSepBy, within, withinBoth,
@@ -14,6 +16,8 @@ import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
                                    Literal (..), Module (..), QClass (QClass),
                                    QCtor (..), QCtorOp (..), QVar (..),
                                    QVarOp (..), Var (..), VarOp (..))
+import Utils.Foldable             (wrapMaybe)
+
 
 literal :: Parser Literal
 literal = UnitLit <$ is "()" <|>
@@ -30,14 +34,14 @@ var = Var <$> check "" (`notElem` reservedKeyWords)
                     (withinParens (operator opSymbol) <|> ident lower)
 
 ctor :: Parser Ctor
-ctor = Ctor <$> (ident upper <|> withinParens (operator colon))
+ctor = Ctor <$> (withinParens (operator colon) <|> ident upper)
 
 varOp :: Parser VarOp
 varOp = VarOp <$> check "" (`notElem` reservedSymbols)
-                        (operator opSymbol <|> withinBackQuotes (ident lower))
+                        (withinBackQuotes (ident lower) <|> operator opSymbol)
 
 ctorOp :: Parser CtorOp
-ctorOp = CtorOp <$> (operator colon <|> withinBackQuotes (ident upper))
+ctorOp = CtorOp <$> (withinBackQuotes (ident upper) <|> operator colon)
 
 class' :: Parser Class
 class' = Class <$> ident upper
@@ -50,7 +54,7 @@ qVar :: Parser QVar
 qVar = uncurry QVar <$> qTerm var
 
 qCtor :: Parser QCtor
-qCtor = uncurry QCtor <$> qTerm ctor
+qCtor = uncurry QCtor <$> qTerm' Ctor
 
 qVarOp :: Parser QVarOp
 qVarOp = uncurry QVarOp <$> qTerm varOp
@@ -59,7 +63,7 @@ qCtorOp :: Parser QCtorOp
 qCtorOp = uncurry QCtorOp <$> qTerm ctorOp
 
 qClass :: Parser QClass
-qClass = uncurry QClass <$> qTerm class'
+qClass = uncurry QClass <$> qTerm' Class
 
 
 ident :: Parser Char -> Parser String
@@ -82,6 +86,11 @@ token = withTransform $ maybeWithin (anyComment |+) . maybeWithin spacing
 
 qTerm :: Parser a -> Parser (Maybe Module, a)
 qTerm x = (,) <$> ((module' <* dot) |?) <*> x
+
+
+qTerm' :: (String -> b) -> Parser (Maybe Module, b)
+qTerm' fn = do Module xs <- module'
+               pure $ (Module <$> wrapMaybe (init xs), fn $ last xs)
 
 
 anyComment :: Parser String

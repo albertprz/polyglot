@@ -5,7 +5,7 @@ import Data.Maybe                (maybeToList)
 import Lexers.Haskell.Layout     (lexeme)
 import Parser
 import ParserCombinators
-import Parsers.Char              (comma)
+import Parsers.Char              (comma, dot)
 import Parsers.Collections       (listOf, tupleOf)
 import Parsers.Haskell.Common    (literal, qCtor, qCtorOp, qVar, qVarOp, var)
 import Parsers.Haskell.Pattern   (pattern')
@@ -19,9 +19,10 @@ import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   PatternGuard (..))
 import Utils.String              (wrapCurly)
 
+-- TODO: Review field accesor fns interaction with (.) operator: (.name)
+-- TODO: Review fn guards: (| x == 1)
 -- TODO: Support Tuple definitions: (def1, def2)
--- TODO: Support field accesor fns: (.name)
--- TODO: Support field acces : a.name
+-- TODO: Support Lambda Case exprs : \case
 -- TODO: Support parsing operators with different precedence
 
 fnSig :: Parser FnSig
@@ -85,7 +86,9 @@ fnBody = adaptFnBody `andThen` openForm
     fnOp = VarOp' <$> qVarOp <|>
            CtorOp' <$> qCtorOp
 
-    fnVar = FnVar' . Var' <$> qVar <|>
+    fnVar = FnVar' . Selector <$> withinParens (is "." *> var)          <|>
+            FnVar' <$> (Selection <$> qVar <* dot <*> anySepBy dot var) <|>
+            FnVar' . Var' <$> qVar                                      <|>
             FnVar' . Ctor' <$> qCtor
 
     literal' = Literal' <$> literal

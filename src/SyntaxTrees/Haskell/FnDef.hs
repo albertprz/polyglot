@@ -79,7 +79,9 @@ data FnBody
   deriving (Show)
 
 data FnVar
-  = Var' QVar
+  = Selector Var
+  | Selection QVar [Var]
+  | Var' QVar
   | Ctor' QCtor
   deriving (Show)
 

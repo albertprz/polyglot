@@ -7,6 +7,7 @@ import SyntaxTrees.Scala.Common  (Literal, Modifier, QCtor, QCtorOp, QVar,
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
 
+import Data.List      (intercalate)
 import Utils.Foldable (hasSome, wrapMaybe)
 import Utils.String   (joinMaybe, joinWords, str, wrapBlock, wrapLetContext,
                        wrapParens, wrapParensCsv, wrapSingleBlock,
@@ -83,7 +84,8 @@ data FnBody
   | Literal' Literal
 
 data FnVar
-  = Var' QVar
+  = Selection QVar [Var]
+  | Var' QVar
   | Ctor' QCtor
 
 data FnOp
@@ -183,8 +185,9 @@ instance Show WhenExpr where
                                   "then", show y]
 
 instance Show FnVar where
-  show (Var' x)  = show x
-  show (Ctor' x) = show x
+  show (Selection x y) = intercalate "." (show x : (show <$> y))
+  show (Var' x)        = show x
+  show (Ctor' x)       = show x
 
 instance Show FnOp where
   show (VarOp' x)  = show x

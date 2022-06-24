@@ -17,7 +17,7 @@ pattern' (H.RecordPattern x y) = S.CtorPattern (qCtor x)
 pattern' (H.WildcardRecordPattern x y) = S.CtorPattern (qCtor x)
                                                (S.VarPattern . var . fst <$> y)
 pattern' (H.AliasedPattern x y) = S.AliasedPattern (var x) (pattern' y)
-pattern' (H.ListPattern x) = S.InfixCtorPattern  (S.QCtorOp Nothing $ S.CtorOp "::") (pattern' <$> x)
+pattern' (H.ListPattern x) = S.CtorPattern  (S.QCtor Nothing $ S.Ctor "List") (pattern' <$> x)
 pattern' (H.TuplePattern x) = S.TuplePattern $ pattern' <$> x
 pattern' (H.VarPattern x) = S.VarPattern $ var x
 pattern' (H.LitPattern x) = S.LitPattern $ literal x

@@ -1,19 +1,17 @@
 module Parsers.Haskell.Type where
 
-import Parser                     (Parser)
-import ParserCombinators          (IsMatch (is), manySepBy, someSepBy, (<|>),
-                                   (|+))
-import Parsers.Char               (comma, dot, lower, upper)
-import Parsers.Collections        (tupleOf)
-import Parsers.Haskell.Common     (class', ident, qClass, qTerm)
-import Parsers.Number             ()
-import Parsers.String             (maybeWithinParens, withinParens,
-                                   withinSquareBrackets)
-import SyntaxTrees.Haskell.Common ()
-import SyntaxTrees.Haskell.Type   (AnyKindedType (..), ClassConstraint (..),
-                                   QTypeCtor (QTypeCtor), QTypeVar (QTypeVar),
-                                   Type (..), TypeCtor (..), TypeParam (..),
-                                   TypeVar (..))
+import Parser                   (Parser)
+import ParserCombinators        (IsMatch (is), manySepBy, someSepBy, (<|>),
+                                 (|+))
+import Parsers.Char             (comma, dot, lower, upper)
+import Parsers.Collections      (tupleOf)
+import Parsers.Haskell.Common   (ident, qClass, qTerm')
+import Parsers.String           (maybeWithinParens, withinParens,
+                                 withinSquareBrackets)
+import SyntaxTrees.Haskell.Type (AnyKindedType (..), ClassConstraint (..),
+                                 QTypeCtor (QTypeCtor), QTypeVar (QTypeVar),
+                                 Type (..), TypeCtor (..), TypeParam (..),
+                                 TypeVar (..))
 
 typeParam :: Parser TypeParam
 typeParam = TypeParam <$> ident lower
@@ -77,7 +75,7 @@ type' = typeScope <|> classScope <|> type'' <|> maybeWithinParens (type'')
             withinParens (typeScope <|> classScope)
 
 qTypeVar :: Parser QTypeVar
-qTypeVar = uncurry QTypeVar <$> qTerm typeVar
+qTypeVar = uncurry QTypeVar <$> qTerm' TypeVar
 
 qTypeCtor :: Parser QTypeCtor
-qTypeCtor = uncurry QTypeCtor <$> qTerm typeCtor
+qTypeCtor = uncurry QTypeCtor <$> qTerm' TypeCtor

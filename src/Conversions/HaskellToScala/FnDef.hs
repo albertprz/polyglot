@@ -108,7 +108,7 @@ fnBody (H.DoExpr x)         = S.ForExpr (doStep <$> init x) (extractDoStep $ las
 fnBody (H.MultiWayIfExpr x) = maybeGuardeBody $ H.Guarded x
 fnBody (H.CaseOfExpr x y)   = S.MatchExpr (fnBody x) (caseBinding <$> y)
 fnBody (H.Tuple x)          = S.Tuple $ fnBody <$> x
-fnBody (H.FnVar' x)         = S.FnVar' $ fnVar x
+fnBody (H.FnVar' x)         = fnVar x
 fnBody (H.Literal' x)       = S.Literal' $ literal x
 
 fnBody (H.List x)        = S.FnApply
@@ -164,9 +164,12 @@ patternGuard (H.SimpleGuard x) body =
         [S.CaseBinding S.Wildcard (Just (fnBody x)) body]
 
 
-fnVar :: H.FnVar -> S.FnVar
-fnVar (H.Var' x)  = S.Var' $ qVar x
-fnVar (H.Ctor' x) = S.Ctor' $ qCtor x
+fnVar :: H.FnVar -> S.FnBody
+fnVar (H.Selector x)    = S.LambdaExpr [] $ S.FnVar' $
+                                S.Selection (S.QVar Nothing $ S.Var "_") [var x]
+fnVar (H.Selection x y) = S.FnVar' $ S.Selection (qVar x) (var <$> y)
+fnVar (H.Var' x)        = S.FnVar' $ S.Var' $ qVar x
+fnVar (H.Ctor' x)       = S.FnVar' $ S.Ctor' $ qCtor x
 
 
 fnOp :: H.FnOp -> S.FnOp
