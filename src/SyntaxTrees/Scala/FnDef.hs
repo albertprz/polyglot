@@ -71,6 +71,10 @@ data FnBody
       , ifBranch   :: FnBody
       , elseBranch :: FnBody
       }
+  | CondExpr
+      { whenBranches :: [WhenExpr]
+      , elseBranch   :: FnBody
+      }
   | ForExpr
       { steps :: [ForStep]
       , yield :: FnBody
@@ -163,6 +167,7 @@ instance Show FnBody where
   show (IfExpr x y z)     = joinWords ["if", show x,
                                        "then", show y,
                                        "else", show z]
+  show (CondExpr x y)     = str "\n  else " (Wrapper <$> ((show <$> x) ++ [show y]))
   show (ForExpr x y)      = joinWords ["for",
                                       wrapBlock x,
                                       "yield",

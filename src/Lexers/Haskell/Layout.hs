@@ -56,7 +56,7 @@ calcIndent indentLvls curr = (newIndentLvls, joinWords [closeContexts, sep])
 
 
 layoutTokens :: [String]
-layoutTokens = ["where", "let", "do", "of"]
+layoutTokens = ["where", "let", "do", "of", "\\case", "(\\case"]
 
 layoutBegin :: Parser String
 layoutBegin = oneOf layoutTokens
@@ -67,6 +67,6 @@ otherText = mconcat <$>
            (((check "" (`notElem` layoutTokens) lexeme) >>> (space |*)) |*)
 
 lexeme :: Parser String
-lexeme = wrapDoubleQuotes <$> withinDoubleQuotes (isNot '"'  |*) <|>
-         wrapQuotes . pure <$>  withinQuotes      (char <|> ((is '\\' |?) *> char)) <|>
+lexeme = wrapDoubleQuotes  <$> withinDoubleQuotes (isNot '"'  |*) <|>
+         wrapQuotes . pure <$> withinQuotes (char <|> ((is '\\' |?) *> char)) <|>
          word

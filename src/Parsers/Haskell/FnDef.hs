@@ -7,7 +7,8 @@ import Parser
 import ParserCombinators
 import Parsers.Char              (comma, dot)
 import Parsers.Collections       (listOf, tupleOf)
-import Parsers.Haskell.Common    (literal, qCtor, qCtorOp, qVar, qVarOp, var)
+import Parsers.Haskell.Common    (literal, qCtor, qCtorOp, qVar, qVarOp, token,
+                                  var)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
 import Parsers.String            (spacing, string, withinCurlyBrackets,
@@ -19,7 +20,6 @@ import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   PatternGuard (..))
 import Utils.String              (wrapCurly)
 
--- TODO: Review fn guards: (| x == 1)
 -- TODO: Support Tuple definitions: (def1, def2)
 -- TODO: Support Lambda Case exprs : (\case)
 -- TODO: Support parsing operators with different precedence
@@ -78,6 +78,8 @@ fnBody = adaptFnBody `andThen` openForm
     caseOfExpr = CaseOfExpr <$> (is "case" *> openForm <* is "of")
                             <*> withinContext caseBinding
 
+    lambdaCaseExpr = LambdaCaseExpr <$> (is "\\case" *> withinContext caseBinding)
+
     tuple = Tuple <$> tupleOf openForm
 
     list = List <$> listOf openForm
@@ -85,8 +87,8 @@ fnBody = adaptFnBody `andThen` openForm
     fnOp = VarOp' <$> qVarOp <|>
            CtorOp' <$> qCtorOp
 
-    fnVar = FnVar' . Selector <$> withinParens (is "." *> var)          <|>
-            FnVar' <$> (Selection <$> qVar <* dot <*> anySepBy dot var) <|>
+    fnVar = FnVar' . Selector <$> withinParens (dot *> var)          <|>
+            FnVar' <$> (Selection <$> qVar <* dot <*> someSepBy dot var) <|>
             FnVar' . Var' <$> qVar                                      <|>
             FnVar' . Ctor' <$> qCtor
 
@@ -101,7 +103,8 @@ fnBody = adaptFnBody `andThen` openForm
 
     complexForm = infixFnApply <|> complexInfixForm
 
-    complexInfixForm = fnApply <|> lambdaExpr <|> letExpr <|> whereExpr <|>
+    complexInfixForm = fnApply <|> lambdaCaseExpr <|>
+                       lambdaExpr <|> letExpr <|> whereExpr <|>
                        ifExpr <|> multiWayIfExpr <|> doExpr <|>
                        caseOfExpr <|> withinParens infixFnApply
 
@@ -115,15 +118,16 @@ caseBinding :: Parser CaseBinding
 caseBinding = CaseBinding <$> pattern' <*> maybeGuardedFnBody (is "->")
 
 maybeGuardedFnBody :: Parser a -> Parser MaybeGuardedFnBody
-maybeGuardedFnBody sep = Guarded  <$> withinContext (guardedFnBody sep) <|>
+maybeGuardedFnBody sep = Guarded  <$> (guardedFnBody sep |+) <|>
                          Standard <$> (sep *> fnBody)
 
 guardedFnBody :: Parser a -> Parser GuardedFnBody
 guardedFnBody sep = GuardedFnBody <$> guard <* sep <*> fnBody
 
 guard :: Parser Guard
-guard = Guard     <$> (is "|" *> someSepBy comma patternGuard) <|>
-        Otherwise <$ is "otherwise"
+guard = Otherwise <$  (is "|" *> token (is "otherwise")) <|>
+        Guard     <$> (is "|" *> someSepBy comma patternGuard)
+
 
 patternGuard :: Parser PatternGuard
 patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>

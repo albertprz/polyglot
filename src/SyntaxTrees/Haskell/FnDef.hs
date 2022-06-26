@@ -72,6 +72,9 @@ data FnBody
       { matchee :: FnBody
       , cases   :: [CaseBinding]
       }
+  | LambdaCaseExpr
+      { cases :: [CaseBinding]
+      }
   | Tuple [FnBody]
   | List [FnBody]
   | FnVar' FnVar
