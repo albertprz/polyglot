@@ -7,12 +7,12 @@ import Parser
 import ParserCombinators
 import Parsers.Char              (comma, dot)
 import Parsers.Collections       (listOf, tupleOf)
-import Parsers.Haskell.Common    (literal, qCtor, qCtorOp, qVar, qVarOp, token,
-                                  var)
+import Parsers.Haskell.Common    (literal, nonTokenIdent, nonTokenQVar, qCtor,
+                                  qCtorOp, qVar, qVarOp, token, var)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
-import Parsers.String            (spacing, string, withinCurlyBrackets,
-                                  withinParens)
+import Parsers.String            (maybeWithinParens, spacing, string,
+                                  withinCurlyBrackets, withinParens)
 import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
                                   FnSig (..), FnVar (..), Guard (..),
@@ -20,15 +20,15 @@ import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   PatternGuard (..))
 import Utils.String              (wrapCurly)
 
--- TODO: Support Tuple definitions: (def1, def2)
--- TODO: Support Lambda Case exprs : (\case)
+
 -- TODO: Support parsing operators with different precedence
+
 
 fnSig :: Parser FnSig
 fnSig = FnSig <$> (var <* is "::") <*> type'
 
 fnDef :: Parser FnDef
-fnDef = FnDef <$> var <*> (pattern' |*)
+fnDef = FnDef <$> (tupleOf var <|> pure <$> var) <*> (pattern' |*)
                       <*> maybeGuardedFnBody (is "=")
 
 fnDefOrSig :: Parser FnDefOrSig
@@ -36,14 +36,13 @@ fnDefOrSig = Def <$> fnDef <|>
              Sig <$> fnSig
 
 fnBody :: Parser FnBody
-fnBody = adaptFnBody `andThen` openForm
+fnBody = openForm <|> withinParens openForm
 
   where
     fnApply = FnApply <$> delimitedForm <*> (delimitedForm |+)
 
-    infixFnApply = uncurry InfixFnApply <$> sepByOp fnOp (complexInfixForm <|>
-                                                withinParens complexInfixForm <|>
-                                                          singleForm)
+    infixFnApply = uncurry InfixFnApply <$> sepByOp fnOp
+       (complexInfixForm <|> withinParens complexInfixForm <|> singleForm)
 
     leftOpSection = uncurry LeftOpSection <$>
       withinParens ((,) <$> fnOp <*> delimitedForm)
@@ -84,12 +83,12 @@ fnBody = adaptFnBody `andThen` openForm
 
     list = List <$> listOf openForm
 
-    fnOp = VarOp' <$> qVarOp <|>
+    fnOp = VarOp' <$> qVarOp   <|>
            CtorOp' <$> qCtorOp
 
-    fnVar = FnVar' . Selector <$> withinParens (dot *> var)          <|>
-            FnVar' <$> (Selection <$> qVar <* dot <*> someSepBy dot var) <|>
-            FnVar' . Var' <$> qVar                                      <|>
+    fnVar = FnVar' . Selector <$> withinParens (dot *> var)              <|>
+            FnVar' <$> (Selection <$> nonTokenQVar <* dot <*> someSepBy dot var) <|>
+            FnVar' . Var' <$> qVar                                       <|>
             FnVar' . Ctor' <$> qCtor
 
     literal' = Literal' <$> literal
@@ -110,19 +109,20 @@ fnBody = adaptFnBody `andThen` openForm
 
 
 doStep :: Parser DoStep
-doStep = DoBinding <$> var <* is "<-" <*> fnBody <|>
+doStep = DoBinding  <$> (tupleOf var <|> pure <$> var) <* is "<-"
+                    <*> (adaptFnBody `andThen` fnBody) <|>
          LetBinding <$> (is "let" *> withinContext fnDefOrSig) <|>
-         Body      <$> fnBody
+         Body       <$> (adaptFnBody `andThen` fnBody)
 
 caseBinding :: Parser CaseBinding
 caseBinding = CaseBinding <$> pattern' <*> maybeGuardedFnBody (is "->")
 
 maybeGuardedFnBody :: Parser a -> Parser MaybeGuardedFnBody
 maybeGuardedFnBody sep = Guarded  <$> (guardedFnBody sep |+) <|>
-                         Standard <$> (sep *> fnBody)
+                         Standard <$> (sep *> (adaptFnBody `andThen` fnBody))
 
 guardedFnBody :: Parser a -> Parser GuardedFnBody
-guardedFnBody sep = GuardedFnBody <$> guard <* sep <*> fnBody
+guardedFnBody sep = GuardedFnBody <$> guard <* sep <*> (adaptFnBody `andThen` fnBody)
 
 guard :: Parser Guard
 guard = Otherwise <$  (is "|" *> token (is "otherwise")) <|>

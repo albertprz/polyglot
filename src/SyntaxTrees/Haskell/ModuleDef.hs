@@ -24,7 +24,7 @@ data ModuleExportDef
   = FnExport Var
   | DataExport TypeVar
   | FullDataExport TypeVar
-  | FilteredDataExport TypeVar [Var]
+  | FilteredDataExport TypeVar [ModuleMember]
   deriving (Show)
 
 data ModuleImport
@@ -35,7 +35,7 @@ data ModuleImportDef
   = FnImport Var
   | DataImport TypeVar
   | FullDataImport TypeVar
-  | FilteredDataImport TypeVar [Var]
+  | FilteredDataImport TypeVar [ModuleMember]
   deriving (Show)
 
 data InternalDef
@@ -45,4 +45,9 @@ data InternalDef
   | FnDefOrSig' FnDefOrSig
   | ClassDef' ClassDef
   | InstanceDef' InstanceDef
+  deriving (Show)
+
+data ModuleMember
+  = VarMember Var
+  | DataMember TypeVar
   deriving (Show)

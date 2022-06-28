@@ -51,34 +51,43 @@ fnDefOrSigs defsOrSigs = nubBy dedupFn $ mergeUnion sigs groupedDefs
   where
     dedupFn x y = any isJust [fst x, fst y] &&
                   ((.name) <$> fst x) == ((.name) <$> fst y)
-    defs = mapMaybe (\case (H.Def x) -> Just ((.name) x, x)
+    defs = mapMaybe (\case (H.Def x) -> Just (head x.names, x)
                            (H.Sig _) -> Nothing)
            defsOrSigs
     sigs = mapMaybe (\case (H.Def _) -> Nothing
-                           (H.Sig x) -> Just ((.name) x, x))
+                           (H.Sig x) -> Just (x.name, x))
            defsOrSigs
     groupedDefs = groupTuplesByKey defs
 
 
 
-fnDefs :: (Maybe H.FnSig, Maybe [H.FnDef]) -> S.MethodDef
+fnDefs :: (Maybe H.FnSig, Maybe [H.FnDef]) -> S.InternalFnDef
 fnDefs (x, Just [y])
-  | allVars y.args = simpleFnDef x y
-fnDefs (x, y)      = fnDef x y
+  | length  y.names > 1 = valDef y
+  | allVars y.args      = simpleFnDef x y
+fnDefs (x, y)           = fnDef x y
 
-fnDef :: Maybe H.FnSig -> Maybe [H.FnDef] -> S.MethodDef
-fnDef sig defs = S.MethodDef [] name fnSig (fnDefToFnBody <$> defs)
+
+fnDef :: Maybe H.FnSig -> Maybe [H.FnDef] -> S.InternalFnDef
+fnDef sig defs = S.FnMethod $ S.MethodDef [] name fnSig (fnDefToFnBody <$> defs)
   where
     n = maybe 0 (length . (.args)) $ (listToMaybe . fold) defs
     fnSig =  (`unNamedFnSig` n) . (.type') <$> sig
-    name = var $ maybe ((.name) . head $ fromMaybe [] defs) (.name) sig
+    name = var $ maybe (head . (.names) . head $ fromMaybe [] defs) (.name) sig
 
-simpleFnDef :: Maybe H.FnSig -> H.FnDef -> S.MethodDef
-simpleFnDef sig def = S.MethodDef [] name fnSig (Just $ simpleFnDefToFnBody def)
+simpleFnDef :: Maybe H.FnSig -> H.FnDef -> S.InternalFnDef
+simpleFnDef sig def = S.FnMethod $ S.MethodDef [] name fnSig
+                                               (Just $ simpleFnDefToFnBody def)
   where
-    name = var $ (.name) def
+    name = var $ head def.names
     args = extractVars $ (.args) def
     fnSig = (`namedFnSig` args) . (.type') <$> sig
+
+valDef :: H.FnDef -> S.InternalFnDef
+valDef def = S.FnVal $ S.ValDef [S.Lazy] names Nothing
+                                (Just $ simpleFnDefToFnBody def)
+  where
+    names = var <$> def.names
 
 
 simpleFnDefToFnBody :: H.FnDef -> S.FnBody
@@ -115,19 +124,22 @@ fnBody (H.Tuple x)          = S.Tuple $ fnBody <$> x
 fnBody (H.FnVar' x)         = fnVar x
 fnBody (H.Literal' x)       = S.Literal' $ literal x
 
+fnBody (H.List [])        = S.FnApply
+        (S.FnVar' $ S.Ctor' $ S.QCtor Nothing $ S.Ctor "List.empty")
+                                     []
 fnBody (H.List x)        = S.FnApply
         (S.FnVar' $ S.Ctor' $ S.QCtor Nothing $ S.Ctor "List")
                                      (fnBody <$> x)
-fnBody (H.LetExpr x y)   = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs x)
+fnBody (H.LetExpr x y)   = S.LetExpr (fnDefs <$> fnDefOrSigs x)
                                      (fnBody y)
-fnBody (H.WhereExpr x y) = S.LetExpr (S.FnMethod . fnDefs <$> fnDefOrSigs y)
+fnBody (H.WhereExpr x y) = S.LetExpr (fnDefs <$> fnDefOrSigs y)
                                      (fnBody x)
 
 
 doStep :: H.DoStep -> S.ForStep
-doStep (H.DoBinding x y) = S.ForBinding (var x) (fnBody y)
-doStep (H.LetBinding x)  = S.LetBinding (S.FnMethod . fnDefs <$> fnDefOrSigs x)
-doStep (H.Body x)        = S.ForBinding (S.Var "_") (fnBody x)
+doStep (H.DoBinding x y) = S.ForBinding (var <$> x) (fnBody y)
+doStep (H.LetBinding x)  = S.LetBinding (fnDefs <$> fnDefOrSigs x)
+doStep (H.Body x)        = S.ForBinding [S.Var "_"] (fnBody x)
 
 
 

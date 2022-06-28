@@ -106,9 +106,7 @@ data ExtensionDef
 
 
 data InternalDef
-  = Val ValDef
-  | Method MethodDef
-  | Given GivenDef
+  = Fn InternalFnDef
   | TypeAlias TypeDef
   | OpaqueType OpaqueTypeDef
   | Trait TraitDef
@@ -178,9 +176,7 @@ showStructure  x y z t u v w r s = joinWords [x,
                                               wrapSpacedBlock s]
 
 instance Show InternalDef where
-  show (Val x)        = show x
-  show (Method x)     = show x
-  show (Given x)      = show x
+  show (Fn x)         = show x
   show (TypeAlias x)  = show x
   show (OpaqueType x) = show x
   show (Trait x)      = show x

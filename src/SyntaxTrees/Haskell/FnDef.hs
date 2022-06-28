@@ -13,9 +13,9 @@ data FnSig
 
 data FnDef
   = FnDef
-      { name :: Var
-      , args :: [Pattern]
-      , body :: MaybeGuardedFnBody
+      { names :: [Var]
+      , args  :: [Pattern]
+      , body  :: MaybeGuardedFnBody
       }
   deriving (Show)
 
@@ -99,7 +99,7 @@ data OperatorPosition
   deriving (Show)
 
 data DoStep
-  = DoBinding Var FnBody
+  = DoBinding [Var] FnBody
   | LetBinding [FnDefOrSig]
   | Body FnBody
   deriving (Show)

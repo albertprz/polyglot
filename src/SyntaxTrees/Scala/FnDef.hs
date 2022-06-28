@@ -7,11 +7,12 @@ import SyntaxTrees.Scala.Common  (Literal, Modifier, QCtor, QCtorOp, QVar,
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
 
-import Data.List      (intercalate)
-import Utils.Foldable (hasSome, wrapMaybe)
-import Utils.String   (joinMaybe, joinWords, str, wrapBlock, wrapLetContext,
-                       wrapParens, wrapParensCsv, wrapSingleBlock,
-                       wrapSpacedBlock, wrapSpaces, wrapSquareCsv, (+++))
+import Data.List       (intercalate)
+import Data.List.Extra (replace)
+import Utils.Foldable  (hasSome, wrapMaybe)
+import Utils.String    (joinMaybe, joinWords, str, wrapBlock, wrapLetContext,
+                        wrapParens, wrapParensCsv, wrapSingleBlock,
+                        wrapSpacedBlock, wrapSpaces, wrapSquareCsv, (+++))
 
 
 data FnSig
@@ -25,7 +26,7 @@ data FnSig
 data ValDef
   = ValDef
       { qualifiers :: [Modifier]
-      , name       :: Var
+      , names      :: [Var]
       , returnType :: Maybe Type
       , body       :: Maybe FnBody
       }
@@ -45,7 +46,7 @@ data GivenDef
       , typeParams   :: [TypeParam]
       , usingArgs    :: [UsingArgList]
       , returnType   :: Type
-      , internalDefs :: [MethodDef]
+      , internalDefs :: [InternalFnDef]
       }
 
 
@@ -97,7 +98,7 @@ data FnOp
   | CtorOp' QCtorOp
 
 data ForStep
-  = ForBinding Var FnBody
+  = ForBinding [Var] FnBody
   | LetBinding [InternalFnDef]
   | Condition FnBody
 
@@ -141,16 +142,7 @@ instance Show MethodDef where
 instance Show GivenDef where
   show (GivenDef x y z t u v) = joinWords [str " " x,
                                           "given",
-                                          foldMap show y,
-                                          wrapSquareCsv z,
-                                          str " " t,
-                                          when displaySep ":",
-                                          show u,
-                                          "with",
-                                          wrapSpacedBlock v]
-    where
-      displaySep = hasSome y || hasSome z || hasSome t
-
+                                          showGiven y z t u v]
 
 instance Show FnBody where
   show (FnApply x y)      = joinWords [show x, wrapParensCsv y]
@@ -177,8 +169,8 @@ instance Show FnBody where
                                       wrapBlock y]
 
 instance Show ForStep where
-  show (ForBinding x y) = joinWords [show x, "<-", show y]
-  show (LetBinding x)   = unlines (drop 4 . show <$> x)
+  show (ForBinding x y) = joinWords [showTuple x, "<-", show y]
+  show (LetBinding x)   = unlines (showBinding <$> x)
   show (Condition x)    = joinWords ["if", show x]
 
 instance Show CaseBinding where
@@ -204,15 +196,39 @@ instance Show InternalFnDef where
   show (FnGiven x)  = show x
 
 
+showBinding :: InternalFnDef -> String
+showBinding (FnVal (ValDef _ y _ t))         = showVal y Nothing t
+showBinding (FnMethod (MethodDef _ y _ t))   = showDef y Nothing t
+showBinding (FnGiven (GivenDef _ y z t u v)) = showGiven y z t u v
+
+
 showForInfix :: FnBody -> String
 showForInfix x@(InfixFnApply _ _) = wrapParens $ show x
 showForInfix x                    = show x
 
 
-showVal :: Var -> Maybe Type -> Maybe FnBody -> String
-showVal x y z = show x ++  ":" `joinMaybe` y
-                       +++ "=" `joinMaybe` z
+showVal :: [Var] -> Maybe Type -> Maybe FnBody -> String
+showVal x y z = showTuple x ++  ":" `joinMaybe` y
+                            +++ "=" `joinMaybe` z
 
 showDef :: Var -> Maybe FnSig -> Maybe FnBody -> String
 showDef x y z = show x ++ (fold $ show <$> y)
                        +++ "=" `joinMaybe` (Wrapper . wrapSingleBlock <$> z)
+
+
+showGiven :: Maybe Var -> [TypeParam] -> [UsingArgList]
+             -> Type -> [InternalFnDef] -> String
+showGiven x y z t u = joinWords [foldMap show x,
+                                 wrapSquareCsv y,
+                                 str " " z,
+                                 when displaySep ":",
+                                 show t,
+                                 "with",
+                                 wrapSpacedBlock u]
+  where
+    displaySep = hasSome x || hasSome y || hasSome z
+
+
+showTuple :: Show a => [a] -> String
+showTuple [x] = show x
+showTuple x   = wrapParens $ str ", " x

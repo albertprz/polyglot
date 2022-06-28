@@ -68,6 +68,7 @@ qClass :: Parser QClass
 qClass = uncurry QClass <$> qTerm' Class
 
 
+
 ident :: Parser Char -> Parser String
 ident start = token $ (:) <$> start <*> (idChar |*)
 
@@ -75,6 +76,10 @@ operator :: Parser Char -> Parser String
 operator start = token $ (:) <$> start
                              <*> ((opSymbol <|> colon) |*)
 
+nonTokenQVar :: Parser QVar
+nonTokenQVar = uncurry QVar <$> qTerm x
+  where  x = Var <$> check "" (`notElem` reservedKeyWords)
+                    (nonTokenIdent lower)
 
 nonTokenIdent :: Parser Char -> Parser String
 nonTokenIdent start = (:) <$> start <*> (idChar |*)
@@ -91,7 +96,7 @@ token = withTransform $ maybeWithin (anyComment |+) . maybeWithin spacing
 
 
 qTerm :: Parser a -> Parser (Maybe Module, a)
-qTerm x =  token $ (,) <$> ((module'' <* dot) |?) <*> x
+qTerm x =  (,) <$> ((module'' <* dot) |?) <*> x
 
 
 qTerm' :: (String -> b) -> Parser (Maybe Module, b)

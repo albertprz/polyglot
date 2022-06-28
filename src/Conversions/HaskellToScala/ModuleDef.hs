@@ -10,9 +10,10 @@ import Conversions.HaskellToScala.DataDef  (dataDef, newtypeDef, typeDef)
 import Conversions.HaskellToScala.FnDef    (fnDefOrSigs, fnDefs)
 import Conversions.HaskellToScala.Type     (typeVar)
 
-import Data.Maybe     (mapMaybe, maybeToList)
-import Utils.Foldable (wrapMaybe)
-import Utils.Maybe    (cond)
+import           Data.Maybe              (mapMaybe, maybeToList)
+import qualified SyntaxTrees.Scala.FnDef as S
+import           Utils.Foldable          (wrapMaybe)
+import           Utils.Maybe             (cond)
 
 
 
@@ -40,7 +41,7 @@ complexImportDef :: H.ModuleImportDef -> Maybe S.PackageImportDef
 complexImportDef (H.FullDataImport x)       =
   Just $ S.FullObjectImport $ typeVar x
 complexImportDef (H.FilteredDataImport x y) =
-  S.FilteredObjectImport (typeVar x) <$> wrapMaybe (S.VarMember . var <$> y)
+  S.FilteredObjectImport (typeVar x) <$> wrapMaybe (moduleMember <$> y)
 complexImportDef _ = Nothing
 
 
@@ -53,7 +54,7 @@ singleImportDef _                = Nothing
 internalDefs :: [H.InternalDef] -> [S.InternalDef]
 internalDefs defs =
   (mapMaybe internalDef others) ++
-  (S.Method . fnDefs <$> fnDefOrSigs fns)
+  (S.Fn . fnDefs <$> fnDefOrSigs fns)
 
   where
     fns    = mapMaybe (\case (H.FnDefOrSig' x) -> Just x
@@ -67,5 +68,9 @@ internalDef (H.TypeDef' x)     = Just $ S.TypeAlias $ typeDef x
 internalDef (H.NewTypeDef' x)  = Just $ S.OpaqueType $ newtypeDef x
 internalDef (H.DataDef' x)     = Just $ S.Enum $ dataDef x
 internalDef (H.ClassDef' x)    = Just $ S.Trait $ classDef x
-internalDef (H.InstanceDef' x) = Just $ S.Given $ instanceDef x
+internalDef (H.InstanceDef' x) = Just $ S.Fn $ S.FnGiven $ instanceDef x
 internalDef (H.FnDefOrSig' _)  = Nothing
+
+moduleMember :: H.ModuleMember -> S.PackageMember
+moduleMember (H.VarMember x)  = S.VarMember $ var x
+moduleMember (H.DataMember x) = S.DataMember $ typeVar x

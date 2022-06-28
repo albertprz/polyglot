@@ -34,14 +34,14 @@ pattern' =  pattern'' <|> maybeWithinParens pattern''
     recordField   = (,) <$> var <*> ((is "=" *> pattern'') |?)
     recordShape p = withinCurlyBrackets (anySepBy comma p)
 
-    elem' = literal' <|> var' <|> wildcard <|> nullaryCtor <|>
+    elem' =  literal' <|> var' <|> alias <|> wildcard <|> nullaryCtor <|>
             withinParens nullaryCtor <|>
-            tuple <|> list <|> withinParens alias
+            tuple <|> list
 
     ctorElem' = record <|> recordWildcard <|> alias <|> elem' <|>
-                withinParens ctor' <|> withinParens infixCtor
+                withinParens (ctor' <|> infixCtor)
 
     aliasElem' = elem' <|> record <|> recordWildcard <|>
-                 ctor' <|> infixCtor
+                 withinParens (ctor' <|> infixCtor)
 
     pattern'' = alias <|> infixCtor <|> ctor' <|> ctorElem'

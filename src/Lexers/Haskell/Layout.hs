@@ -15,6 +15,8 @@ import Utils.List       (safeHead)
 import Utils.String     (joinWords, wrapDoubleQuotes, wrapQuotes)
 
 
+-- TODO: Support semicolons and braces syntax
+
 
 adaptLayout :: String -> Either ParseError String
 adaptLayout str = (++ "}") . unlines . fst3 <$> layoutLines
@@ -50,8 +52,8 @@ layout (x, y, z) str = runParser layoutParser str
 calcIndent :: [Int] -> Int -> ([Int], String)
 calcIndent indentLvls curr = (newIndentLvls, joinWords [closeContexts, sep])
   where
-    closeContexts = fold ("}; " <$ extra)
-    sep = when (any (== curr) (safeHead indentLvls)) "; "
+    closeContexts = fold ("} " <$ extra)
+    sep = when (any (== curr) (safeHead newIndentLvls)) "; "
     (extra, newIndentLvls) = span (curr <) indentLvls
 
 

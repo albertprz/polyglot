@@ -6,11 +6,10 @@ import Parsers.Haskell.Common        (module', token, var)
 import Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
 import Parsers.Haskell.FnDef         (fnDef, fnSig, withinContextTupled)
 import Parsers.Haskell.Type          (typeVar)
-import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (ModuleDef),
-                                      ModuleExport (ModuleExport),
-                                      ModuleExportDef (DataExport, FilteredDataExport, FnExport, FullDataExport),
-                                      ModuleImport (ModuleImport),
-                                      ModuleImportDef (DataImport, FilteredDataImport, FnImport, FullDataImport))
+import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (..),
+                                      ModuleExport (..), ModuleExportDef (..),
+                                      ModuleImport (..), ModuleImportDef (..),
+                                      ModuleMember (DataMember, VarMember))
 
 import Data.Foldable             (Foldable (fold))
 import Data.Maybe                (isJust)
@@ -19,7 +18,7 @@ import ParserCombinators         (IsMatch (is), anySepBy, maybeWithin, (<|>),
                                   (|?))
 import Parsers.Char              (comma)
 import Parsers.String            (spacing, withinParens)
-import SyntaxTrees.Haskell.FnDef (FnDefOrSig (Def, Sig))
+import SyntaxTrees.Haskell.FnDef (FnDefOrSig (..))
 
 
 
@@ -42,7 +41,7 @@ moduleExportDef = FnExport            <$> var                    <|>
                   FullDataExport      <$> typeVar
                                       <*  withinParens (is "..") <|>
                   FilteredDataExport  <$> typeVar
-                                      <*> withinParens (anySepBy comma var)
+                                      <*> withinParens (anySepBy comma moduleMember)
 
 moduleImport :: Parser ModuleImport
 moduleImport = ModuleImport <$> (token (is "import") *>
@@ -59,7 +58,7 @@ moduleImportDef = FnImport            <$> var                    <|>
                   FullDataImport      <$> typeVar
                                       <*  withinParens (is "..") <|>
                   FilteredDataImport  <$> typeVar
-                                      <*> withinParens (anySepBy comma var) <|>
+                                      <*> withinParens (anySepBy comma moduleMember) <|>
                   DataImport          <$> typeVar
 
 
@@ -72,3 +71,9 @@ internalDef = TypeDef'          <$> typeDef      <|>
               FnDefOrSig' . Sig <$> fnSig        <|>
               ClassDef'         <$> classDef     <|>
               InstanceDef'      <$> instanceDef
+
+
+
+moduleMember :: Parser ModuleMember
+moduleMember = VarMember  <$> var     <|>
+              DataMember  <$> typeVar

@@ -17,7 +17,7 @@ classDef :: H.ClassDef -> S.TraitDef
 classDef (H.ClassDef x (H.Class y) z t) =
   S.TraitDef [] (S.TypeVar y)
         (typeParam <$> z) [] [usingArgList $ classConstraint <$> x] []
-        ((S.Method . fnDefs) <$> fnDefOrSigs t)
+        (S.Fn . fnDefs <$> fnDefOrSigs t)
 
 
 instanceDef :: H.InstanceDef -> S.GivenDef
