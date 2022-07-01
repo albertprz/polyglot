@@ -7,12 +7,12 @@ import Parser
 import ParserCombinators
 import Parsers.Char              (comma, dot)
 import Parsers.Collections       (listOf, tupleOf)
-import Parsers.Haskell.Common    (literal, nonTokenIdent, nonTokenQVar, qCtor,
-                                  qCtorOp, qVar, qVarOp, token, var)
+import Parsers.Haskell.Common    (literal, nonTokenQVar, qCtor, qCtorOp, qVar,
+                                  qVarOp, token, var)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
-import Parsers.String            (maybeWithinParens, spacing, string,
-                                  withinCurlyBrackets, withinParens)
+import Parsers.String            (spacing, string, withinCurlyBrackets,
+                                  withinParens)
 import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
                                   FnSig (..), FnVar (..), Guard (..),

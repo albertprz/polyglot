@@ -17,9 +17,8 @@ import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
                                    QCtor (..), QCtorOp (..), QVar (..),
                                    QVarOp (..), Var (..), VarOp (..))
 import Utils.Foldable             (wrapMaybe)
+import Utils.String               (wrap, wrapBoth)
 
-
--- TODO: Support parsing of comments
 
 
 literal :: Parser Literal
@@ -108,21 +107,21 @@ qTerm' fn = token $ do Module xs <- module''
 
 
 anyComment :: Parser String
-anyComment = lineComment <|> blockComment <|> pragma
+anyComment = pragma <|> blockComment <|> lineComment
 
 lineComment :: Parser String
-lineComment = is "--" *> (pure <$> newLine <|>
-                          noneOf symbolChars >>> (inverse newLine |?))
+lineComment = is "--" >>> (pure <$> newLine <|>
+                          noneOf symbolChars >>> (inverse newLine |*))
 
 
 blockComment :: Parser String
-blockComment = fold <$> withinBoth (is "{-") (is "-}") (isNot "#" *>
-                                   ((isNot "-" *> isNot "}") |*))
+blockComment = wrap "{-"  "-}" . fold <$> withinBoth (is "{-") (is "-}")
+                         ((:) <$> (isNot "#") <*> ((isNot "-" >>> isNot "}") |*))
 
 
 pragma :: Parser String
-pragma = fold <$> withinBoth (is "{-#") (is "#-}")
-                             (((isNot "#" *> isNot "-" *> isNot "}") |*))
+pragma = wrap "{-#"  "#-}" . fold <$> withinBoth (is "{-#") (is "#-}")
+                             ((isNot "#" |*))
 
 
 symbolChars :: [Char]

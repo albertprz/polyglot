@@ -18,9 +18,7 @@ process Opts {sourcePath, targetPath} =
   writeFile targetPath'
 
   where
-    convert = (show
-               . Conversions.moduleDef)
-              <$$> runParser moduleDef
+    convert = (show . Conversions.moduleDef) <$$> runParser moduleDef
     setTargetFileName = (</> (takeFileName sourcePath)) . dropFileName
     targetPath' = maybe sourcePath setTargetFileName targetPath -<.> "scala"
 
