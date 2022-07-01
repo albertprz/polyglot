@@ -14,9 +14,7 @@ import qualified Conversions.HaskellToScala.ModuleDef as Conversions
 process :: Opts -> IO ()
 process Opts {sourcePath, targetPath} =
   readFile sourcePath >>=
-  emitError . (adaptLayout
-               >>. convert
-              ) >>=
+  emitError . (adaptLayout >>. convert) >>=
   writeFile targetPath'
 
   where

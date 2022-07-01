@@ -19,6 +19,9 @@ import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
 import Utils.Foldable             (wrapMaybe)
 
 
+-- TODO: Support parsing of comments
+
+
 literal :: Parser Literal
 literal = UnitLit <$ is "()" <|>
           BoolLit <$> (True <$ is "True" <|> False <$ is "False") <|>

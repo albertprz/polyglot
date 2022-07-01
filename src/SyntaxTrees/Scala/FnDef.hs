@@ -7,12 +7,12 @@ import SyntaxTrees.Scala.Common  (Literal, Modifier, QCtor, QCtorOp, QVar,
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
 
-import Data.List       (intercalate)
-import Data.List.Extra (replace)
-import Utils.Foldable  (hasSome, wrapMaybe)
-import Utils.String    (joinMaybe, joinWords, str, wrapBlock, wrapLetContext,
-                        wrapParens, wrapParensCsv, wrapSingleBlock,
-                        wrapSpacedBlock, wrapSpaces, wrapSquareCsv, (+++))
+import Data.List (intercalate)
+
+import Utils.Foldable (hasSome, wrapMaybe)
+import Utils.String   (joinMaybe, joinWords, str, wrapBlock, wrapLetContext,
+                       wrapParens, wrapParensCsv, wrapSingleBlock,
+                       wrapSpacedBlock, wrapSpaces, wrapSquareCsv, (+++))
 
 
 data FnSig
