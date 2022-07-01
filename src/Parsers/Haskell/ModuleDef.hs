@@ -64,11 +64,11 @@ moduleImportDef = FnImport            <$> var                    <|>
 
 
 internalDef :: Parser InternalDef
-internalDef = TypeDef'          <$> typeDef      <|>
+internalDef = FnDefOrSig' . Def <$> fnDef        <|>
+              FnDefOrSig' . Sig <$> fnSig        <|>
+              TypeDef'          <$> typeDef      <|>
               NewTypeDef'       <$> newtypeDef   <|>
               DataDef'          <$> dataDef      <|>
-              FnDefOrSig' . Def <$> fnDef        <|>
-              FnDefOrSig' . Sig <$> fnSig        <|>
               ClassDef'         <$> classDef     <|>
               InstanceDef'      <$> instanceDef
 

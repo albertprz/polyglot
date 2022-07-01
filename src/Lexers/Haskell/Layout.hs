@@ -15,7 +15,7 @@ import Data.Maybe     (fromMaybe)
 import Parsers.String (spacing, withinDoubleQuotes, withinParens, withinQuotes,
                        word)
 import Utils.Foldable (hasNone, hasSome)
-import Utils.List     (safeHead)
+import Utils.List     (safeHead, safeTail)
 import Utils.String   (joinWords, wrapCurly, wrapDoubleQuotes, wrapParens,
                        wrapQuotes)
 
@@ -67,9 +67,10 @@ parensLayout = (((spacing |?) >>>
 
 calcIndent :: [Int] -> Int -> Bool -> ([Int], String, Bool)
 calcIndent indentLvls curr stop =
-  (newIndentLvls, joinWords [when (not stop) closeContexts, sep], shouldStop)
+  (newIndentLvls, joinWords [closeContexts, sep], shouldStop)
   where
-    closeContexts = fold ("} " <$ extra)
+    extraElems = if (not stop) then extra else fold $ safeTail extra
+    closeContexts = fold ("} " <$ extraElems)
     shouldStop = stop && hasNone closeContexts
     sep = when (any (== curr) (safeHead newIndentLvls)) "; "
     (extra, newIndentLvls) = span (curr <) indentLvls
