@@ -5,7 +5,7 @@ import ParserCombinators        (IsMatch (is), manySepBy, someSepBy, (<|>),
                                  (|+))
 import Parsers.Char             (comma, dot, lower, upper)
 import Parsers.Collections      (tupleOf)
-import Parsers.Haskell.Common   (ident, qClass, qTerm')
+import Parsers.Haskell.Common   (ident, notReserved, qClass, qTerm')
 import Parsers.String           (maybeWithinParens, withinParens,
                                  withinSquareBrackets)
 import SyntaxTrees.Haskell.Type (AnyKindedType (..), ClassConstraint (..),
@@ -14,7 +14,7 @@ import SyntaxTrees.Haskell.Type (AnyKindedType (..), ClassConstraint (..),
                                  TypeVar (..))
 
 typeParam :: Parser TypeParam
-typeParam = TypeParam <$> ident lower
+typeParam = TypeParam <$> notReserved (ident lower)
 
 typeVar :: Parser TypeVar
 typeVar = TypeVar  <$> ident upper <|>

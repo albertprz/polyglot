@@ -4,7 +4,7 @@ import qualified SyntaxTrees.Haskell.Type as H
 import qualified SyntaxTrees.Scala.Common as S
 import qualified SyntaxTrees.Scala.Type   as S
 
-import Conversions.HaskellToScala.Common
+import Conversions.HaskellToScala.Common (find, module', qClass)
 
 import Data.Char (toUpper)
 import Data.Map  (Map)
@@ -18,7 +18,7 @@ typeParam :: H.TypeParam -> S.TypeParam
 typeParam (H.TypeParam x) = S.TypeParam $ toUpper <$> x
 
 typeVar :: H.TypeVar -> S.TypeVar
-typeVar (H.TypeVar x) = S.TypeVar x
+typeVar (H.TypeVar x) = S.TypeVar $ convertTypeVar x
 typeVar H.UnitType    = S.TypeVar "Unit"
 
 typeCtor :: H.TypeCtor -> S.TypeCtor
@@ -107,8 +107,17 @@ qTypeCtor :: H.QTypeCtor -> S.QTypeCtor
 qTypeCtor (H.QTypeCtor x y) = S.QTypeCtor (module' <$> x) (typeCtor y)
 
 
+
+
+
 convertTypeCtor :: String -> String
-convertTypeCtor x =  Map.findWithDefault x x typeCtorMap
+convertTypeCtor x =  find typeCtorMap x
+
+convertTypeVar :: String -> String
+convertTypeVar x =  find typeVarMap x
 
 typeCtorMap :: Map String String
 typeCtorMap = Map.fromList [("Maybe", "Option")]
+
+typeVarMap :: Map String String
+typeVarMap = Map.fromList [("Type", "Typex")]

@@ -40,17 +40,22 @@ wrapCurlyCsv :: Show a => [a] -> String
 wrapCurlyCsv = wrapCurly . str ", "
 
 wrapLetContext :: (Show a, Show b) => [a] -> b -> String
-wrapLetContext x y = wrapCurly $ wrapBoth "\n\n" (str "\n" x) ++ show y
+wrapLetContext x y = wrapContext $ wrapBoth "\n\n" (str "\n" x) ++ show y
 
 
 wrapBlock :: Show a => [a] -> String
-wrapBlock x = wrapCurly $ wrapBoth "\n" $ str "\n" x
+wrapBlock x = wrapContext $ wrapBoth "\n" $ str "\n" x
 
 wrapSpacedBlock :: Show a => [a] -> String
-wrapSpacedBlock x = wrapCurly $ wrapBoth "\n\n" $ str "\n\n" x
+wrapSpacedBlock x = wrapContext $ wrapBoth "\n\n" $ str "\n\n" x
 
 wrapSingleBlock :: Show a => a -> String
-wrapSingleBlock x = wrapCurly $ wrapBoth "\n" $ show x
+wrapSingleBlock x = wrapContext $ wrapBoth "\n" $ show x
+
+wrapContext :: String -> String
+wrapContext = intercalate "\n" . (indent 2 <$>) . lines
+  where
+    indent n x = when (hasSome x) (replicate n ' ' ++ x)
 
 
 str :: Show a => String -> [a] -> String

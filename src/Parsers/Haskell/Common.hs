@@ -32,18 +32,20 @@ literal = UnitLit <$ is "()" <|>
 
 
 var :: Parser Var
-var = Var <$> check "" (`notElem` reservedKeyWords)
-                    (withinParens (operator opSymbol) <|> ident lower)
+var = Var <$> notReserved
+              (withinParens (operator opSymbol) <|> ident lower)
 
 ctor :: Parser Ctor
-ctor = Ctor <$> (withinParens (operator colon) <|> ident upper)
+ctor = Ctor <$> notReserved
+                (withinParens (operator colon) <|> ident upper)
 
 varOp :: Parser VarOp
-varOp = VarOp <$> check "" (`notElem` reservedSymbols)
-                        (withinBackQuotes (ident lower) <|> operator opSymbol)
+varOp = VarOp <$> notReserved
+                 (withinBackQuotes (ident lower) <|> operator opSymbol)
 
 ctorOp :: Parser CtorOp
-ctorOp = CtorOp <$> (withinBackQuotes (ident upper) <|> operator colon)
+ctorOp = CtorOp <$> notReserved
+                    (withinBackQuotes (ident upper) <|> operator colon)
 
 class' :: Parser Class
 class' = Class <$> ident upper
@@ -129,6 +131,11 @@ symbolChars =
      ['!', '#', '$', '%', '&', '*', '+', '.', '/',
       '<', '=', '>', '?', '@', '\\', '|', '^', '|',
       '-', '~']
+
+
+notReserved :: Parser String -> Parser String
+notReserved = check "reserved"
+               (`notElem` (reservedSymbols ++ reservedKeyWords))
 
 
 reservedKeyWords :: [String]

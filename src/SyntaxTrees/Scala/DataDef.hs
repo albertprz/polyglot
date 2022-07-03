@@ -1,9 +1,11 @@
 module SyntaxTrees.Scala.DataDef where
 
+import Data.Monoid.HT           (when)
 import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass)
-import SyntaxTrees.Scala.FnDef  (GivenDef, InternalFnDef, MethodDef, ValDef)
+import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef)
 import SyntaxTrees.Scala.Type   (ArgField, ArgList (..), Type, TypeParam,
                                  TypeVar, UsingArgList)
+import Utils.Foldable           (hasSome)
 import Utils.String
 
 
@@ -173,7 +175,9 @@ showStructure  x y z t u v w r s = joinWords [x,
                                               str " " v,
                                               joinList "derives" ", " w,
                                               joinList "extends" ", " r,
-                                              wrapSpacedBlock s]
+                                              sep ++ wrapSpacedBlock s]
+  where
+    sep = when (x /= "extension" && hasSome s) ": "
 
 instance Show InternalDef where
   show (Fn x)         = show x

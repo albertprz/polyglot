@@ -5,9 +5,10 @@ import Parser                      (Parser)
 import ParserCombinators           (IsMatch (..), anySepBy, someSepBy, (<#>),
                                     (<|>), (|*), (|?))
 import Parsers.Char                (colon, comma, equal)
+import Parsers.Collections         (tupleOf)
 import Parsers.Haskell.Common      (class', ctor, var)
 import Parsers.Haskell.Type        (anyKindedType, type', typeParam, typeVar)
-import Parsers.String              (withinCurlyBrackets)
+import Parsers.String              (maybeWithinParens, withinCurlyBrackets)
 import SyntaxTrees.Haskell.Common  (Class)
 import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
                                     FieldDef (..), NamedFieldDef (..),
@@ -54,4 +55,5 @@ dataCtorDef = NamedFieldsCtor   <$> ctor
                                 <*> (unNamedFieldDef |*)
 
 derivingList :: Parser [Class]
-derivingList = fold <$> ((is "deriving" *> anySepBy comma class') |?)
+derivingList = fold <$> ((is "deriving" *> (tupleOf class' <|>
+                                            pure <$> maybeWithinParens class')) |?)

@@ -26,6 +26,13 @@ packages:
   original:
     hackage: optparse-applicative-0.17.0.0
 - completed:
+    hackage: fsnotify-0.3.0.1@sha256:fbec8cddd3f991d5b905df16895c67717b0f580e1ef33de34d93de814af1a08a,2988
+    pantry-tree:
+      size: 1130
+      sha256: 37a2111006e61b752f3d4690dc81d76a4cedf3415dc486779addb2a033f5de58
+  original:
+    hackage: fsnotify-0.3.0.1
+- completed:
     hackage: extra-1.7.10@sha256:e384751317577554f873812358fab022da02aa9a286c9341308fac83f4d766c5,2691
     pantry-tree:
       size: 1896
@@ -88,4 +95,39 @@ packages:
       sha256: 03f8e22f364deb86098dbfbe0bf83c896437b2355f139abdac0402658fb6ac7e
   original:
     hackage: colour-2.3.6
+- completed:
+    hackage: async-2.2.4@sha256:b83dec34a53520de84c6dd3dc7aae45d22409b46eb471c478b98108215a370f0,3095
+    pantry-tree:
+      size: 501
+      sha256: 08b8a9f8d2e27d51b04fb9c14f65e1209c7f24160d2a4557963900edb2c0f07d
+  original:
+    hackage: async-2.2.4
+- completed:
+    hackage: hfsevents-0.1.6@sha256:295b29e8a4ac51a0015f4fb92b4140139d7b13ed691318159a20f85ce785dac6,863
+    pantry-tree:
+      size: 438
+      sha256: 14370510ec9a045fdc5b7e614279a84e3540a968f8b5ad12b8796916c4d6d1ee
+  original:
+    hackage: hfsevents-0.1.6
+- completed:
+    hackage: unix-compat-0.6@sha256:db47d4ad77f3f865d162a531d9b759ed30e2722710a8358aa6df1d3fcf83f552,3569
+    pantry-tree:
+      size: 1267
+      sha256: 530668be5ded77879c925433ec40e1e4f4a9113a8527410f8f282d3cf92eb950
+  original:
+    hackage: unix-compat-0.6
+- completed:
+    hackage: cereal-0.5.8.2@sha256:fe7d9a6426eacbe12351afe9642daedcb64fa29eda56118a65915f1c14df0d9a,2863
+    pantry-tree:
+      size: 641
+      sha256: 28597366f0addd7269ea90fa215b05fc68889240fb28c87bd214d7ce99c169f7
+  original:
+    hackage: cereal-0.5.8.2
+- completed:
+    hackage: hashable-1.4.0.2@sha256:0cddd0229d1aac305ea0404409c0bbfab81f075817bd74b8b2929eff58333e55,5005
+    pantry-tree:
+      size: 1248
+      sha256: 51dda0aa70849588d074125f324beba1c8736cfa486e7f4a90a798b1d0e6019d
+  original:
+    hackage: hashable-1.4.0.2
 snapshots: []

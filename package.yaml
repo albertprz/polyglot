@@ -27,6 +27,7 @@ dependencies:
 - containers
 - extra >= 1.7.10 && < 1.8
 - utility-ht >= 0.0.16
+- fsnotify >= 0.3.0.1
 
 ghc-options:
 - -Wall

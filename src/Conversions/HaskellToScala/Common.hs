@@ -66,7 +66,7 @@ globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap
 
 
 charMap :: Map Char Char
-charMap = Map.fromList [('\'', '_'), ('$', '%'), ('.', '|')]
+charMap = Map.fromList [('\'', '$'), ('$', '%'), ('.', '|')]
 
 varOpMap :: Map String String
 varOpMap = Map.fromList [("$", "<|:"), (".", "|:"), ("++", "<+>"), ("<>", "<+>")]

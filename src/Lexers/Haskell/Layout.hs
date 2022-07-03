@@ -54,8 +54,8 @@ layout (x, y, z, t) str = runParser layoutParser str
 
 
 parensLayout :: Parser [String]
-parensLayout = (((spacing |?) >>>
-                 elem' <|> parensParser <|>
+parensLayout = (((spacing |?) >>> elem' <|>
+                 parensParser <|>
                 (wrapParens . fold <$> withinParens parensLayout) >>>
                 (spacing |?)) |*)
   where
@@ -72,7 +72,7 @@ calcIndent indentLvls curr stop =
   where
     extraElems = if (not stop) then extra else fold $ safeTail extra
     closeContexts = fold ("} " <$ extraElems)
-    shouldStop = stop && hasNone closeContexts
+    shouldStop = stop && hasNone extra
     sep = when (any (== curr) (safeHead newIndentLvls)) "; "
     (extra, newIndentLvls) = span (curr <) indentLvls
 
