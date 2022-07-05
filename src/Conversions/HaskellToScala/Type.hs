@@ -59,7 +59,8 @@ typeSplit :: Int -> H.Type -> ([S.Type], S.Type)
 typeSplit 0 tpe = ([], type' tpe)
 typeSplit n tpe = (args, S.CtorTypeApply (S.QTypeCtor Nothing S.Arrow) ret)
   where
-    (args, ret) = splitAt n $ type' <$> extractTypes tpe
+    (args, ret) = splitAt (min n (length types - 1)) (type' <$> types)
+    types = extractTypes tpe
 
 
 classScopeSplit :: H.Type -> ([S.ClassConstraint], H.Type)
@@ -105,7 +106,6 @@ qTypeVar (H.QTypeVar x y) = S.QTypeVar (module' <$> x) (typeVar y)
 
 qTypeCtor :: H.QTypeCtor -> S.QTypeCtor
 qTypeCtor (H.QTypeCtor x y) = S.QTypeCtor (module' <$> x) (typeCtor y)
-
 
 
 

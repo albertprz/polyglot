@@ -21,13 +21,43 @@ wrapCurly :: String -> String
 wrapCurly = wrap "{" "}"
 
 wrapSpaces :: String -> String
-wrapSpaces = wrap " " " "
+wrapSpaces = wrapBoth " "
 
 wrapQuotes :: String -> String
-wrapQuotes = wrap "'" "'"
+wrapQuotes = wrapBoth "'"
+
+wrapBackQuotes :: String -> String
+wrapBackQuotes = wrapBoth "`"
 
 wrapDoubleQuotes :: String -> String
-wrapDoubleQuotes = wrap "\"" "\""
+wrapDoubleQuotes = wrapBoth "\""
+
+
+
+wrap' :: String -> String -> String -> String
+wrap' beg end x = beg ++ x ++ end
+
+wrapBoth' :: String -> String -> String
+wrapBoth' x = wrap' x x
+
+wrapParens' :: String -> String
+wrapParens' = wrap' "(" ")"
+
+wrapSquare' :: String -> String
+wrapSquare' = wrap' "[" "]"
+
+wrapCurly' :: String -> String
+wrapCurly' = wrap' "{" "}"
+
+wrapSpaces' :: String -> String
+wrapSpaces' = wrapBoth' " "
+
+wrapQuotes' :: String -> String
+wrapQuotes' = wrapBoth' "'"
+
+wrapDoubleQuotes' :: String -> String
+wrapDoubleQuotes' = wrapBoth' "\""
+
 
 
 wrapParensCsv :: Show a => [a] -> String
@@ -56,6 +86,7 @@ wrapContext :: String -> String
 wrapContext = intercalate "\n" . (indent 2 <$>) . lines
   where
     indent n x = when (hasSome x) (replicate n ' ' ++ x)
+
 
 
 str :: Show a => String -> [a] -> String

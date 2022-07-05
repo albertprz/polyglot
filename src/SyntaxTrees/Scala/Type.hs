@@ -1,6 +1,6 @@
 module SyntaxTrees.Scala.Type where
 
-import SyntaxTrees.Scala.Common (Modifier, Package, QTypeClass, TypeClass, Var,
+import SyntaxTrees.Scala.Common (Modifier, Package, QTypeClass, Var,
                                  Wrapper (..), showQualified)
 import Utils.Foldable           (wrapMaybe)
 import Utils.String

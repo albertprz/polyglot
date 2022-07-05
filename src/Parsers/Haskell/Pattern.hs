@@ -1,6 +1,6 @@
 module Parsers.Haskell.Pattern where
 
-import Parser                      (Parser)
+import Parser                      (Parser, exactly)
 import ParserCombinators           (IsMatch (is), anySepBy, sepByOp, (<|>),
                                     (|+), (|?))
 import Parsers.Char                (comma, underscore)
@@ -41,7 +41,7 @@ pattern' =  pattern'' <|> maybeWithinParens pattern''
     ctorElem' = record <|> recordWildcard <|> alias <|> elem' <|>
                 withinParens (ctor' <|> infixCtor)
 
-    aliasElem' = elem' <|> record <|> recordWildcard <|>
+    aliasElem' = exactly elem' <|> record <|> recordWildcard <|>
                  withinParens (ctor' <|> infixCtor)
 
     pattern'' = alias <|> infixCtor <|> ctor' <|> ctorElem'

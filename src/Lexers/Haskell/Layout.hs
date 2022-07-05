@@ -17,8 +17,8 @@ import Parsers.String         (spacing, withinDoubleQuotes, withinParens,
                                withinQuotes, word)
 import Utils.Foldable         (hasNone, hasSome)
 import Utils.List             (safeHead, safeTail)
-import Utils.String           (joinWords, wrapCurly, wrapDoubleQuotes,
-                               wrapParens, wrapQuotes)
+import Utils.String           (joinWords, wrapCurly', wrapDoubleQuotes',
+                               wrapParens', wrapQuotes')
 
 
 
@@ -54,15 +54,15 @@ layout (x, y, z, t) str = runParser layoutParser str
 
 
 parensLayout :: Parser [String]
-parensLayout = (((spacing |?) >>> elem' <|>
-                 parensParser <|>
-                (wrapParens . fold <$> withinParens parensLayout) >>>
-                (spacing |?)) |*)
+parensLayout = (((spacing |?) >>> elem'
+               <|> parensParser
+               <|> (wrapParens' . fold <$> withinParens parensLayout) >>>
+                   (spacing |?)) |*)
   where
     elem' = lexeme' id
-    parensParser = wrapParens <$> withinParens
+    parensParser = wrapParens' <$> withinParens
                 ((spacing |?) >>> layoutBegin >>> spacing >>>
-                 (wrapCurly . fold <$> parensLayout))
+                 (wrapCurly' . fold <$> parensLayout))
 
 
 
@@ -90,10 +90,10 @@ otherText = fold <$>
 
 
 lexeme :: Parser String
-lexeme = wrapDoubleQuotes  <$> withinDoubleQuotes (isNot '"'  |*)             <|>
-         wrapQuotes . pure <$> withinQuotes (char <|> ((is '\\' |?) *> char)) <|>
-         anyComment <|>
-         word
+lexeme = wrapDoubleQuotes'      <$> withinDoubleQuotes (isNot '"'  |+)
+         <|> wrapQuotes' . pure <$> withinQuotes (char <|> ((is '\\' |?) *> char))
+         <|> anyComment
+         <|> word
 
 
 
@@ -104,10 +104,10 @@ otherText' = lexeme' (check "" (`notElem` layoutTokens))
 lexeme' :: (Parser String -> Parser String) -> Parser String
 lexeme' f = (spacing |?) >>> f parser >>> (spacing |?)
   where
-    parser = wrapDoubleQuotes  <$> withinDoubleQuotes (isNot '"'  |*)             <|>
-             wrapQuotes . pure <$> withinQuotes (char <|> ((is '\\' |?) *> char)) <|>
-             anyComment <|>
-             word'
+    parser = wrapDoubleQuotes'      <$> withinDoubleQuotes (isNot '"'  |+)
+             <|> wrapQuotes' . pure <$> withinQuotes (char <|> (is '\\' |?) *> char)
+             <|> anyComment
+             <|> word'
 
 word' :: Parser String
 word' = ((noneOf [' ', '\n', '\t', '(', ')']) |+)

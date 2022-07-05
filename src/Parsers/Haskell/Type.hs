@@ -1,5 +1,6 @@
 module Parsers.Haskell.Type where
 
+
 import Parser                   (Parser)
 import ParserCombinators        (IsMatch (is), manySepBy, someSepBy, (<|>),
                                  (|+))
@@ -45,7 +46,7 @@ type' = typeScope <|> classScope <|> type'' <|> maybeWithinParens (type'')
   where
     type'' = arrow <|> typeApply <|> elem'
 
-    typeApply = CtorTypeApply   <$> qTypeCtor <*> (typeApplyElem |+) <|>
+    typeApply = CtorTypeApply   <$> typeCtor' <*> (typeApplyElem |+) <|>
                 ParamTypeApply  <$> typeParam <*> (typeApplyElem |+) <|>
                 NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
 
@@ -56,7 +57,8 @@ type' = typeScope <|> classScope <|> type'' <|> maybeWithinParens (type'')
     list  = CtorTypeApply (QTypeCtor Nothing ListType)
             <$> (pure <$> withinSquareBrackets type'')
 
-    typeVar'   = TypeVar'   <$> qTypeVar
+    typeCtor'  = qTypeCtor <|> QTypeCtor Nothing <$> typeCtor
+    typeVar'   = TypeVar'   <$> (qTypeVar <|> QTypeVar Nothing <$> typeVar)
     typeParam' = TypeParam' <$> typeParam
 
     typeScope = TypeScope <$> (is "forall" *> someSepBy dot typeParam <* dot)

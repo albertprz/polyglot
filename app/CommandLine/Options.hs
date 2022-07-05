@@ -1,39 +1,39 @@
 module CommandLine.Options where
 
 import Options.Applicative (Parser, ParserInfo, fullDesc, header, help, helper,
-                            info, long, optional, progDesc, short, strOption,
-                            switch, (<**>))
+                            info, long, progDesc, short, strOption, switch,
+                            (<**>))
 
 
 data Opts
   = Opts
       { sourcePath :: FilePath
-      , targetPath :: Maybe FilePath
-      , watchMode  :: Bool
+      , targetPath :: FilePath
       , autoFormat :: Bool
+      , watchMode  :: Bool
       }
 
 opts :: Parser Opts
 opts = Opts
     <$> strOption
-        ( long "source"
-        <> short 's'
-        <> help "Path of input Haskell file (required)" )
-    <*> optional (strOption
-        ( long "target"
-        <> short 't'
-        <> help "Path of output Scala file" ))
+        ( long "input"
+        <> short 'i'
+        <> help "Path of input Haskell file or directory" )
+    <*> strOption
+        ( long "output"
+        <> short 'o'
+        <> help "Path of output Scala file or directory" )
+    <*> switch
+        ( long "format"
+        <> short 'f'
+        <> help "Apply Scala formatter (scalafmt) on output file(s)" )
     <*> switch
         ( long "watch"
         <> short 'w'
         <> help "Watch for changes and convert automatically" )
-    <*> switch
-        ( long "format"
-        <> short 'f'
-        <> help "Apply formatter on target file" )
 
 optsInfo :: ParserInfo Opts
 optsInfo = info (opts <**> helper)
            ( fullDesc
-           <> progDesc "Transpile a Haskell file into Scala"
+           <> progDesc "Translate Haskell file(s) into Scala"
            <> header "haskala" )

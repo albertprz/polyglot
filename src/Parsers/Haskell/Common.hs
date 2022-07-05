@@ -17,18 +17,19 @@ import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
                                    QCtor (..), QCtorOp (..), QVar (..),
                                    QVarOp (..), Var (..), VarOp (..))
 import Utils.Foldable             (wrapMaybe)
-import Utils.String               (wrap, wrapBoth)
+import Utils.String               (wrap, wrapBackQuotes, wrapBoth)
 
 
 
 literal :: Parser Literal
-literal = UnitLit <$ is "()" <|>
-          BoolLit <$> (True <$ is "True" <|> False <$ is "False") <|>
-          IntLit . show <$> int <|>
-          FloatLit . show <$> double <|>
-          CharLit <$> withinQuotes (noneOf  ['\'', '\\']) <|>
-          CharLit <$> withinQuotes (is '\\' *> char) <|>
-          StringLit <$> withinDoubleQuotes (isNot '"' |*)
+literal = token $
+  UnitLit <$ is "()" <|>
+  BoolLit <$> (True <$ is "True" <|> False <$ is "False") <|>
+  IntLit . show <$> int <|>
+  FloatLit . show <$> double <|>
+  CharLit <$> withinQuotes (noneOf  ['\'', '\\']) <|>
+  CharLit <$> withinQuotes (is '\\' *> char) <|>
+  StringLit <$> withinDoubleQuotes (isNot '"' |*)
 
 
 var :: Parser Var
@@ -41,11 +42,13 @@ ctor = Ctor <$> notReserved
 
 varOp :: Parser VarOp
 varOp = VarOp <$> notReserved
-                 (withinBackQuotes (ident lower) <|> operator opSymbol)
+                 (wrapBackQuotes <$> withinBackQuotes (ident lower)
+                  <|> operator opSymbol)
 
 ctorOp :: Parser CtorOp
 ctorOp = CtorOp <$> notReserved
-                    (withinBackQuotes (ident upper) <|> operator colon)
+                    (wrapBackQuotes <$> withinBackQuotes (ident upper)
+                     <|> operator colon)
 
 class' :: Parser Class
 class' = Class <$> ident upper

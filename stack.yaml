@@ -6,9 +6,11 @@ resolver:
 extra-deps:
 
 - bookhound-0.1.9.0
-- filepath-1.4.2.2
 - optparse-applicative-0.17.0.0
+- directory-tree-0.12.1
 - fsnotify-0.3.0.1
+- filepath-1.4.2.2
+
 - extra-1.7.10
 - utility-ht-0.0.16
 

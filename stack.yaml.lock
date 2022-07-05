@@ -12,13 +12,6 @@ packages:
   original:
     hackage: bookhound-0.1.9.0
 - completed:
-    hackage: filepath-1.4.2.2@sha256:3622cbc524093b18af0235249087546473ab04e9fe275967680e97755a9eae6b,2225
-    pantry-tree:
-      size: 784
-      sha256: e8aa0c8f41f1f6801cbbc5e0f0bff434edc0fb7b9d822ec2690240051393d19b
-  original:
-    hackage: filepath-1.4.2.2
-- completed:
     hackage: optparse-applicative-0.17.0.0@sha256:0713e54cbb341e5cae979e2ac441eb3a5ff42e303001f432bd58c19e5638bdda,4967
     pantry-tree:
       size: 3124
@@ -26,12 +19,26 @@ packages:
   original:
     hackage: optparse-applicative-0.17.0.0
 - completed:
+    hackage: directory-tree-0.12.1@sha256:6f24ee1eca965a199a96f853582e61a338f1a529c87bc02c7f1451e2f2ed03fe,3170
+    pantry-tree:
+      size: 396
+      sha256: 0f85bb0fb6d6d6841cc250eb4538c3ab0ac1ceb967089d6322446b8a777bbcf7
+  original:
+    hackage: directory-tree-0.12.1
+- completed:
     hackage: fsnotify-0.3.0.1@sha256:fbec8cddd3f991d5b905df16895c67717b0f580e1ef33de34d93de814af1a08a,2988
     pantry-tree:
       size: 1130
       sha256: 37a2111006e61b752f3d4690dc81d76a4cedf3415dc486779addb2a033f5de58
   original:
     hackage: fsnotify-0.3.0.1
+- completed:
+    hackage: filepath-1.4.2.2@sha256:3622cbc524093b18af0235249087546473ab04e9fe275967680e97755a9eae6b,2225
+    pantry-tree:
+      size: 784
+      sha256: e8aa0c8f41f1f6801cbbc5e0f0bff434edc0fb7b9d822ec2690240051393d19b
+  original:
+    hackage: filepath-1.4.2.2
 - completed:
     hackage: extra-1.7.10@sha256:e384751317577554f873812358fab022da02aa9a286c9341308fac83f4d766c5,2691
     pantry-tree:

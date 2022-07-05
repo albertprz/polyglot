@@ -4,6 +4,9 @@ import SyntaxTrees.Haskell.Common  (Literal, QCtor, QCtorOp, QVar, QVarOp, Var)
 import SyntaxTrees.Haskell.Pattern (Pattern)
 import SyntaxTrees.Haskell.Type    (Type)
 
+
+-- TODO: Support Record Apply & Record Update syntax
+
 data FnSig
   = FnSig
       { name  :: Var
