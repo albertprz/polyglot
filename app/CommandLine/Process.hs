@@ -5,7 +5,8 @@ import           Lexers.Haskell.Layout     (adaptLayout)
 import           Parser                    (ParseError, runParser)
 import qualified Parsers.Haskell.ModuleDef as Parser (moduleDef)
 
-import System.FilePath (replaceFileName, takeDirectory, takeExtensions,
+import System.FilePath (equalFilePath, joinPath, replaceFileName,
+                        splitDirectories, takeDirectory, takeExtensions,
                         takeFileName, (-<.>), (</>))
 import System.FSNotify (Action, ActionPredicate, Event (..), watchTree,
                         withManager)
@@ -13,6 +14,7 @@ import System.FSNotify (Action, ActionPredicate, Event (..), watchTree,
 import CommandLine.Options (Opts (..))
 import Control.Concurrent  (threadDelay)
 import Control.Monad       (forever, when)
+import Control.Monad.Extra (andM)
 import Utils.Functor       ((<$$>))
 import Utils.Monad         ((>>.))
 
@@ -23,20 +25,22 @@ import System.Directory.Tree (AnchoredDirTree (..), DirTree (..), failures,
 
 import           Control.Monad.Extra                  (whenM)
 import qualified Conversions.HaskellToScala.ModuleDef as Conversions
-import           Data.Foldable                        (traverse_)
+import           Data.Foldable                        (foldl', traverse_)
 import           Debug.Trace                          (trace)
 import           System.Directory.Extra               (createDirectoryIfMissing,
                                                        doesDirectoryExist,
                                                        removeDirectoryRecursive,
-                                                       removeFile)
+                                                       removeFile, getHomeDirectory)
 import           System.Process.Extra                 (callProcess, readProcess)
 
 
 
 process :: Opts -> IO ()
 process opts@Opts{watchMode, sourcePath, targetPath}
-  | isDir sourcePath && not (isDir targetPath) = trace "Did not meet cond" $
-      fail "If inputPath is a directory then outputPath must be a directory as well"
+  | isDir sourcePath && not (isDir targetPath) =
+      fail "If the input path is a directory then the output path must be a directory as well"
+  | equalFilePath sourcePath targetPath =
+      fail "The output path cannot be the same as the input path"
   | watchMode                      = trace "Watching..." $ watchPath opts
   | null (takeFileName sourcePath) = trace "Multiple actions" $ actions opts
   | otherwise                      = trace "Single action" $ action opts emitError
@@ -66,16 +70,18 @@ action Opts{sourcePath, targetPath, autoFormat} errorAction =
 
 
 actions :: Opts -> IO ()
-actions Opts{sourcePath, targetPath, autoFormat} =
-  removeDirIfExists targetPath
+actions Opts{sourcePath, targetPath, autoFormat, clearContents} =
+  when clearContents (removeDirIfExists targetPath)
   >>= const (migrateDirTree sourcePath targetPath)
   >>= writeDirectory
   >>= (traverse_ reportFailure) . failures . dirTree
   >>= const format
 
   where
-    removeDirIfExists fp = whenM (doesDirectoryExist fp)
+    removeDirIfExists fp = whenM (removeDirPred fp)
                                  (removeDirectoryRecursive fp)
+    removeDirPred fp = andM [doesDirectoryExist fp,
+                             (/= fp) <$> getHomeDirectory]
     migrateDirTree fp1 fp2 = convertDirTree
                              </$> (moveTree fp2 <$> readDirectory fp1)
     format = when autoFormat $ callProcess formatterExec [targetPath]
@@ -114,7 +120,11 @@ convertDirTree x = x
 
 
 moveTree :: FilePath -> AnchoredDirTree a -> AnchoredDirTree a
-moveTree path (x :/ (Dir _ y)) = x  :/  Dir (takeDirectory path) y
+moveTree path (x :/ y@(Dir _ _)) = trace (name newDirTree) $ x :/ newDirTree
+  where
+    newDirTree = foldr (\curr acc -> Dir curr [acc]) y dirs
+    dirs = splitDirectories $ takeDirectory path
+
 moveTree _ x                   = x
 
 
@@ -162,6 +172,7 @@ getWatchPath fp Opts{sourcePath, targetPath} =
 
 isDir :: FilePath -> Bool
 isDir = null . takeFileName
+
 
 formatterExec :: FilePath
 formatterExec = "scalafmt"

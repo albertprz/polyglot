@@ -11,6 +11,7 @@ data Opts
       , targetPath :: FilePath
       , autoFormat :: Bool
       , watchMode  :: Bool
+      , clearContents :: Bool
       }
 
 opts :: Parser Opts
@@ -31,6 +32,9 @@ opts = Opts
         ( long "watch"
         <> short 'w'
         <> help "Watch for changes and convert automatically" )
+    <*> switch
+        ( long "clear"
+        <> help "Clear the output directory contents before conversion" )
 
 optsInfo :: ParserInfo Opts
 optsInfo = info (opts <**> helper)
