@@ -1,37 +1,37 @@
 module CommandLine.Process where
 
 
-import           Lexers.Haskell.Layout     (adaptLayout)
-import           Parser                    (ParseError, runParser)
-import qualified Parsers.Haskell.ModuleDef as Parser (moduleDef)
+import Lexers.Haskell.Layout (adaptLayout)
+import Parser                (ParseError, runParser)
 
-import System.FilePath (equalFilePath, joinPath, replaceFileName,
-                        splitDirectories, takeDirectory, takeExtensions,
-                        takeFileName, (-<.>), (</>))
-import System.FSNotify (Action, ActionPredicate, Event (..), watchTree,
-                        withManager)
 
 import CommandLine.Options (Opts (..))
 import Control.Concurrent  (threadDelay)
-import Control.Monad       (forever, when)
-import Control.Monad.Extra (andM)
-import Utils.Functor       ((<$$>))
+import Control.Monad       (forever, join, when)
+import Control.Monad.Extra (andM, whenM)
+import Data.Foldable       (traverse_)
+import Data.Tuple.Extra    (both)
+import Utils.Functor       ((<<$>>))
 import Utils.Monad         ((>>.))
 
+import System.Directory       (canonicalizePath)
+import System.Directory.Extra (createDirectoryIfMissing, doesDirectoryExist,
+                               getHomeDirectory, removeDirectoryRecursive,
+                               removeFile)
+import System.Directory.Tree  (AnchoredDirTree (..), DirTree (..), failures,
+                               readDirectory, writeDirectory, (</$>))
+import System.FilePath        (equalFilePath, joinPath, normalise,
+                               replaceFileName, splitDirectories, splitPath,
+                               takeDirectory, takeExtensions, takeFileName,
+                               (-<.>), (</>))
+import System.FSNotify        (Action, ActionPredicate, Event (..), watchTree,
+                               withManager)
+import System.Process.Extra   (callProcess, readProcess)
 
-import System.Directory.Tree (AnchoredDirTree (..), DirTree (..), failures,
-                              readDirectory, writeDirectory, (</$>))
 
-
-import           Control.Monad.Extra                  (whenM)
 import qualified Conversions.HaskellToScala.ModuleDef as Conversions
-import           Data.Foldable                        (foldl', traverse_)
-import           Debug.Trace                          (trace)
-import           System.Directory.Extra               (createDirectoryIfMissing,
-                                                       doesDirectoryExist,
-                                                       removeDirectoryRecursive,
-                                                       removeFile, getHomeDirectory)
-import           System.Process.Extra                 (callProcess, readProcess)
+import qualified Parsers.Haskell.ModuleDef            as Parser
+
 
 
 
@@ -41,13 +41,13 @@ process opts@Opts{watchMode, sourcePath, targetPath}
       fail "If the input path is a directory then the output path must be a directory as well"
   | equalFilePath sourcePath targetPath =
       fail "The output path cannot be the same as the input path"
-  | watchMode                      = trace "Watching..." $ watchPath opts
-  | null (takeFileName sourcePath) = trace "Multiple actions" $ actions opts
-  | otherwise                      = trace "Single action" $ action opts emitError
+  | watchMode                      = watchPath opts
+  | null (takeFileName sourcePath) = actions opts
+  | otherwise                      = action emitError opts
 
 
-action :: Opts -> (ParseError -> IO ()) -> IO ()
-action Opts{sourcePath, targetPath, autoFormat} errorAction =
+action :: (ParseError -> IO ()) -> Opts -> IO ()
+action errorAction Opts{sourcePath, targetPath, autoFormat} =
   readFile sourcePath
   >>= traverse format . toScala
   >>= either errorAction createDirAndWriteFile
@@ -58,6 +58,7 @@ action Opts{sourcePath, targetPath, autoFormat} errorAction =
 
     finalDir    = takeDirectory finalPath
     finalPath   = pathToScala targetPath'
+
     targetPath' = if isDir targetPath then
                     replaceFileName targetPath (takeFileName sourcePath)
                   else
@@ -83,13 +84,16 @@ actions Opts{sourcePath, targetPath, autoFormat, clearContents} =
     removeDirPred fp = andM [doesDirectoryExist fp,
                              (/= fp) <$> getHomeDirectory]
     migrateDirTree fp1 fp2 = convertDirTree
-                             </$> (moveTree fp2 <$> readDirectory fp1)
+                             </$> (moveTree fp1 fp2 <$> readDirectory fp1)
     format = when autoFormat $ callProcess formatterExec [targetPath]
 
-watchPath :: Opts -> IO b
-watchPath opts@Opts {sourcePath} =
-  withManager (\mgr -> watchTree mgr dir pred' (watchAction opts) *> loop)
 
+watchPath :: Opts -> IO ()
+watchPath opts@Opts {sourcePath} =
+  withManager (\mgr -> watchTree mgr dir pred' (watchAction opts)
+                     *> putStrLn ("Watching on: " ++ sourcePath)
+                     *> putStrLn ". . ."
+                     *> loop)
   where
     dir = takeDirectory sourcePath
     fileName = takeFileName sourcePath
@@ -100,32 +104,30 @@ watchPath opts@Opts {sourcePath} =
 toScala :: String -> Either ParseError String
 toScala =  adaptLayout >>. convert
   where
-    convert = (show . Conversions.moduleDef) <$$> runParser Parser.moduleDef
-
-pathToScala :: FilePath -> FilePath
-pathToScala = (-<.> "scala")
+    convert = show . Conversions.moduleDef <<$>> runParser Parser.moduleDef
 
 
 convertDirTree :: DirTree String -> DirTree String
 convertDirTree (File x y)
-  | takeExtensions x `elem` [".hs", ".lhs"] =
-    applyTransform y
+  | isHaskellFile x = applyTransform y
     where
       applyTransform = either (Failed x . userError . const "Parse Error")
-                              (File $ pathToScala x) .
-                      toScala
+                              (File $ pathToScala x)
+                       . toScala
 
 convertDirTree (Dir x y) = Dir x (convertDirTree <$> y)
 convertDirTree x = x
 
 
-moveTree :: FilePath -> AnchoredDirTree a -> AnchoredDirTree a
-moveTree path (x :/ y@(Dir _ _)) = trace (name newDirTree) $ x :/ newDirTree
+moveTree :: FilePath -> FilePath -> AnchoredDirTree a -> AnchoredDirTree a
+moveTree fp1 fp2 (_ :/ x@(Dir _ _)) = "." :/ newDirTree
   where
-    newDirTree = foldr (\curr acc -> Dir curr [acc]) y dirs
-    dirs = splitDirectories $ takeDirectory path
-
-moveTree _ x                   = x
+    newDirTree    = foldr (\curr acc -> Dir curr [acc]) prunedDirTree
+                                                      (init outputDirs)
+    prunedDirTree = Dir (last outputDirs) (getDirTreeContents (length inputDirs) x)
+    (inputDirs, outputDirs) = both (splitDirectories . takeDirectory . normalise)
+                                   (fp1, fp2)
+moveTree _ _ x                      = x
 
 
 
@@ -138,14 +140,15 @@ reportFailure _ = pure ()
 watchAction :: Opts -> Action
 watchAction opts (Added fp _ _)    = transformAction fp opts
 watchAction opts (Modified fp _ _) = transformAction fp opts
-watchAction opts (Removed fp _ _)  = removeFile $ getWatchPath fp opts
+watchAction opts (Removed fp _ _)  = join $ removeFile <$> getWatchPath fp opts
 watchAction _ _                    = pure ()
 
 
 transformAction :: FilePath -> Opts -> IO ()
-transformAction fp opts = action newOpts (const $ pure ())
+transformAction fp opts = join $ action (const $ pure ()) <$> newOpts
   where
-    newOpts = opts{sourcePath = fp, targetPath = getWatchPath fp opts}
+    newOpts = (\x -> opts{sourcePath = fp, targetPath = x})
+              <$> getWatchPath fp opts
 
 
 
@@ -157,28 +160,41 @@ watchPred _ _                 = False
 
 
 filePathPred :: Foldable t => FilePath -> t FilePath -> Bool
-filePathPred fp x = extension `elem` [".hs", ".lhs"]
+filePathPred fp x = isHaskellFile fp
                     && all (== fileName) x
   where
     fileName = takeFileName fp
-    extension = takeExtensions fp
 
-getWatchPath :: FilePath -> Opts -> FilePath
+getWatchPath :: FilePath -> Opts -> IO FilePath
 getWatchPath fp Opts{sourcePath, targetPath} =
-  maybe targetPath (targetPath </>) (wrapMaybe (fp `diffPath` sourcePath))
+  maybe targetPath (targetPath </>) . wrapMaybe <$> prunedPath
   where
-    diffPath fp1 fp2 = drop (length fp2) fp1
+    prunedPath          = diffPath <$> traverse canonicalizePath (fp, sourcePath)
+    diffPath (fp1, fp2) = joinPath $ drop (length $ splitPath fp2)
+                                          (splitPath fp1)
+
+
+getDirTreeContents :: Int -> DirTree a -> [DirTree a]
+getDirTreeContents 0 x         = [x]
+getDirTreeContents n (Dir _ x) = getDirTreeContents (n - 1) =<< x
+getDirTreeContents _ x         = [x]
+
 
 
 isDir :: FilePath -> Bool
 isDir = null . takeFileName
 
+isHaskellFile :: FilePath -> Bool
+isHaskellFile = (`elem` [".hs", ".lhs"]) . takeExtensions
+
+pathToScala :: FilePath -> FilePath
+pathToScala = (-<.> "scala")
 
 formatterExec :: FilePath
 formatterExec = "scalafmt"
 
 emitError :: ParseError -> IO ()
-emitError = error . ("\n\n" ++) . show
+emitError = fail . ("\n\n" ++) . take 50 . show
 
 wrapMaybe :: Foldable t => t a -> Maybe (t a)
 wrapMaybe x = if (not . null) x then Just x else Nothing

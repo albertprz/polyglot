@@ -100,9 +100,10 @@ library
       base >=4.7 && <5
     , bookhound >=0.1.9 && <0.2
     , containers
+    , directory >=1.3.7.0 && <1.4
     , directory-tree >=0.12.1 && <0.13
     , extra >=1.7.10 && <1.8
-    , filepath >=1.4.2.2
+    , filepath >=1.4.2.2 && <1.5
     , fsnotify >=0.3.0.1 && <0.4
     , optparse-applicative >=0.17.0 && <0.18
     , utility-ht >=0.0.16
@@ -154,9 +155,10 @@ executable haskala-exe
       base >=4.7 && <5
     , bookhound >=0.1.9 && <0.2
     , containers
+    , directory >=1.3.7.0 && <1.4
     , directory-tree >=0.12.1 && <0.13
     , extra >=1.7.10 && <1.8
-    , filepath >=1.4.2.2
+    , filepath >=1.4.2.2 && <1.5
     , fsnotify >=0.3.0.1 && <0.4
     , haskala
     , optparse-applicative >=0.17.0 && <0.18

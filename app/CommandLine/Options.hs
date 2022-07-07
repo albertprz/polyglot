@@ -1,16 +1,15 @@
 module CommandLine.Options where
 
 import Options.Applicative (Parser, ParserInfo, fullDesc, header, help, helper,
-                            info, long, progDesc, short, strOption, switch,
-                            (<**>))
+                            info, long, progDesc, short, strOption, switch)
 
 
 data Opts
   = Opts
-      { sourcePath :: FilePath
-      , targetPath :: FilePath
-      , autoFormat :: Bool
-      , watchMode  :: Bool
+      { sourcePath    :: FilePath
+      , targetPath    :: FilePath
+      , autoFormat    :: Bool
+      , watchMode     :: Bool
       , clearContents :: Bool
       }
 
@@ -37,7 +36,7 @@ opts = Opts
         <> help "Clear the output directory contents before conversion" )
 
 optsInfo :: ParserInfo Opts
-optsInfo = info (opts <**> helper)
+optsInfo = info (helper <*> opts)
            ( fullDesc
            <> progDesc "Translate Haskell file(s) into Scala"
            <> header "haskala" )
