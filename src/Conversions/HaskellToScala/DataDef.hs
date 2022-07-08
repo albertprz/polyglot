@@ -28,8 +28,11 @@ dataCtorDef (H.NamedFieldsCtor x y) = S.EnumCaseDef (ctor x)
         [S.ArgList $ namedFieldDef <$> y] [] [] []
 dataCtorDef (H.UnNamedFieldsCtor x y) = S.EnumCaseDef (ctor x)
         [S.ArgList $ uncurry unNamedFieldDef <$> zip autoIds y] [] [] []
- where
-   autoIds = ("value" ++) . show  <$> [1 :: Integer ..]
+  where
+    autoIds = ("value" ++) . show <$> nums
+
+    nums :: [Integer]
+    nums = iterate (+ 1) 1
 
 
 fieldDef :: H.FieldDef -> S.ArgField

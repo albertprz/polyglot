@@ -179,8 +179,9 @@ getDirTreeContents 0 x         = [x]
 getDirTreeContents n (Dir _ x) =  x  >>= getDirTreeContents (n - 1)
 getDirTreeContents _ x         = [x]
 
+filterPred :: DirTree a -> Bool
 filterPred (Dir x _) = (not . isPrefixOf ".")  x
-filterPred x         = True
+filterPred _         = True
 
 
 isDir :: FilePath -> Bool

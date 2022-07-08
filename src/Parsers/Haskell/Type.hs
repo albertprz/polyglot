@@ -33,8 +33,10 @@ anyKindedType = TypeValue <$> type'     <|>
 
 
 classConstraints :: Parser Type -> Parser [ClassConstraint]
-classConstraints typeParser = tupleOf (classConstraint typeParser) <|>
-                pure <$> classConstraint typeParser
+classConstraints typeParser =
+  tupleOf (classConstraint typeParser)
+  <|> pure <$> maybeWithinParens (classConstraint typeParser)
+
 
 classConstraint :: Parser Type -> Parser ClassConstraint
 classConstraint typeParser = ClassConstraint <$> qClass <*> (typeParser |+)

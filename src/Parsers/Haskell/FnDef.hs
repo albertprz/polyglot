@@ -5,15 +5,15 @@ import Data.Maybe                (maybeToList)
 import Lexers.Haskell.Layout     (lexeme)
 import Parser
 import ParserCombinators
-import Parsers.Char              (comma, dot)
+import Parsers.Char              (comma, dot, space)
 import Parsers.Collections       (listOf, tupleOf)
 import Parsers.Haskell.Common    (literal, nonTokenQVar, qCtor, qCtorOp, qVar,
                                   qVarOp, token, var, varOp)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
 import Parsers.Number            (int)
-import Parsers.String            (spacing, string, withinCurlyBrackets,
-                                  withinParens)
+import Parsers.String            (maybeWithinParens, spacing, string,
+                                  withinCurlyBrackets, withinParens)
 import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
@@ -47,7 +47,7 @@ fnDefOrSig = Def <$> fnDef <|>
              Sig <$> fnSig
 
 fnBody :: Parser FnBody
-fnBody = openForm <|> withinParens openForm
+fnBody = openForm
 
   where
     fnApply = FnApply <$> delimitedForm <*> (delimitedForm |+)
@@ -56,10 +56,10 @@ fnBody = openForm <|> withinParens openForm
        (complexInfixForm <|> withinParens complexInfixForm <|> singleForm)
 
     leftOpSection = uncurry LeftOpSection <$>
-      withinParens ((,) <$> fnOp <*> delimitedForm)
+      withinParens ((,) <$> fnOp <*> openForm)
 
     rightOpSection = uncurry RightOpSection <$>
-      withinParens ((,) <$> delimitedForm <*> fnOp)
+      withinParens ((,) <$> openForm <*> fnOp)
 
     postfixOpSection = uncurry PostFixOpSection <$>
       withinParens ((,) <$> openForm <*> fnOp)
@@ -68,7 +68,7 @@ fnBody = openForm <|> withinParens openForm
     opSection = leftOpSection <|> rightOpSection
 
 
-    lambdaExpr = LambdaExpr <$> (is '\\' *> someSepBy comma var)
+    lambdaExpr = LambdaExpr <$> (is '\\' *> (tupleOf var <|> (var |*)))
                             <*> (is "->" *> openForm)
 
     letExpr = LetExpr <$> (is "let" *> withinContext fnDefOrSig)
@@ -105,8 +105,10 @@ fnBody = openForm <|> withinParens openForm
     literal' = Literal' <$> literal
 
     openForm = complexForm <|> singleForm
+               <|> withinParens (complexForm <|> singleForm)
 
     delimitedForm = singleForm <|> withinParens complexForm
+                    <|> withinParens singleForm
 
     singleForm = fnVar <|> literal' <|> tuple <|> list <|> opSection
                        <|> postfixOpSection

@@ -37,12 +37,12 @@ sortByKey f x = sortBy (\a b -> f a `compare` f b) x
 zipWithKey :: Eq a => [(a, b)] ->  [(a, c)] -> [(b, Maybe c)]
 zipWithKey x y = (\a ->  (snd a, snd <$> (find (\b -> fst a == fst b) y))) <$> x
 
-mergeUnion :: (Eq a) => [(a, b)] -> [(a, c)] -> [(Maybe b, Maybe c)]
+
+mergeUnion :: Eq a => [(a, b)] -> [(a, c)] -> [(Maybe b, Maybe c)]
 mergeUnion x y =  a ++ b
   where
     a = (first Just) <$> zipWithKey x y
     b = (tupleReverse . (first Just)) <$> zipWithKey y x
-
 
 
 

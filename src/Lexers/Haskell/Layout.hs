@@ -44,13 +44,13 @@ layout (x, y, z, t) str = runParser layoutParser str
          let layoutNextLine = hasSome layoutText && hasNone rest
          let contextIndent = length $ spaces' ++ start ++ fold layoutText ++ spaces''
          let (newIndents, beginSep, stop) = calcIndent indents (length spaces')
-                                                               (t || hasCurly)
+                                (t || hasCurly)
          let endSep = when (hasSome layoutText && not hasCurly) " {"
          let indents' = when (hasSome layoutText && hasSome rest)
                         [contextIndent] ++ newIndents
          let text = x ++ [spaces' ++ beginSep ++ start ++ fold layoutText ++
                           endSep ++  spaces'' ++ rest]
-         pure $ (text, indents', layoutNextLine, stop)
+         pure $ (text, indents', layoutNextLine, stop || hasCurly)
 
 
 parensLayout :: Parser [String]
@@ -70,7 +70,7 @@ calcIndent :: [Int] -> Int -> Bool -> ([Int], String, Bool)
 calcIndent indentLvls curr stop =
   (newIndentLvls, joinWords [closeContexts, sep], shouldStop)
   where
-    extraElems = if (not stop) then extra else fold $ safeTail extra
+    extraElems = if not stop then extra else fold $ safeTail extra
     closeContexts = fold ("} " <$ extraElems)
     shouldStop = stop && hasNone extra
     sep = when (any (== curr) (safeHead newIndentLvls)) "; "

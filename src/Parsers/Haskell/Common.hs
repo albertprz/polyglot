@@ -7,8 +7,8 @@ import Parser                     (Parser, check, withTransform)
 import ParserCombinators          (IsMatch (inverse, is, isNot, noneOf, oneOf),
                                    maybeWithin, someSepBy, within, withinBoth,
                                    (<|>), (>>>), (|*), (|+), (|?))
-import Parsers.Char               (alphaNum, char, colon, dot, lower, newLine,
-                                   quote, underscore, upper)
+import Parsers.Char               (alpha, alphaNum, char, colon, dot, lower,
+                                   newLine, quote, underscore, upper)
 import Parsers.Number             (double, int)
 import Parsers.String             (spacing, withinDoubleQuotes, withinParens,
                                    withinQuotes)
@@ -17,24 +17,31 @@ import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
                                    QCtor (..), QCtorOp (..), QVar (..),
                                    QVarOp (..), Var (..), VarOp (..))
 import Utils.Foldable             (wrapMaybe)
-import Utils.String               (wrap, wrapBackQuotes)
+import Utils.String               (wrap, wrapBackQuotes, wrapQuotes)
 
 
 
 literal :: Parser Literal
 literal = token $
-  UnitLit <$ is "()" <|>
-  BoolLit <$> (True <$ is "True" <|> False <$ is "False") <|>
-  IntLit . show <$> int <|>
-  FloatLit . show <$> double <|>
-  CharLit <$> withinQuotes (noneOf  ['\'', '\\']) <|>
-  CharLit <$> withinQuotes (is '\\' *> char) <|>
-  StringLit <$> withinDoubleQuotes (isNot '"' |*)
+      UnitLit <$ is "()"
+  <|> BoolLit <$> (True <$ is "True" <|> False <$ is "False")
+  <|> IntLit   . show <$> int
+  <|> FloatLit . show <$> double
+  <|> CharLit   <$> withinQuotes        (charLit   <|> charLitEscaped)
+  <|> StringLit <$> withinDoubleQuotes ((stringLit <|> charLitEscaped) |*)
+
+  where
+    charLit = noneOf ['\'', '\\']
+    charLitEscaped = read . wrapQuotes <$> (is '\\' >>> alpha)
+                     <|> (is '\\' *> char)
+    stringLit = noneOf ['"', '\\']
+
 
 
 var :: Parser Var
 var = Var <$> notReserved
-              (withinParens (operator opSymbol) <|> ident lower)
+              (withinParens (operator opSymbol <|> simpleOperator <|> simpleOperatorFn)
+               <|> ident lower)
 
 ctor :: Parser Ctor
 ctor = Ctor <$> notReserved
@@ -43,7 +50,7 @@ ctor = Ctor <$> notReserved
 varOp :: Parser VarOp
 varOp = VarOp <$> notReserved
                  (wrapBackQuotes <$> withinBackQuotes (ident lower)
-                  <|> operator opSymbol)
+                  <|> (operator opSymbol <|> simpleOperator))
 
 ctorOp :: Parser CtorOp
 ctorOp = CtorOp <$> notReserved
@@ -83,6 +90,12 @@ operator :: Parser Char -> Parser String
 operator start = token $ (:) <$> start
                              <*> ((opSymbol <|> colon) |*)
 
+simpleOperator :: Parser String
+simpleOperator = token $ pure <$> oneOf [':']
+
+simpleOperatorFn :: Parser String
+simpleOperatorFn = token $ pure <$> oneOf [',']
+
 nonTokenQVar :: Parser QVar
 nonTokenQVar = uncurry QVar <$> qTerm x
   where  x = Var <$> check "" (`notElem` reservedKeyWords)
@@ -107,8 +120,11 @@ qTerm x =  (,) <$> ((module'' <* dot) |?) <*> x
 
 
 qTerm' :: (String -> b) -> Parser (Maybe Module, b)
-qTerm' fn = token $ do Module xs <- module''
-                       pure $ (Module <$> wrapMaybe (init xs), fn $ last xs)
+qTerm' fn = token parser
+  where
+    parser = do xs <- getComponents <$> module''
+                pure $ (Module <$> wrapMaybe (init xs), fn $ last xs)
+    getComponents (Module xs) = xs
 
 
 anyComment :: Parser String
@@ -127,7 +143,6 @@ blockComment = wrap "{-"  "-}" . fold <$> withinBoth (is "{-") (is "-}")
 pragma :: Parser String
 pragma = wrap "{-#"  "#-}" . fold <$> withinBoth (is "{-#") (is "#-}")
                              ((isNot "#" |*))
-
 
 symbolChars :: [Char]
 symbolChars =
