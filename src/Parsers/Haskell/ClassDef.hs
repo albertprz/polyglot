@@ -31,7 +31,7 @@ classDef = ClassDef <$> (is "class" *> classConstraints')
 
 
 instanceDef :: Parser InstanceDef
-instanceDef = InstanceDef <$> (is "class" *> classConstraints')
+instanceDef = InstanceDef <$> (is "instance" *> classConstraints')
                           <*> class'
                           <*> types
                           <* is "where"

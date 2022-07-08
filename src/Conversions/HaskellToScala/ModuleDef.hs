@@ -64,12 +64,13 @@ internalDefs defs =
                              x                 -> Just x) defs
 
 internalDef :: H.InternalDef -> Maybe S.InternalDef
-internalDef (H.TypeDef' x)     = Just $ S.TypeAlias $ typeDef x
-internalDef (H.NewTypeDef' x)  = Just $ S.OpaqueType $ newtypeDef x
-internalDef (H.DataDef' x)     = Just $ S.Enum $ dataDef x
-internalDef (H.ClassDef' x)    = Just $ S.Trait $ classDef x
-internalDef (H.InstanceDef' x) = Just $ S.Fn $ S.FnGiven $ instanceDef x
-internalDef (H.FnDefOrSig' _)  = Nothing
+internalDef (H.TypeDef' x)           = Just $ S.TypeAlias $ typeDef x
+internalDef (H.NewTypeDef' x)        = Just $ S.OpaqueType $ newtypeDef x
+internalDef (H.DataDef' x)           = Just $ S.Enum $ dataDef x
+internalDef (H.ClassDef' x)          = Just $ S.Trait $ classDef x
+internalDef (H.InstanceDef' x)       = Just $ S.Fn $ S.FnGiven $ instanceDef x
+internalDef (H.FnDefOrSig' _)        = Nothing
+internalDef (H.InfixFnAnnotation' _) = Nothing
 
 moduleMember :: H.ModuleMember -> S.PackageMember
 moduleMember (H.VarMember x)  = S.VarMember $ var x

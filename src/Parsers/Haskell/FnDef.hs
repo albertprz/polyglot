@@ -8,16 +8,19 @@ import ParserCombinators
 import Parsers.Char              (comma, dot)
 import Parsers.Collections       (listOf, tupleOf)
 import Parsers.Haskell.Common    (literal, nonTokenQVar, qCtor, qCtorOp, qVar,
-                                  qVarOp, token, var)
+                                  qVarOp, token, var, varOp)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
+import Parsers.Number            (int)
 import Parsers.String            (spacing, string, withinCurlyBrackets,
                                   withinParens)
-import SyntaxTrees.Haskell.FnDef (CaseBinding (..), DoStep (..), FnBody (..),
+import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
+                                  CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
                                   FnSig (..), FnVar (..), Guard (..),
-                                  GuardedFnBody (..), MaybeGuardedFnBody (..),
-                                  PatternGuard (..))
+                                  GuardedFnBody (..),
+                                  InfixFnAnnotation (InfixFnAnnotation),
+                                  MaybeGuardedFnBody (..), PatternGuard (..))
 import Utils.String              (wrapCurly)
 
 
@@ -30,6 +33,14 @@ fnSig = FnSig <$> (var <* is "::") <*> type'
 fnDef :: Parser FnDef
 fnDef = FnDef <$> (tupleOf var <|> pure <$> var) <*> (pattern' |*)
                       <*> maybeGuardedFnBody (is "=")
+
+
+infixAnnotation :: Parser InfixFnAnnotation
+infixAnnotation = InfixFnAnnotation
+  <$> token (LAssoc <$ is "infixl" <|> RAssoc <$ is "infixr")
+  <*> token int
+  <*> varOp
+
 
 fnDefOrSig :: Parser FnDefOrSig
 fnDefOrSig = Def <$> fnDef <|>

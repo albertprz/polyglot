@@ -3,7 +3,9 @@ module SyntaxTrees.Scala.Type where
 import SyntaxTrees.Scala.Common (Modifier, Package, QTypeClass, Var,
                                  Wrapper (..), showQualified)
 import Utils.Foldable           (wrapMaybe)
-import Utils.String
+import Utils.String             (joinMaybe, joinWords, str, wrapParens,
+                                 wrapParensCsv, wrapSpaces, wrapSquareCsv,
+                                 (+++))
 
 
 newtype TypeParam

@@ -19,7 +19,7 @@ import System.Directory.Extra (createDirectoryIfMissing, doesDirectoryExist,
                                getHomeDirectory, removeDirectoryRecursive,
                                removeFile)
 import System.Directory.Tree  (AnchoredDirTree (..), DirTree (..), failures,
-                               readDirectory, writeDirectory, (</$>))
+                               filterDir, readDirectory, writeDirectory, (</$>))
 import System.FilePath        (equalFilePath, joinPath, normalise,
                                replaceFileName, splitDirectories, splitPath,
                                takeDirectory, takeExtensions, takeFileName,
@@ -30,6 +30,7 @@ import System.Process.Extra   (callProcess, readProcess)
 
 
 import qualified Conversions.HaskellToScala.ModuleDef as Conversions
+import           Data.List                            (isPrefixOf)
 import qualified Parsers.Haskell.ModuleDef            as Parser
 
 
@@ -55,9 +56,8 @@ action errorAction Opts{sourcePath, targetPath, autoFormat} =
   where
     createDirAndWriteFile x = createDirectoryIfMissing True finalDir *>
                               writeFile finalPath x
-
-    finalDir    = takeDirectory finalPath
-    finalPath   = pathToScala targetPath'
+    finalDir                = takeDirectory finalPath
+    finalPath               = pathToScala targetPath'
 
     targetPath' = if isDir targetPath then
                     replaceFileName targetPath (takeFileName sourcePath)
@@ -83,7 +83,7 @@ actions Opts{sourcePath, targetPath, autoFormat, clearContents} =
                                  (removeDirectoryRecursive fp)
     removeDirPred fp = andM [doesDirectoryExist fp,
                              (/= fp) <$> getHomeDirectory]
-    migrateDirTree fp1 fp2 = convertDirTree
+    migrateDirTree fp1 fp2 = convertDirTree . filterDir filterPred
                              </$> (moveTree fp1 fp2 <$> readDirectory fp1)
     format = when autoFormat $ callProcess formatterExec [targetPath]
 
@@ -176,9 +176,11 @@ getWatchPath fp Opts{sourcePath, targetPath} =
 
 getDirTreeContents :: Int -> DirTree a -> [DirTree a]
 getDirTreeContents 0 x         = [x]
-getDirTreeContents n (Dir _ x) = getDirTreeContents (n - 1) =<< x
+getDirTreeContents n (Dir _ x) =  x  >>= getDirTreeContents (n - 1)
 getDirTreeContents _ x         = [x]
 
+filterPred (Dir x _) = (not . isPrefixOf ".")  x
+filterPred x         = True
 
 
 isDir :: FilePath -> Bool

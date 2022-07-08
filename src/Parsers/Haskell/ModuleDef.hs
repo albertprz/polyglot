@@ -4,7 +4,8 @@ module Parsers.Haskell.ModuleDef where
 import Parsers.Haskell.ClassDef      (classDef, instanceDef)
 import Parsers.Haskell.Common        (module', token, var)
 import Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
-import Parsers.Haskell.FnDef         (fnDef, fnSig, withinContextTupled)
+import Parsers.Haskell.FnDef         (fnDef, fnSig, infixAnnotation,
+                                      withinContextTupled)
 import Parsers.Haskell.Type          (typeVar)
 import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (..),
                                       ModuleExport (..), ModuleExportDef (..),
@@ -18,7 +19,8 @@ import ParserCombinators         (IsMatch (is), anySepBy, maybeWithin, (<|>),
                                   (|?))
 import Parsers.Char              (comma)
 import Parsers.String            (spacing, withinParens)
-import SyntaxTrees.Haskell.FnDef (FnDefOrSig (..))
+import SyntaxTrees.Haskell.FnDef (FnDefOrSig (..),
+                                  InfixFnAnnotation (InfixFnAnnotation))
 
 
 
@@ -70,7 +72,8 @@ internalDef = FnDefOrSig' . Def <$> fnDef        <|>
               NewTypeDef'       <$> newtypeDef   <|>
               DataDef'          <$> dataDef      <|>
               ClassDef'         <$> classDef     <|>
-              InstanceDef'      <$> instanceDef
+              InstanceDef'      <$> instanceDef  <|>
+              InfixFnAnnotation' <$> infixAnnotation
 
 
 

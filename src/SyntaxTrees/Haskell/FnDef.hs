@@ -1,6 +1,7 @@
 module SyntaxTrees.Haskell.FnDef where
 
-import SyntaxTrees.Haskell.Common  (Literal, QCtor, QCtorOp, QVar, QVarOp, Var)
+import SyntaxTrees.Haskell.Common  (Literal, QCtor, QCtorOp, QVar, QVarOp, Var,
+                                    VarOp)
 import SyntaxTrees.Haskell.Pattern (Pattern)
 import SyntaxTrees.Haskell.Type    (Type)
 
@@ -19,6 +20,14 @@ data FnDef
       { names :: [Var]
       , args  :: [Pattern]
       , body  :: MaybeGuardedFnBody
+      }
+  deriving (Show)
+
+data InfixFnAnnotation
+  = InfixFnAnnotation
+      { associativity :: Associativity
+      , precedence    :: Integer
+      , name          :: VarOp
       }
   deriving (Show)
 
@@ -131,4 +140,9 @@ data Guard
 data PatternGuard
   = PatternGuard Pattern FnBody
   | SimpleGuard FnBody
+  deriving (Show)
+
+data Associativity
+  = LAssoc
+  | RAssoc
   deriving (Show)
