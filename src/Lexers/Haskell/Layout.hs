@@ -11,7 +11,7 @@ import Data.Foldable (Foldable (fold))
 
 import Data.Monoid.HT (when)
 
-import Data.Maybe             (fromMaybe)
+import Data.List              (isPrefixOf)
 import Parsers.Haskell.Common (anyComment)
 import Parsers.String         (spacing, withinDoubleQuotes, withinParens,
                                withinQuotes, word)
@@ -39,8 +39,11 @@ layout (x, y, z, t) str = runParser layoutParser str
          layoutText <- (layoutBegin |?)
          spaces'' <- (space |*)
          rest <- otherText
-         let hasCurly = fromMaybe False $ (== '{')  <$> safeHead rest
-         let indents = when z [length spaces'] ++ y
+         let hasIn = maybe False ("in" ==) (safeHead $ words start)
+         let hasCurly = isPrefixOf "{" rest
+         let indents = when z [length spaces'] ++
+                if not hasIn then y
+                else (length spaces' + 1) : (fold $ safeTail y)
          let layoutNextLine = hasSome layoutText && hasNone rest
          let contextIndent = length $ spaces' ++ start ++ fold layoutText ++ spaces''
          let (newIndents, beginSep, stop) = calcIndent indents (length spaces')
@@ -85,8 +88,9 @@ layoutBegin = oneOf layoutTokens
 
 
 otherText :: Parser String
-otherText = fold <$>
-           (((check "" (`notElem` layoutTokens) lexeme) >>> (space |*)) |*)
+otherText = fold <$> elems
+  where
+    elems = (((check "" (`notElem` layoutTokens) lexeme) >>> (space |*)) |*)
 
 
 lexeme :: Parser String

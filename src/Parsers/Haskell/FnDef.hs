@@ -1,6 +1,7 @@
 module Parsers.Haskell.FnDef where
 
 import Data.Foldable             (Foldable (fold))
+import Data.IntMap               (elems)
 import Data.Maybe                (maybeToList)
 import Lexers.Haskell.Layout     (lexeme)
 import Parser
@@ -28,11 +29,13 @@ import Utils.String              (wrapCurly)
 
 
 fnSig :: Parser FnSig
-fnSig = FnSig <$> (var <* is "::") <*> type'
+fnSig = FnSig <$> (var <* is "::")
+              <*> type'
 
 fnDef :: Parser FnDef
-fnDef = FnDef <$> (tupleOf var <|> pure <$> var) <*> (pattern' |*)
-                      <*> maybeGuardedFnBody (is "=")
+fnDef = FnDef <$> (tupleOf var <|> pure <$> var)
+              <*> (pattern' |*)
+              <*> maybeGuardedFnBody (is "=")
 
 
 infixAnnotation :: Parser InfixFnAnnotation
@@ -159,15 +162,16 @@ adaptFnBody :: Parser String
 adaptFnBody = do start <- otherText
                  next <- ((is "where" >>> string) |?)
                  other <- ((is ";" >>> string) |?)
-                 let x = (maybe start ((wrapCurly start) ++) next) ++ fold other
+                 let x = maybe start ((wrapCurly start) ++) next ++ fold other
                  pure x
 
 
 
 otherText :: Parser String
-otherText = mconcat <$>
-           (pure <$> (spacing |?) >>>
-            (((check "" (`notElem`  ["where", ";"]) lexeme) >>> (spacing |?)) |*))
+otherText = (spacing |?) >>> (textElem |*)
+
+ where
+   textElem = check "" (`notElem` ["where", ";"]) lexeme >>> (spacing |?)
 
 
 statements :: Parser a -> Parser [a]

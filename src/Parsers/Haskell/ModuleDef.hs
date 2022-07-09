@@ -19,8 +19,9 @@ import ParserCombinators         (IsMatch (is), anySepBy, maybeWithin, (<|>),
                                   (|?))
 import Parsers.Char              (comma)
 import Parsers.String            (spacing, withinParens)
-import SyntaxTrees.Haskell.FnDef (FnDefOrSig (..),
-                                  InfixFnAnnotation (InfixFnAnnotation))
+import SyntaxTrees.Haskell.FnDef (FnDefOrSig (..))
+
+
 
 
 

@@ -17,7 +17,7 @@ import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
                                    QCtor (..), QCtorOp (..), QVar (..),
                                    QVarOp (..), Var (..), VarOp (..))
 import Utils.Foldable             (wrapMaybe)
-import Utils.String               (wrap, wrapBackQuotes, wrapQuotes)
+import Utils.String               (wrap, wrapBackQuotes, wrapParens, wrapQuotes)
 
 
 
@@ -40,12 +40,12 @@ literal = token $
 
 var :: Parser Var
 var = Var <$> notReserved
-              (withinParens (operator opSymbol <|> simpleOperator <|> simpleOperatorFn)
+              (wrapParens <$> withinParens (operator opSymbol <|> simpleOperator <|> simpleOperatorFn)
                <|> ident lower)
 
 ctor :: Parser Ctor
 ctor = Ctor <$> notReserved
-                (withinParens (operator colon) <|> ident upper)
+                (wrapParens <$> withinParens (operator colon) <|> ident upper)
 
 varOp :: Parser VarOp
 varOp = VarOp <$> notReserved
