@@ -89,6 +89,9 @@ data FnBody
       { matchee :: FnBody
       , cases   :: [CaseBinding]
       }
+  | TopLevelMatchExpr
+      { cases :: [CaseBinding]
+      }
   | Tuple [FnBody]
   | FnVar' FnVar
   | Literal' Literal
@@ -175,6 +178,7 @@ instance Show FnBody where
   show (MatchExpr x y)    = joinWords [show x,
                                       "match",
                                       wrapBlock y]
+  show (TopLevelMatchExpr x) = wrapBlock x
 
 instance Show ForStep where
   show (ForBinding x y) = joinWords [showTuple x, "<-", show y]

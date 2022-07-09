@@ -71,13 +71,16 @@ charMap = Map.fromList [('\'', '$'), ('$', '&'), ('.', '|')]
 varOpMap :: Map String String
 varOpMap = Map.fromList [("$", "|<|"), (".", "^"),
                          ("++", "<+>"), ("<>", "<+>"),
-                         (",", "Tuple2"), (",,", "Tuple3"), (",,,", "Tuple4")]
+                         (",", "Tuple2"), (",,", "Tuple3"),
+                         (",,,", "Tuple4")]
 
 ctorOpMap :: Map String String
 ctorOpMap = Map.fromList [(":", "::"), ("::", ":")]
 
 varMap :: Map String String
-varMap = Map.fromList [("type", "typex"), ("var", "varx"), ("def", "defx"), ("match", "matchx")]
+varMap = Map.fromList [("type", "typex"), ("var", "varx"),
+                       ("def", "defx"), ("match", "matchx")]
 
 ctorMap :: Map String String
-ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None")]
+ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None"),
+                       ("True", "true"), ("False", "false")]

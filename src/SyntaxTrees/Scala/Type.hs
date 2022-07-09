@@ -75,7 +75,7 @@ instance Show TypeCtor where
 
 instance Show Type where
   show (CtorTypeApply x@(QTypeCtor _ (TypeCtor _)) z) = show x ++ wrapSquareCsv z
-  show (CtorTypeApply (QTypeCtor _ Arrow) x)        = str (wrapSpaces "->") x
+  show (CtorTypeApply (QTypeCtor _ Arrow) x)        = str (wrapSpaces "=>") x
   show (CtorTypeApply (QTypeCtor _ TupleType) x)    = wrapParensCsv x
   show (ParamTypeApply x y) = show x ++ wrapSquareCsv y
   show (NestedTypeApply x y) = show x ++ wrapSquareCsv y

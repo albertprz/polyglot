@@ -91,9 +91,9 @@ extractTypes (H.ClassScope _ y)                          = extractTypes y
 extractTypes _                                           = []
 
 
-argList :: [S.Var] -> [S.Type] -> S.ArgList
-argList args argTypes =
-  S.ArgList $ uncurry (S.ArgField []) <$> zip args argTypes
+argLists :: [S.Var] -> [S.Type] -> [S.ArgList]
+argLists args argTypes =
+  S.ArgList . pure . uncurry (S.ArgField []) <$> zip args argTypes
 
 
 usingArgList :: [S.ClassConstraint] -> S.UsingArgList

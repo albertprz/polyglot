@@ -7,14 +7,13 @@ import Parser                (ParseError, runParser)
 
 import CommandLine.Options         (Opts (..))
 import Control.Concurrent          (threadDelay)
-import Control.Monad               (forever, join, when)
+import Control.Monad               (forever, join, when, (>=>))
 import Control.Monad.Extra         (andM, whenM)
 import Control.Parallel.Strategies (parMap, rseq)
 import Data.Foldable               (traverse_)
 import Data.List                   (isPrefixOf)
 import Data.Tuple.Extra            (both)
 import Utils.Functor               ((<<$>>))
-import Utils.Monad                 ((>>.))
 
 
 import System.Directory       (canonicalizePath)
@@ -34,7 +33,6 @@ import System.Process.Extra   (callProcess, readProcess)
 
 import qualified Conversions.HaskellToScala.ModuleDef as Conversions
 import qualified Parsers.Haskell.ModuleDef            as Parser
-
 
 
 
@@ -105,7 +103,7 @@ watchPath opts@Opts {sourcePath} =
 
 
 toScala :: String -> Either ParseError String
-toScala =  adaptLayout >>. convert
+toScala =  adaptLayout >=> convert
   where
     convert = show . Conversions.moduleDef <<$>> runParser Parser.moduleDef
 

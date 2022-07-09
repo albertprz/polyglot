@@ -10,7 +10,7 @@ import qualified SyntaxTrees.Scala.Pattern  as S
 import Conversions.HaskellToScala.Common  (literal, qCtor, qCtorOp, qVar,
                                            qVarOp, var)
 import Conversions.HaskellToScala.Pattern (allVars, extractVars, pattern')
-import Conversions.HaskellToScala.Type    (argList, classScopeSplit,
+import Conversions.HaskellToScala.Type    (argLists, classScopeSplit,
                                            findTypeParams, typeParam, typeSplit,
                                            usingArgList)
 
@@ -18,7 +18,7 @@ import Data.Foldable           (Foldable (fold, toList))
 import Data.List               (nubBy)
 import Data.Maybe              (fromMaybe, isJust, listToMaybe, mapMaybe)
 import Data.Tuple.Extra        (uncurry3, (***))
-import SyntaxTrees.Scala.FnDef (WhenExpr (WhenExpr))
+import SyntaxTrees.Scala.FnDef (WhenExpr (..))
 import Utils.List              (groupTuplesByKey, mergeUnion)
 
 
@@ -27,7 +27,7 @@ emptyFnSig = S.FnSig [] [] [] Nothing
 
 namedFnSig :: H.Type -> [H.Var] -> S.FnSig
 namedFnSig tpe args = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
-                      [argList (var <$> args) argTypes]
+                      (argLists (var <$> args) argTypes)
                       [usingArgList constraints]
                       (Just retType)
   where
@@ -37,7 +37,7 @@ namedFnSig tpe args = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
 
 unNamedFnSig :: H.Type -> Int -> S.FnSig
 unNamedFnSig tpe n = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
-                     [argList (S.Var <$> autoFnIds) argTypes]
+                     (argLists (S.Var <$> autoFnIds) argTypes)
                      [usingArgList constraints]
                      (Just retType)
   where
@@ -69,11 +69,13 @@ fnDefs (x, y)           = fnDef x y
 
 
 fnDef :: Maybe H.FnSig -> Maybe [H.FnDef] -> S.InternalFnDef
-fnDef sig defs = S.FnMethod $ S.MethodDef [] name fnSig (fnDefToFnBody <$> defs)
+fnDef sig defs = S.FnMethod $ S.MethodDef [] name fnSig
+                              (matchFn . fnDefToFnBody <$> defs)
   where
     n = maybe 0 (length . (.args)) $ (listToMaybe . fold) defs
-    fnSig =  (`unNamedFnSig` n) . (.type') <$> sig
+    fnSig =  (`unNamedFnSig` n') . (.type') <$> sig
     name = var $ maybe (head . (.names) . head $ fromMaybe [] defs) (.name) sig
+    (n', matchFn) = if n == 1 then (0, topLevelMatch) else (n, id)
 
 simpleFnDef :: Maybe H.FnSig -> H.FnDef -> S.InternalFnDef
 simpleFnDef sig def = S.FnMethod $ S.MethodDef [] name fnSig
@@ -96,7 +98,8 @@ simpleFnDefToFnBody def = maybeGuardedBody . (.body) $ def
 fnDefToFnBody :: [H.FnDef] -> S.FnBody
 fnDefToFnBody defs = match
   where
-    match = simplifyMatch $ S.MatchExpr (tuple $ take n autoFnIds) cases
+    match = simplifyMatch $
+      S.MatchExpr (tuple $ take n autoFnIds) cases
     casePatterns = (S.TuplePattern  . (pattern' <$>) . (.args)) <$> defs
     caseBodies =  (maybeGuardedBody . (.body)) <$> defs
     cases = uncurry3 S.CaseBinding <$> zip3 casePatterns (repeat Nothing)
@@ -165,6 +168,10 @@ simplifyMatch :: S.FnBody -> S.FnBody
 simplifyMatch (S.MatchExpr x y) = S.MatchExpr x (foldMap simplifyCases y)
 simplifyMatch x                 = x
 
+topLevelMatch :: S.FnBody -> S.FnBody
+topLevelMatch (S.MatchExpr _ y) = S.TopLevelMatchExpr y
+topLevelMatch x                 = x
+
 
 simplifyCases :: S.CaseBinding -> [S.CaseBinding]
 simplifyCases (S.CaseBinding x' Nothing (S.MatchExpr _ y))
@@ -191,8 +198,8 @@ maybeGuardedBody (H.Guarded x)
     whenBranches = uncurry WhenExpr <$> zip conds (init bodies)
     elseBranch = last bodies
 
-maybeGuardedBody (H.Guarded x)  = S.MatchExpr (S.Literal' $ S.BoolLit True)
-                                             (guardedBody <$> x)
+maybeGuardedBody (H.Guarded x)  = simplifyMatch $
+  S.MatchExpr (S.Literal' $ S.BoolLit True) (guardedBody <$> x)
 maybeGuardedBody (H.Standard x) = fnBody x
 
 
@@ -211,12 +218,12 @@ guardedBody (H.GuardedFnBody H.Otherwise body) =
 
 
 patternGuard :: H.PatternGuard -> S.FnBody -> S.FnBody
-patternGuard (H.PatternGuard x y) body =
+patternGuard (H.PatternGuard x y) body = simplifyMatch $
   S.MatchExpr
         (fnBody y)
         [S.CaseBinding (pattern' x) Nothing body]
 
-patternGuard (H.SimpleGuard x) body =
+patternGuard (H.SimpleGuard x) body = simplifyMatch $
   S.MatchExpr
         (S.Literal' $ S.BoolLit True)
         [S.CaseBinding S.Wildcard (Just (fnBody x)) body]
