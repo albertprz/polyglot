@@ -1,20 +1,20 @@
 module Parsers.Haskell.FnDef where
 
 import Data.Foldable             (Foldable (fold))
-import Data.IntMap               (elems)
 import Data.Maybe                (maybeToList)
 import Lexers.Haskell.Layout     (lexeme)
-import Parser
-import ParserCombinators
-import Parsers.Char              (comma, dot, space)
+import Parser                    (Parser, andThen, check)
+import ParserCombinators         (IsMatch (is), someSepBy, (<|>), (>>>), (|*),
+                                  (|+), (|?))
+import Parsers.Char              (comma, dot)
 import Parsers.Collections       (listOf, tupleOf)
 import Parsers.Haskell.Common    (literal, nonTokenQVar, qCtor, qCtorOp, qVar,
                                   qVarOp, token, var, varOp)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
 import Parsers.Number            (int)
-import Parsers.String            (maybeWithinParens, spacing, string,
-                                  withinCurlyBrackets, withinParens)
+import Parsers.String            (spacing, string, withinCurlyBrackets,
+                                  withinParens)
 import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
@@ -24,8 +24,6 @@ import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   MaybeGuardedFnBody (..), PatternGuard (..))
 import Utils.String              (wrapCurly)
 
-
--- TODO: Support parsing operators with different precedence
 
 
 fnSig :: Parser FnSig
@@ -55,17 +53,17 @@ fnBody = openForm
   where
     fnApply = FnApply <$> delimitedForm <*> (delimitedForm |+)
 
-    infixFnApply = uncurry InfixFnApply <$> sepByOp fnOp
+    infixFnApply = uncurry InfixFnApply <$> sepByOps fnOp
        (complexInfixForm <|> withinParens complexInfixForm <|> singleForm)
 
-    leftOpSection = uncurry LeftOpSection <$>
-      withinParens ((,) <$> fnOp <*> openForm)
+    leftOpSection = uncurry LeftOpSection
+      <$> withinParens ((,) <$> fnOp <*> openForm)
 
-    rightOpSection = uncurry RightOpSection <$>
-      withinParens ((,) <$> openForm <*> fnOp)
+    rightOpSection = uncurry RightOpSection
+      <$> withinParens ((,) <$> openForm <*> fnOp)
 
-    postfixOpSection = uncurry PostFixOpSection <$>
-      withinParens ((,) <$> openForm <*> fnOp)
+    postfixOpSection = uncurry PostFixOpSection
+      <$> withinParens ((,) <$> openForm <*> fnOp)
 
 
     opSection = leftOpSection <|> rightOpSection
@@ -166,7 +164,6 @@ adaptFnBody = do start <- otherText
                  pure x
 
 
-
 otherText :: Parser String
 otherText = (spacing |?) >>> (textElem |*)
 
@@ -183,3 +180,9 @@ withinContext = withinCurlyBrackets . statements
 withinContextTupled :: Parser a1 -> Parser a2 -> Parser ([a1], [a2])
 withinContextTupled p1 p2 = withinCurlyBrackets $
                                (,) <$> statements p1 <*> statements p2
+
+
+sepByOps :: Parser a -> Parser b -> Parser ([a], [b])
+sepByOps sep p = do x <-  p
+                    y <- (((,) <$> sep <*> p) |+)
+                    pure $ (fst <$> y, x : (snd <$> y))

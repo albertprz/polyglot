@@ -5,15 +5,17 @@ import Lexers.Haskell.Layout (adaptLayout)
 import Parser                (ParseError, runParser)
 
 
-import CommandLine.Options (Opts (..))
-import Control.Concurrent  (threadDelay)
-import Control.Monad       (forever, join, when)
-import Control.Monad.Extra (andM, whenM)
-import Data.Foldable       (traverse_)
-import Data.List           (isPrefixOf)
-import Data.Tuple.Extra    (both)
-import Utils.Functor       ((<<$>>))
-import Utils.Monad         ((>>.))
+import CommandLine.Options         (Opts (..))
+import Control.Concurrent          (threadDelay)
+import Control.Monad               (forever, join, when)
+import Control.Monad.Extra         (andM, whenM)
+import Control.Parallel.Strategies (parMap, rseq)
+import Data.Foldable               (traverse_)
+import Data.List                   (isPrefixOf)
+import Data.Tuple.Extra            (both)
+import Utils.Functor               ((<<$>>))
+import Utils.Monad                 ((>>.))
+
 
 import System.Directory       (canonicalizePath)
 import System.Directory.Extra (createDirectoryIfMissing, doesDirectoryExist,
@@ -33,7 +35,6 @@ import System.Process.Extra   (callProcess, readProcess)
 import qualified Conversions.HaskellToScala.ModuleDef as Conversions
 import qualified Parsers.Haskell.ModuleDef            as Parser
 
-import Control.Parallel.Strategies
 
 
 
@@ -117,7 +118,7 @@ convertDirTree (File x y)
                               (File $ pathToScala x)
                        . toScala
 
-convertDirTree (Dir x y) = Dir x (fmap convertDirTree y)
+convertDirTree (Dir x y) = Dir x (parMap rseq convertDirTree y)
 convertDirTree x = x
 
 

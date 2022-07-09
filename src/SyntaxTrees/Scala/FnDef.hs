@@ -10,9 +10,10 @@ import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
 import Data.List (intercalate)
 
 import Utils.Foldable (hasSome, wrapMaybe)
-import Utils.String   (joinMaybe, joinWords, str, wrapBlock, wrapLetContext,
-                       wrapParens, wrapParensCsv, wrapSingleBlock,
-                       wrapSpacedBlock, wrapSpaces, wrapSquareCsv, (+++))
+import Utils.String   (joinMaybe, joinWords, str, strs, wrapBlock,
+                       wrapLetContext, wrapParens, wrapParensCsv,
+                       wrapSingleBlock, wrapSpacedBlock, wrapSpaces,
+                       wrapSquareCsv, (+++))
 
 
 data FnSig
@@ -60,7 +61,7 @@ data FnBody
       , namedArgs :: [(Var, FnBody)]
       }
   | InfixFnApply
-      { fnOp :: FnOp
+      { fnOp :: [FnOp]
       , args :: [FnBody]
       }
   | LambdaExpr
@@ -152,8 +153,9 @@ instance Show FnBody where
   show (FnApply x y)      = joinWords [show x, wrapParensCsv y]
   show (NamedFnApply x y) = joinWords [show x, wrapParensCsv $ Wrapper .
                                       (\(a, b) -> show a +++ "=" +++ show b) <$> y]
-  show (InfixFnApply x [y]) = showForInfix y +++ show x
-  show (InfixFnApply x y) = str (wrapSpaces $ show x) (Wrapper . showForInfix <$> y)
+  show (InfixFnApply x [y]) = showForInfix y +++ foldMap show x
+  show (InfixFnApply x y) = strs (wrapSpaces . show <$> x)
+                                 (showForInfix <$> y)
   show (LambdaExpr [] y)  = wrapParens $ show y
   show (LambdaExpr [x] y) = wrapParens $ joinWords [show x, "=>", show y]
   show (LambdaExpr x y)   = wrapParens $ joinWords [wrapParensCsv x, "=>", show y]

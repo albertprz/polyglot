@@ -40,12 +40,12 @@ literal = token $
 
 var :: Parser Var
 var = Var <$> notReserved
-              (wrapParens <$> withinParens (operator opSymbol <|> simpleOperator <|> simpleOperatorFn)
+              (withinParens (operator opSymbol <|> simpleOperator <|> simpleOperatorFn)
                <|> ident lower)
 
 ctor :: Parser Ctor
 ctor = Ctor <$> notReserved
-                (wrapParens <$> withinParens (operator colon) <|> ident upper)
+                (withinParens (operator colon) <|> ident upper)
 
 varOp :: Parser VarOp
 varOp = VarOp <$> notReserved
@@ -91,10 +91,10 @@ operator start = token $ (:) <$> start
                              <*> ((opSymbol <|> colon) |*)
 
 simpleOperator :: Parser String
-simpleOperator = token $ pure <$> oneOf [':']
+simpleOperator = token $ oneOf [":"]
 
 simpleOperatorFn :: Parser String
-simpleOperatorFn = token $ pure <$> oneOf [',']
+simpleOperatorFn = token $ oneOf [",", ",,", ",,,"]
 
 nonTokenQVar :: Parser QVar
 nonTokenQVar = uncurry QVar <$> qTerm x

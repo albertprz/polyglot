@@ -1,8 +1,10 @@
 module Utils.String where
 
-import Data.List      (intercalate)
-import Data.Monoid.HT (when)
-import Utils.Foldable (hasSome, wrapMaybe)
+import Data.Foldable.Extra (Foldable (fold))
+import Data.List           (intercalate)
+import Data.Monoid.HT      (when)
+import Utils.Foldable      (hasSome, wrapMaybe)
+import Utils.List          (safeLast)
 
 
 wrap :: String -> String -> String -> String
@@ -90,7 +92,13 @@ wrapContext = intercalate "\n" . (indent 2 <$>) . lines
 
 
 str :: Show a => String -> [a] -> String
-str sep x = intercalate sep $ show <$> x
+str sep xs = intercalate sep $ show <$> xs
+
+strs :: [String] -> [String] -> String
+strs seps xs = fold elems ++ fold (safeLast xs)
+  where
+    elems = do (x, sep) <- zip xs seps
+               pure $ x ++ sep
 
 joinWords :: [String] -> String
 joinWords x = unwords $ filter hasSome x

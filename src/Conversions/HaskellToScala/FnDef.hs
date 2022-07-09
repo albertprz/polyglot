@@ -108,15 +108,15 @@ fnDefToFnBody defs = match
 
 fnBody :: H.FnBody -> S.FnBody
 fnBody (H.FnApply x y)      = S.FnApply (fnBody x) (fnBody <$> y)
-fnBody (H.InfixFnApply x y) = S.InfixFnApply (fnOp x) (fnBody <$> y)
+fnBody (H.InfixFnApply x y) = S.InfixFnApply (fnOp <$> x) (fnBody <$> y)
 
-fnBody (H.LeftOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp x)
+fnBody (H.LeftOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp x]
         [S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_", fnBody y])
 
-fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y)
+fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp y]
         [fnBody x, S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_"])
 
-fnBody (H.PostFixOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y)
+fnBody (H.PostFixOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp y]
                                                    [fnBody x])
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (var <$> x) (fnBody y)
 fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
@@ -256,7 +256,7 @@ onlySimpleGuards H.Otherwise = False
 aggregateConds :: [S.FnBody] -> S.FnBody
 aggregateConds [x] = x
 aggregateConds x = S.InfixFnApply
-                     (S.VarOp' $ S.QVarOp Nothing $ S.VarOp "&&") x
+                     [S.VarOp' $ S.QVarOp Nothing $ S.VarOp "&&"] x
 
 
 autoFnIds :: [String]
