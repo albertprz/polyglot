@@ -55,6 +55,10 @@ data FnBody
       { fn   :: FnBody
       , args :: [FnBody]
       }
+  | NamedFnApply
+      { fn        :: FnBody
+      , namedArgs :: [(Var, FnBody)]
+      }
   | InfixFnApply
       { fnOp :: FnOp
       , args :: [FnBody]
@@ -146,6 +150,8 @@ instance Show GivenDef where
 
 instance Show FnBody where
   show (FnApply x y)      = joinWords [show x, wrapParensCsv y]
+  show (NamedFnApply x y) = joinWords [show x, wrapParensCsv $ Wrapper .
+                                      (\(a, b) -> show a +++ "=" +++ show b) <$> y]
   show (InfixFnApply x [y]) = showForInfix y +++ show x
   show (InfixFnApply x y) = str (wrapSpaces $ show x) (Wrapper . showForInfix <$> y)
   show (LambdaExpr [] y)  = wrapParens $ show y

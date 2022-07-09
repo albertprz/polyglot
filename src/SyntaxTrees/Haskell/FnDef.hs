@@ -6,7 +6,6 @@ import SyntaxTrees.Haskell.Pattern (Pattern)
 import SyntaxTrees.Haskell.Type    (Type)
 
 
--- TODO: Support Record Apply & Record Update syntax
 
 data FnSig
   = FnSig
@@ -86,6 +85,14 @@ data FnBody
       }
   | LambdaCaseExpr
       { cases :: [CaseBinding]
+      }
+  | RecordCreate
+      { ctor        :: QCtor
+      , namedFields :: [(Var, FnBody)]
+      }
+  | RecordUpdate
+      { var         :: QVar
+      , namedFields :: [(Var, FnBody)]
       }
   | Tuple [FnBody]
   | List [FnBody]

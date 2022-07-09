@@ -17,7 +17,7 @@ import Conversions.HaskellToScala.Type    (argList, classScopeSplit,
 import Data.Foldable           (Foldable (fold, toList))
 import Data.List               (nubBy)
 import Data.Maybe              (fromMaybe, isJust, listToMaybe, mapMaybe)
-import Data.Tuple.Extra        (uncurry3)
+import Data.Tuple.Extra        (uncurry3, (***))
 import SyntaxTrees.Scala.FnDef (WhenExpr (WhenExpr))
 import Utils.List              (groupTuplesByKey, mergeUnion)
 
@@ -109,9 +109,15 @@ fnDefToFnBody defs = match
 fnBody :: H.FnBody -> S.FnBody
 fnBody (H.FnApply x y)      = S.FnApply (fnBody x) (fnBody <$> y)
 fnBody (H.InfixFnApply x y) = S.InfixFnApply (fnOp x) (fnBody <$> y)
-fnBody (H.LeftOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp x) [S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_", fnBody y])
-fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y) [fnBody x, S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_"])
-fnBody (H.PostFixOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y) [fnBody x])
+
+fnBody (H.LeftOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp x)
+        [S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_", fnBody y])
+
+fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y)
+        [fnBody x, S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_"])
+
+fnBody (H.PostFixOpSection x y) = S.LambdaExpr [] (S.InfixFnApply (fnOp y)
+                                                   [fnBody x])
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (var <$> x) (fnBody y)
 fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
 fnBody (H.DoExpr x)         = S.ForExpr (doStep <$> init x) (extractDoStep $ last x)
@@ -134,6 +140,13 @@ fnBody (H.LetExpr x y)   = S.LetExpr (fnDefs <$> fnDefOrSigs x)
                                      (fnBody y)
 fnBody (H.WhereExpr x y) = S.LetExpr (fnDefs <$> fnDefOrSigs y)
                                      (fnBody x)
+fnBody (H.RecordCreate x y) = S.NamedFnApply (S.FnVar' $ S.Ctor' $ qCtor x)
+                                             ((var *** fnBody) <$> y)
+fnBody (H.RecordUpdate x y) = S.NamedFnApply (S.FnVar' $ S.Selection (qVar x)
+                                              [S.Var "copy"])
+                                             ((var *** fnBody) <$> y)
+
+
 
 
 doStep :: H.DoStep -> S.ForStep

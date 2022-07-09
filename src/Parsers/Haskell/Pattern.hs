@@ -8,7 +8,6 @@ import Parsers.Collections         (listOf, tupleOf)
 import Parsers.Haskell.Common      (literal, qCtor, qCtorOp, token, var)
 import Parsers.String              (maybeWithinParens, withinCurlyBrackets,
                                     withinParens)
-import SyntaxTrees.Haskell.Common  ()
 import SyntaxTrees.Haskell.Pattern (Pattern (..))
 
 

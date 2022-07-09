@@ -94,8 +94,7 @@ fnBody = openForm
 
     list = List <$> listOf openForm
 
-    fnOp = VarOp' <$> qVarOp   <|>
-           CtorOp' <$> qCtorOp
+    fnOp = CtorOp' <$> qCtorOp <|> VarOp' <$> qVarOp
 
     fnVar = FnVar' . Selector <$> withinParens (dot *> var)              <|>
             FnVar' <$> (Selection <$> nonTokenQVar <* dot <*> someSepBy dot var) <|>
@@ -103,6 +102,14 @@ fnBody = openForm
             FnVar' . Ctor' <$> qCtor
 
     literal' = Literal' <$> literal
+
+    recordCreate = RecordCreate <$> qCtor <*> recordFields
+
+    recordUpdate = RecordUpdate <$> qVar <*> recordFields
+
+    recordFields = withinCurlyBrackets (someSepBy comma recordField)
+
+    recordField   = (,) <$> var <*> (is "=" *> openForm)
 
     openForm = complexForm <|> singleForm
                <|> withinParens (complexForm <|> singleForm)
@@ -114,6 +121,7 @@ fnBody = openForm
                        <|> postfixOpSection
 
     complexForm = infixFnApply <|> complexInfixForm
+                  <|> recordCreate <|> recordUpdate
 
     complexInfixForm = fnApply <|> lambdaCaseExpr <|>
                        lambdaExpr <|> letExpr <|> whereExpr <|>
