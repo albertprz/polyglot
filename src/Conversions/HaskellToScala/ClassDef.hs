@@ -7,7 +7,9 @@ import qualified SyntaxTrees.Scala.FnDef      as S
 import qualified SyntaxTrees.Scala.Type       as S
 
 import Conversions.HaskellToScala.FnDef (fnDefOrSigs, fnDefs)
-import Conversions.HaskellToScala.Type
+import Conversions.HaskellToScala.Type  (anyKindedType, classConstraint,
+                                         findAnyKindedTypeParams, typeParam,
+                                         usingArgList)
 
 import Data.Foldable (Foldable (toList))
 

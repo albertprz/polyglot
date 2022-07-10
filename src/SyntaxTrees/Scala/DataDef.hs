@@ -1,11 +1,11 @@
 module SyntaxTrees.Scala.DataDef where
 
 import Data.Monoid.HT           (when)
-import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass)
+import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass, Wrapper (Wrapper))
 import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef)
-import SyntaxTrees.Scala.Type   (ArgField, ArgList (..), Type, TypeParam,
-                                 TypeVar, UsingArgList)
-import Utils.Foldable           (hasSome)
+import SyntaxTrees.Scala.Type   (ArgList (..), Type, TypeParam, TypeVar,
+                                 UsingArgList)
+import Utils.Foldable           (hasSome, wrapMaybe)
 import Utils.String
 
 
@@ -18,11 +18,10 @@ data TypeDef
 
 data OpaqueTypeDef
   = OpaqueTypeDef
-      { type'        :: TypeVar
-      , typeParams   :: [TypeParam]
-      , field        :: ArgField
-      , derives      :: [TypeClass]
-      , internalDefs :: [InternalFnDef]
+      { alias      :: TypeVar
+      , typeParams :: [TypeParam]
+      , type'      :: Type
+      , derives    :: [TypeClass]
       }
 
 data TraitDef
@@ -127,8 +126,9 @@ instance Show TypeDef where
     joinWords ["type", show x, wrapSquareCsv y, "=", show z]
 
 instance Show OpaqueTypeDef where
-  show (OpaqueTypeDef x y z t u) =
-    showStructure "opaque type" [] x y [ArgList [z]] [] t [] u
+  show (OpaqueTypeDef x y z t) =
+    joinWords ["opaque type", show x, wrapSquareCsv y, "=", show z,
+      joinMaybe "derives" $ Wrapper <$> wrapMaybe (wrapParens $ str ", " t)]
 
 instance Show TraitDef where
   show (TraitDef x y z t u v w) =

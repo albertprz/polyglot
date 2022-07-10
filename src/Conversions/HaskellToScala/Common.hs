@@ -3,9 +3,9 @@ module Conversions.HaskellToScala.Common where
 import qualified SyntaxTrees.Haskell.Common as H
 import qualified SyntaxTrees.Scala.Common   as S
 
-import           Data.Char (toLower)
-import           Data.Map  (Map)
-import qualified Data.Map  as Map
+import           Data.Map    (Map)
+import qualified Data.Map    as Map
+import           Text.Casing (quietSnake)
 
 
 
@@ -26,7 +26,10 @@ class' (H.Class x) = S.TypeClass x
 
 
 module' :: H.Module -> S.Package
-module' (H.Module x) = S.Package $ (replaceNaming . (toLower <$>)) <$> x
+module' (H.Module x) = S.Package $ (replaceNaming . quietSnake) <$> x
+
+qualifier' :: H.Module -> S.Package
+qualifier' (H.Module x) = S.Package $ replaceNaming <$> x
 
 
 literal :: H.Literal -> S.Literal
@@ -40,19 +43,19 @@ literal (H.StringLit x) = S.StringLit x
 
 
 qVar :: H.QVar -> S.QVar
-qVar (H.QVar x y) = S.QVar (module' <$> x) (var y)
+qVar (H.QVar x y) = S.QVar (qualifier' <$> x) (var y)
 
 qVarOp :: H.QVarOp -> S.QVarOp
-qVarOp (H.QVarOp x y) = S.QVarOp (module' <$> x) (varOp y)
+qVarOp (H.QVarOp x y) = S.QVarOp (qualifier' <$> x) (varOp y)
 
 qCtor :: H.QCtor -> S.QCtor
-qCtor (H.QCtor x y) = S.QCtor (module' <$> x) (ctor y)
+qCtor (H.QCtor x y) = S.QCtor (qualifier' <$> x) (ctor y)
 
 qCtorOp :: H.QCtorOp -> S.QCtorOp
-qCtorOp (H.QCtorOp x y) = S.QCtorOp (module' <$> x) (ctorOp y)
+qCtorOp (H.QCtorOp x y) = S.QCtorOp (qualifier' <$> x) (ctorOp y)
 
 qClass :: H.QClass -> S.QTypeClass
-qClass (H.QClass x y) = S.QTypeClass (module' <$> x) (class' y)
+qClass (H.QClass x y) = S.QTypeClass (qualifier' <$> x) (class' y)
 
 
 replaceNaming :: String -> String
@@ -84,3 +87,6 @@ varMap = Map.fromList [("type", "typex"), ("var", "varx"),
 ctorMap :: Map String String
 ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None"),
                        ("True", "true"), ("False", "false")]
+
+autoIds :: [String]
+autoIds = pure <$> ['x', 'y', 'z', 't', 'u', 'v', 'w', 'p', 'q', 'r', 's']

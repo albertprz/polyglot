@@ -6,7 +6,7 @@ import qualified SyntaxTrees.Scala.FnDef       as S
 import qualified SyntaxTrees.Scala.PackageDef  as S
 
 import Conversions.HaskellToScala.ClassDef (classDef, instanceDef)
-import Conversions.HaskellToScala.Common   (module', var)
+import Conversions.HaskellToScala.Common   (module', qualifier', var)
 import Conversions.HaskellToScala.DataDef  (dataDef, newtypeDef, typeDef)
 import Conversions.HaskellToScala.FnDef    (fnDefOrSigs, fnDefs)
 import Conversions.HaskellToScala.Type     (typeVar)
@@ -23,11 +23,13 @@ moduleDef (H.ModuleDef x _ z t) =
 
 
 moduleImport :: H.ModuleImport -> [S.PackageImport]
+moduleImport (H.ModuleImport True x Nothing z) =
+  moduleImport $ H.ModuleImport True x (Just x) z
 moduleImport (H.ModuleImport x y z []) =
-  [S.PackageImport (module' y) (module' <$> z)
+  [S.PackageImport (module' y) (qualifier' <$> z)
    (cond (not x) S.FullImport)]
 moduleImport (H.ModuleImport x y z t) =
-  S.PackageImport (module' y) (module' <$> z) . (cond (not x))
+  S.PackageImport (module' y) (qualifier' <$> z) . (cond (not x))
   <$> moduleImportDefs t
 
 moduleImportDefs :: [H.ModuleImportDef] -> [S.PackageImportDef]

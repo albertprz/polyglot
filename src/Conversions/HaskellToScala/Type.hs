@@ -4,7 +4,7 @@ import qualified SyntaxTrees.Haskell.Type as H
 import qualified SyntaxTrees.Scala.Common as S
 import qualified SyntaxTrees.Scala.Type   as S
 
-import Conversions.HaskellToScala.Common (find, module', qClass)
+import Conversions.HaskellToScala.Common (find, module', qClass, qualifier')
 
 import Data.Char (toUpper)
 import Data.Map  (Map)
@@ -102,10 +102,10 @@ usingArgList constraints =
 
 
 qTypeVar :: H.QTypeVar -> S.QTypeVar
-qTypeVar (H.QTypeVar x y) = S.QTypeVar (module' <$> x) (typeVar y)
+qTypeVar (H.QTypeVar x y) = S.QTypeVar (qualifier' <$> x) (typeVar y)
 
 qTypeCtor :: H.QTypeCtor -> S.QTypeCtor
-qTypeCtor (H.QTypeCtor x y) = S.QTypeCtor (module' <$> x) (typeCtor y)
+qTypeCtor (H.QTypeCtor x y) = S.QTypeCtor (qualifier' <$> x) (typeCtor y)
 
 
 

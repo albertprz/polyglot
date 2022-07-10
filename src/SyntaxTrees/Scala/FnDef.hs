@@ -5,7 +5,8 @@ import Data.Monoid.HT            (when)
 import SyntaxTrees.Scala.Common  (Literal, Modifier, QCtor, QCtorOp, QVar,
                                   QVarOp, Var, Wrapper (..))
 import SyntaxTrees.Scala.Pattern (Pattern)
-import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam, UsingArgList)
+import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam,
+                                  UsingArgList (UsingArgList))
 
 import Data.List (intercalate)
 
@@ -238,7 +239,8 @@ showGiven x y z t u = joinWords [foldMap show x,
                                  "with",
                                  wrapSpacedBlock u]
   where
-    displaySep = hasSome x || hasSome y || hasSome z
+    displaySep = hasSome x || hasSome y || hasSome (foldMap fields z)
+    fields (UsingArgList x) = x
 
 
 showTuple :: Show a => [a] -> String

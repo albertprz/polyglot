@@ -8,7 +8,8 @@ import Parsers.Char                (colon, comma, equal)
 import Parsers.Collections         (tupleOf)
 import Parsers.Haskell.Common      (class', ctor, var)
 import Parsers.Haskell.Type        (anyKindedType, type', typeParam, typeVar)
-import Parsers.String              (maybeWithinParens, withinCurlyBrackets)
+import Parsers.String              (maybeWithinParens, withinCurlyBrackets,
+                                    withinParens)
 import SyntaxTrees.Haskell.Common  (Class)
 import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
                                     FieldDef (..), NamedFieldDef (..),
@@ -41,7 +42,7 @@ namedFieldDef = NamedFieldDef <$> var <* (colon <#> 2)
                               <*> type'
 
 unNamedFieldDef :: Parser UnNamedFieldDef
-unNamedFieldDef = UnNamedFieldDef <$> type'
+unNamedFieldDef = UnNamedFieldDef <$> (withinParens type' <|> type')
 
 fieldDef :: Parser FieldDef
 fieldDef = UnNamedField <$> unNamedFieldDef <|>

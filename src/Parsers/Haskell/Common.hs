@@ -17,7 +17,7 @@ import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
                                    QCtor (..), QCtorOp (..), QVar (..),
                                    QVarOp (..), Var (..), VarOp (..))
 import Utils.Foldable             (wrapMaybe)
-import Utils.String               (wrap, wrapBackQuotes, wrapParens, wrapQuotes)
+import Utils.String               (wrap, wrapBackQuotes, wrapQuotes)
 
 
 

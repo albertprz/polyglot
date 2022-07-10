@@ -12,6 +12,7 @@ extra-deps:
 - filepath-1.4.2.2
 - directory-1.3.7.0
 - parallel-3.2.2.0
+- casing-0.1.4.1
 
 - extra-1.7.10
 - utility-ht-0.0.16
@@ -29,3 +30,4 @@ extra-deps:
 - unix-compat-0.6
 - cereal-0.5.8.2
 - hashable-1.4.0.2
+- split-0.2.3.4

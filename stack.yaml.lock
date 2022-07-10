@@ -54,6 +54,13 @@ packages:
   original:
     hackage: parallel-3.2.2.0
 - completed:
+    hackage: casing-0.1.4.1@sha256:0be79e10a37cb7bd71f195e8a5f064e584be7674f57f5fe9f6f73a160527fcd8,1081
+    pantry-tree:
+      size: 263
+      sha256: e6c1f83eb7b665ee7a959b64a26d23db0f2bb5ea6534ff0cd4fdc45862cc4b20
+  original:
+    hackage: casing-0.1.4.1
+- completed:
     hackage: extra-1.7.10@sha256:e384751317577554f873812358fab022da02aa9a286c9341308fac83f4d766c5,2691
     pantry-tree:
       size: 1896
@@ -144,4 +151,11 @@ packages:
       sha256: 51dda0aa70849588d074125f324beba1c8736cfa486e7f4a90a798b1d0e6019d
   original:
     hackage: hashable-1.4.0.2
+- completed:
+    hackage: split-0.2.3.4@sha256:a6df9c3e806ee7cb50bc980a183fc1156f35022a39430dabac0bf9456fe18a4b,2647
+    pantry-tree:
+      size: 439
+      sha256: 4e7559f1be32a70cdbdb96d14db768561dd36b8fdff36b3ffac94751f5b5ae6d
+  original:
+    hackage: split-0.2.3.4
 snapshots: []

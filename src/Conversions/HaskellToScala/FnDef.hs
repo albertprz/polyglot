@@ -7,8 +7,8 @@ import qualified SyntaxTrees.Scala.Common   as S
 import qualified SyntaxTrees.Scala.FnDef    as S
 import qualified SyntaxTrees.Scala.Pattern  as S
 
-import Conversions.HaskellToScala.Common  (literal, qCtor, qCtorOp, qVar,
-                                           qVarOp, var)
+import Conversions.HaskellToScala.Common  (autoIds, literal, qCtor, qCtorOp,
+                                           qVar, qVarOp, var)
 import Conversions.HaskellToScala.Pattern (allVars, extractVars, pattern')
 import Conversions.HaskellToScala.Type    (argLists, classScopeSplit,
                                            findTypeParams, typeParam, typeSplit,
@@ -37,7 +37,7 @@ namedFnSig tpe args = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
 
 unNamedFnSig :: H.Type -> Int -> S.FnSig
 unNamedFnSig tpe n = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
-                     (argLists (S.Var <$> autoFnIds) argTypes)
+                     (argLists (S.Var <$> autoIds) argTypes)
                      [usingArgList constraints]
                      (Just retType)
   where
@@ -99,7 +99,7 @@ fnDefToFnBody :: [H.FnDef] -> S.FnBody
 fnDefToFnBody defs = match
   where
     match = simplifyMatch $
-      S.MatchExpr (tuple $ take n autoFnIds) cases
+      S.MatchExpr (tuple $ take n autoIds) cases
     casePatterns = (S.TuplePattern  . (pattern' <$>) . (.args)) <$> defs
     caseBodies =  (maybeGuardedBody . (.body)) <$> defs
     cases = uncurry3 S.CaseBinding <$> zip3 casePatterns (repeat Nothing)
@@ -134,8 +134,8 @@ fnBody (H.FnVar' x)         = fnVar x
 fnBody (H.Literal' x)       = S.Literal' $ literal x
 
 fnBody (H.List [])        = S.FnApply
-        (S.FnVar' $ S.Ctor' $ S.QCtor Nothing $ S.Ctor "List.empty")
-                                     []
+        (S.FnVar' $ S.Ctor' $ S.QCtor (Just $ S.Package ["List"])
+                                      (S.Ctor "empty")) []
 fnBody (H.List x)        = S.FnApply
         (S.FnVar' $ S.Ctor' $ S.QCtor Nothing $ S.Ctor "List")
                                      (fnBody <$> x)
@@ -264,7 +264,3 @@ aggregateConds :: [S.FnBody] -> S.FnBody
 aggregateConds [x] = x
 aggregateConds x = S.InfixFnApply
                      [S.VarOp' $ S.QVarOp Nothing $ S.VarOp "&&"] x
-
-
-autoFnIds :: [String]
-autoFnIds = pure <$> ['x', 'y', 'z', 't', 'u', 'v', 'w', 'p', 'q', 'r', 's']
