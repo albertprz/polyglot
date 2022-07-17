@@ -154,7 +154,9 @@ instance Show GivenDef where
                                           showGiven y z t u v]
 
 instance Show FnBody where
-  show (FnApply x y)      = joinWords [show x, wrapParensCsv y]
+  show (FnApply x y)
+    | (FnVar' (Ctor' _)) <- x = joinWords [show x, wrapParensCsv y]
+    | otherwise = joinWords [show x, joinWords $ wrapParens . show <$> y]
   show (NamedFnApply x y) = joinWords [show x, wrapParensCsv $ Wrapper .
                                       (\(a, b) -> show a +++ "=" +++ show b) <$> y]
   show (InfixFnApply x [y]) = showForInfix y +++ foldMap show x
@@ -240,7 +242,7 @@ showGiven x y z t u = joinWords [foldMap show x,
                                  wrapSpacedBlock u]
   where
     displaySep = hasSome x || hasSome y || hasSome (foldMap fields z)
-    fields (UsingArgList x) = x
+    fields (UsingArgList h) = h
 
 
 showTuple :: Show a => [a] -> String

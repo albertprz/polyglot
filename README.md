@@ -66,23 +66,23 @@ def action(x: ParseError => IO[Unit])(y: Opts): IO[Unit] =
   (x, y) match
     case (errorAction, Opts(sourcePath, targetPath, autoFormat)) =>
       def createDirAndWriteFile =
-        createDirectoryIfMissing(true, finalDir) *> writeFileUtf8(finalPath, x)
+        createDirectoryIfMissing(true)(finalDir) *> writeFileUtf8(finalPath)(x)
       def finalDir =
         takeDirectory(finalPath)
       def finalPath =
         pathToScala(targetPath$)
       def targetPath$ =
         if isDir(targetPath) then
-          replaceFileName(targetPath, takeFileName(sourcePath))
+          replaceFileName(targetPath)(takeFileName(sourcePath))
         else targetPath
       def format =
         if autoFormat then
-          readProcess(formatterExec, List("--stdin", finalPath))
+          readProcess(formatterExec)(List("--stdin", finalPath))
         else pure
 
       readFileUtf8(sourcePath)
       >>= (pack <<&>> _) ^ traverse(format) ^ toScala
-      >>= either(errorAction, createDirAndWriteFile)
+      >>= either(errorAction)(createDirAndWriteFile)
 
 ```
 
