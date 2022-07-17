@@ -1,20 +1,10 @@
 module Parsers.Haskell.FnDef where
 
-import Data.Foldable             (Foldable (fold))
-import Data.Maybe                (maybeToList)
 import Lexers.Haskell.Layout     (lexeme)
-import Parser                    (Parser, andThen, check)
-import ParserCombinators         (IsMatch (is), someSepBy, (<|>), (>>>), (|*),
-                                  (|+), (|?))
-import Parsers.Char              (comma, dot)
-import Parsers.Collections       (listOf, tupleOf)
 import Parsers.Haskell.Common    (literal, nonTokenQVar, qCtor, qCtorOp, qVar,
                                   qVarOp, token, var, varOp)
 import Parsers.Haskell.Pattern   (pattern')
 import Parsers.Haskell.Type      (type')
-import Parsers.Number            (int)
-import Parsers.String            (spacing, string, withinCurlyBrackets,
-                                  withinParens)
 import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   CaseBinding (..), DoStep (..), FnBody (..),
                                   FnDef (FnDef), FnDefOrSig (..), FnOp (..),
@@ -22,8 +12,19 @@ import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   GuardedFnBody (..),
                                   InfixFnAnnotation (InfixFnAnnotation),
                                   MaybeGuardedFnBody (..), PatternGuard (..))
-import Utils.String              (wrapCurly)
 
+import Bookhound.Parser              (Parser, andThen, check)
+import Bookhound.ParserCombinators   (IsMatch (is), someSepBy, (<|>), (>>>),
+                                      (|*), (|+), (|?))
+import Bookhound.Parsers.Char        (comma, dot)
+import Bookhound.Parsers.Collections (listOf, tupleOf)
+import Bookhound.Parsers.Number      (int)
+import Bookhound.Parsers.String      (spacing, string, withinCurlyBrackets,
+                                      withinParens)
+
+import Data.Foldable (Foldable (fold))
+import Data.Maybe    (maybeToList)
+import Utils.String  (wrapCurly)
 
 
 fnSig :: Parser FnSig

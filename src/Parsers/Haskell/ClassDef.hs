@@ -3,15 +3,16 @@ module Parsers.Haskell.ClassDef where
 import SyntaxTrees.Haskell.ClassDef (ClassDef (ClassDef),
                                      InstanceDef (InstanceDef))
 
-import Data.Foldable          (Foldable (fold))
-import Parser                 (Parser)
-import ParserCombinators      (IsMatch (is), (<|>), (|?))
-import Parsers.Collections    (tupleOf)
 import Parsers.Haskell.Common (class')
 import Parsers.Haskell.FnDef  (fnDefOrSig, withinContext)
 import Parsers.Haskell.Type   (anyKindedType, classConstraints, type',
                                typeParam)
 
+import Bookhound.Parser              (Parser)
+import Bookhound.ParserCombinators   (IsMatch (is), (<|>), (|?))
+import Bookhound.Parsers.Collections (tupleOf)
+
+import Data.Foldable (Foldable (fold))
 
 
 classDef :: Parser ClassDef

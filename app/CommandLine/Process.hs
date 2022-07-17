@@ -1,8 +1,6 @@
 module CommandLine.Process where
 
-
 import Lexers.Haskell.Layout (adaptLayout)
-import Parser                (ParseError, runParser)
 
 
 import CommandLine.Options         (Opts (..))
@@ -13,6 +11,8 @@ import Control.Parallel.Strategies (parMap, rseq)
 import Data.Foldable               (traverse_)
 import Data.List                   (isPrefixOf)
 import Data.Tuple.Extra            (both)
+import Data.Text.Encoding (decodeUtf8, encodeUtf8)
+import Data.Text (Text, pack)
 import Utils.Functor               ((<<$>>))
 
 
@@ -21,7 +21,7 @@ import System.Directory.Extra (createDirectoryIfMissing, doesDirectoryExist,
                                getHomeDirectory, removeDirectoryRecursive,
                                removeFile)
 import System.Directory.Tree  (AnchoredDirTree (..), DirTree (..), failures,
-                               filterDir, readDirectory, writeDirectory, (</$>))
+                               filterDir, readDirectoryWith, writeDirectoryWith, (</$>))
 import System.FilePath        (equalFilePath, joinPath, normalise,
                                replaceFileName, splitDirectories, splitPath,
                                takeDirectory, takeExtensions, takeFileName,
@@ -31,10 +31,12 @@ import System.FSNotify        (Action, ActionPredicate, Event (..), watchTree,
 import System.Process.Extra   (callProcess, readProcess)
 
 
+import qualified Data.ByteString as B (readFile, writeFile)
+
 import qualified Conversions.HaskellToScala.ModuleDef as Conversions
 import qualified Parsers.Haskell.ModuleDef            as Parser
 
-
+import Bookhound.Parser                (ParseError, runParser)
 
 
 process :: Opts -> IO ()
@@ -50,13 +52,13 @@ process opts@Opts{watchMode, sourcePath, targetPath}
 
 action :: (ParseError -> IO ()) -> Opts -> IO ()
 action errorAction Opts{sourcePath, targetPath, autoFormat} =
-  readFile sourcePath
-  >>= traverse format . toScala
+  readFileUtf8 sourcePath
+  >>= (pack <<$>>) . traverse format . toScala
   >>= either errorAction createDirAndWriteFile
 
   where
     createDirAndWriteFile x = createDirectoryIfMissing True finalDir *>
-                              writeFile finalPath x
+                              writeFileUtf8 finalPath x
     finalDir                = takeDirectory finalPath
     finalPath               = pathToScala targetPath'
 
@@ -75,7 +77,7 @@ actions :: Opts -> IO ()
 actions Opts{sourcePath, targetPath, autoFormat, clearContents} =
   when clearContents (removeDirIfExists targetPath)
   >>= const (migrateDirTree sourcePath targetPath)
-  >>= writeDirectory
+  >>= writeDirectoryWith writeFileUtf8
   >>= (traverse_ reportFailure) . failures . dirTree
   >>= const format
 
@@ -85,7 +87,8 @@ actions Opts{sourcePath, targetPath, autoFormat, clearContents} =
     removeDirPred fp = andM [doesDirectoryExist fp,
                              (/= fp) <$> getHomeDirectory]
     migrateDirTree fp1 fp2 = convertDirTree . filterDir filterPred
-                             </$> (moveTree fp1 fp2 <$> readDirectory fp1)
+                             </$> (moveTree fp1 fp2 <$>
+                                   readDirectoryWith readFileUtf8 fp1)
     format = when autoFormat $ callProcess formatterExec [targetPath]
 
 
@@ -102,19 +105,19 @@ watchPath opts@Opts {sourcePath} =
     loop = forever (threadDelay 1000000)
 
 
-toScala :: String -> Either ParseError String
-toScala =  adaptLayout >=> convert
+toScala :: Text -> Either ParseError String
+toScala = adaptLayout >=> convert
   where
-    convert = show . Conversions.moduleDef <<$>> runParser Parser.moduleDef
+        convert = show . Conversions.moduleDef <<$>> runParser Parser.moduleDef
 
 
-convertDirTree :: DirTree String -> DirTree String
+convertDirTree :: DirTree Text -> DirTree Text
 convertDirTree (File x y)
   | isHaskellFile x = applyTransform y
     where
       applyTransform = either (Failed x . userError . const "Parse Error")
                               (File $ pathToScala x)
-                       . toScala
+                       . (pack <$>) . toScala
 
 convertDirTree (Dir x y) = Dir x (parMap rseq convertDirTree y)
 convertDirTree x = x
@@ -173,6 +176,13 @@ getWatchPath fp Opts{sourcePath, targetPath} =
     prunedPath          = diffPath <$> traverse canonicalizePath (fp, sourcePath)
     diffPath (fp1, fp2) = joinPath $ drop (length $ splitPath fp2)
                                           (splitPath fp1)
+
+
+readFileUtf8 :: FilePath -> IO Text
+readFileUtf8 fp = decodeUtf8 <$> B.readFile fp
+
+writeFileUtf8 :: FilePath -> Text -> IO ()
+writeFileUtf8 fp = B.writeFile fp . encodeUtf8
 
 
 getDirTreeContents :: Int -> DirTree a -> [DirTree a]

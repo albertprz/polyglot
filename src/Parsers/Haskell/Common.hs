@@ -3,21 +3,21 @@ module Parsers.Haskell.Common where
 import Data.Foldable (Foldable (fold))
 
 
-import Parser                     (Parser, check, withTransform)
-import ParserCombinators          (IsMatch (inverse, is, isNot, noneOf, oneOf),
-                                   maybeWithin, someSepBy, within, withinBoth,
-                                   (<|>), (>>>), (|*), (|+), (|?))
-import Parsers.Char               (alpha, alphaNum, char, colon, dot, lower,
-                                   newLine, quote, underscore, upper)
-import Parsers.Number             (double, int)
-import Parsers.String             (spacing, withinDoubleQuotes, withinParens,
-                                   withinQuotes)
-import SyntaxTrees.Haskell.Common (Class (..), Ctor (..), CtorOp (..),
-                                   Literal (..), Module (..), QClass (QClass),
-                                   QCtor (..), QCtorOp (..), QVar (..),
-                                   QVarOp (..), Var (..), VarOp (..))
-import Utils.Foldable             (wrapMaybe)
-import Utils.String               (wrap, wrapBackQuotes, wrapQuotes)
+import Bookhound.Parser            (Parser, check, withTransform)
+import Bookhound.ParserCombinators (IsMatch (inverse, is, isNot, noneOf, oneOf),
+                                    maybeWithin, someSepBy, within, withinBoth,
+                                    (<|>), (>>>), (|*), (|+), (|?))
+import Bookhound.Parsers.Char      (alpha, alphaNum, char, colon, dot, lower,
+                                    newLine, quote, underscore, upper)
+import Bookhound.Parsers.Number    (double, int)
+import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
+                                    withinQuotes)
+import SyntaxTrees.Haskell.Common  (Class (..), Ctor (..), CtorOp (..),
+                                    Literal (..), Module (..), QClass (QClass),
+                                    QCtor (..), QCtorOp (..), QVar (..),
+                                    QVarOp (..), Var (..), VarOp (..))
+import Utils.Foldable              (wrapMaybe)
+import Utils.String                (wrap, wrapBackQuotes, wrapQuotes)
 
 
 

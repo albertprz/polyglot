@@ -1,29 +1,31 @@
 module Lexers.Haskell.Layout where
 
 
-import Parser            (ParseError, Parser, check, runParser)
-import ParserCombinators (IsMatch (is, isNot, noneOf, oneOf), (<|>), (>>>),
-                          (|*), (|+), (|?))
-import Parsers.Char      (char, space)
-
-import Control.Monad (foldM)
-import Data.Foldable (Foldable (fold))
-
-import Data.Monoid.HT (when)
-
-import Data.List              (isPrefixOf)
 import Parsers.Haskell.Common (anyComment)
-import Parsers.String         (spacing, withinDoubleQuotes, withinParens,
-                               withinQuotes, word)
-import Utils.Foldable         (hasNone, hasSome)
-import Utils.List             (safeHead, safeTail)
-import Utils.String           (joinWords, wrapCurly', wrapDoubleQuotes',
-                               wrapParens', wrapQuotes')
+
+import Utils.Foldable (hasNone, hasSome)
+import Utils.List     (safeHead, safeTail)
+import Utils.String   (joinWords, wrapCurly', wrapDoubleQuotes', wrapParens',
+                       wrapQuotes')
 
 
+import Bookhound.Parser            (ParseError, Parser, check, runParser)
+import Bookhound.ParserCombinators (IsMatch (is, isNot, noneOf, oneOf), (<|>),
+                                    (>>>), (|*), (|+), (|?))
+import Bookhound.Parsers.Char      (char, space)
+import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
+                                    withinQuotes, word)
 
-adaptLayout :: String -> Either ParseError String
-adaptLayout str = (++ " }") . unlines . fst4 <$> layoutLines
+
+import Control.Monad  (foldM)
+import Data.Foldable  (Foldable (fold))
+import Data.List      (isPrefixOf)
+import Data.Monoid.HT (when)
+import Data.Text      (Text, pack)
+
+
+adaptLayout :: Text -> Either ParseError Text
+adaptLayout str = pack . (++ " }") . unlines . fst4 <$> layoutLines
   where
     layoutLines = foldM layout args . (++ pure "") . filter (/= "") =<< input
     input = lines . fold <$> runParser parensLayout str
@@ -31,7 +33,7 @@ adaptLayout str = (++ " }") . unlines . fst4 <$> layoutLines
 
 
 layout :: ([String], [Int], Bool, Bool) -> String -> Either ParseError ([String], [Int], Bool, Bool)
-layout (x, y, z, t) str = runParser layoutParser str
+layout (x, y, z, t) str = runParser layoutParser $ pack str
   where
     layoutParser =
       do spaces' <- (space |*)

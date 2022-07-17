@@ -1,14 +1,15 @@
 module Parsers.Haskell.Type where
 
 
-import Parser                   (Parser)
-import ParserCombinators        (IsMatch (is), manySepBy, someSepBy, (<|>),
-                                 (|+))
-import Parsers.Char             (comma, dot, lower, upper)
-import Parsers.Collections      (tupleOf)
+import Bookhound.Parser              (Parser)
+import Bookhound.ParserCombinators   (IsMatch (is), manySepBy, someSepBy, (<|>),
+                                      (|+))
+import Bookhound.Parsers.Char        (comma, dot, lower, upper)
+import Bookhound.Parsers.Collections (tupleOf)
+import Bookhound.Parsers.String      (maybeWithinParens, withinParens,
+                                      withinSquareBrackets)
+
 import Parsers.Haskell.Common   (ident, notReserved, qClass, qTerm')
-import Parsers.String           (maybeWithinParens, withinParens,
-                                 withinSquareBrackets)
 import SyntaxTrees.Haskell.Type (AnyKindedType (..), ClassConstraint (..),
                                  QTypeCtor (QTypeCtor), QTypeVar (QTypeVar),
                                  Type (..), TypeCtor (..), TypeParam (..),

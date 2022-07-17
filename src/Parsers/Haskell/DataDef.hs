@@ -1,20 +1,22 @@
 module Parsers.Haskell.DataDef where
 
-import Data.Foldable               (Foldable (fold))
-import Parser                      (Parser)
-import ParserCombinators           (IsMatch (..), anySepBy, someSepBy, (<#>),
-                                    (<|>), (|*), (|?))
-import Parsers.Char                (colon, comma, equal)
-import Parsers.Collections         (tupleOf)
 import Parsers.Haskell.Common      (class', ctor, var)
 import Parsers.Haskell.Type        (anyKindedType, type', typeParam, typeVar)
-import Parsers.String              (maybeWithinParens, withinCurlyBrackets,
-                                    withinParens)
 import SyntaxTrees.Haskell.Common  (Class)
 import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
                                     FieldDef (..), NamedFieldDef (..),
                                     NewTypeDef (..), TypeDef (..),
                                     UnNamedFieldDef (..))
+
+import Bookhound.Parser              (Parser)
+import Bookhound.ParserCombinators   (IsMatch (..), anySepBy, someSepBy, (<#>),
+                                      (<|>), (|*), (|?))
+import Bookhound.Parsers.Char        (colon, comma, equal)
+import Bookhound.Parsers.Collections (tupleOf)
+import Bookhound.Parsers.String      (maybeWithinParens, withinCurlyBrackets,
+                                      withinParens)
+
+import Data.Foldable (Foldable (fold))
 
 
 typeDef :: Parser TypeDef

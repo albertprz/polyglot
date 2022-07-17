@@ -19,7 +19,7 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/githubuser/haskala#readme>
 
 dependencies:
-- bookhound >= 0.1.9 && < 0.2
+- bookhound >= 0.1.11 && < 0.2
 - optparse-applicative >= 0.17.0 && < 0.18
 - directory-tree >= 0.12.1 && < 0.13
 - fsnotify >= 0.3.0.1 && < 0.4
@@ -28,10 +28,13 @@ dependencies:
 - parallel >= 3.2.2.0 && < 3.3
 - casing >= 0.1.4.1 && < 0.2
 
-- base >= 4.7 && < 5
 - containers
+- base >= 4.7 && < 5
 - extra >= 1.7.10 && < 1.8
-- utility-ht >= 0.0.16
+- utility-ht >= 0.0.16 && < 0.1
+- text >= 2 && < 2.1
+- bytestring
+
 
 ghc-options:
 - -Wall

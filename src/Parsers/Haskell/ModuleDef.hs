@@ -1,27 +1,28 @@
 module Parsers.Haskell.ModuleDef where
 
 
-import Parsers.Haskell.ClassDef      (classDef, instanceDef)
-import Parsers.Haskell.Common        (module', token, var)
-import Parsers.Haskell.DataDef       (dataDef, newtypeDef, typeDef)
-import Parsers.Haskell.FnDef         (fnDef, fnSig, infixAnnotation,
-                                      withinContextTupled)
-import Parsers.Haskell.Type          (typeVar)
+import Parsers.Haskell.ClassDef (classDef, instanceDef)
+import Parsers.Haskell.Common   (module', token, var)
+import Parsers.Haskell.DataDef  (dataDef, newtypeDef, typeDef)
+import Parsers.Haskell.FnDef    (fnDef, fnSig, infixAnnotation,
+                                 withinContextTupled)
+import Parsers.Haskell.Type     (typeVar)
+
+import SyntaxTrees.Haskell.FnDef     (FnDefOrSig (..))
 import SyntaxTrees.Haskell.ModuleDef (InternalDef (..), ModuleDef (..),
                                       ModuleExport (..), ModuleExportDef (..),
                                       ModuleImport (..), ModuleImportDef (..),
                                       ModuleMember (DataMember, VarMember))
 
-import Data.Foldable             (Foldable (fold))
-import Data.Maybe                (isJust)
-import Parser                    (Parser)
-import ParserCombinators         (IsMatch (is), anySepBy, maybeWithin, (<|>),
-                                  (|?))
-import Parsers.Char              (comma)
-import Parsers.String            (spacing, withinParens)
-import SyntaxTrees.Haskell.FnDef (FnDefOrSig (..))
+import Bookhound.Parser            (Parser)
+import Bookhound.ParserCombinators (IsMatch (is), anySepBy, maybeWithin, (<|>),
+                                    (|?))
+import Bookhound.Parsers.Char      (comma)
+import Bookhound.Parsers.String    (spacing, withinParens)
 
 
+import Data.Foldable (Foldable (fold))
+import Data.Maybe    (isJust)
 
 
 
