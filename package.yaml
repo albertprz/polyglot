@@ -95,7 +95,7 @@ library:
   source-dirs: src
 
 executables:
-  haskala-exe:
+  haskala:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

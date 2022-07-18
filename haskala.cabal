@@ -112,7 +112,7 @@ library
     , utility-ht >=0.0.16 && <0.1
   default-language: Haskell2010
 
-executable haskala-exe
+executable haskala
   main-is: Main.hs
   other-modules:
       CommandLine.FileIO
