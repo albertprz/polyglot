@@ -115,6 +115,7 @@ library
 executable haskala-exe
   main-is: Main.hs
   other-modules:
+      CommandLine.FileIO
       CommandLine.Options
       CommandLine.Process
       Paths_haskala

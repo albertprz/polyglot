@@ -5,13 +5,13 @@
 CLI tool to partially transpile Haskell modules to Scala 3 packages.
 
 The CLI can convert individual Haskell files as well as recursively
-convert directory trees (or projects for that matter).
+convert directory trees (or projects, for that matter).
 
 There are a few options available to, for example, 
 watch a file / directory and reactively convert it whenever modified,
 as well as to format the output Scala files.
 
-This is still WIP. At the moment, parsing of Haskell 98 / 2010 along with a limited subset of GHC Extensions is supported (for example there is currently no support for Template Haskell).
+This is still WIP. At the moment, only parsing of Haskell 98 / 2010 files along with a limited subset of GHC Extensions is supported (for example, there is currently no support for Template Haskell).
 
 
 ## Details
@@ -27,7 +27,40 @@ Also, bear in mind that due to different semantics (call-by-need vs strict) and 
 
 In any case, it can be helpful to check the output Scala files and manually adapt them as desired, because many Haskell idioms may not be the best match in Scala. 
 
-## Example
+## Examples
+
+Sample Haskell snippet:
+
+``` haskell
+
+process :: Opts -> IO ()
+process opts@Opts{watchMode, sourcePath, targetPath}
+  | isDir sourcePath && not (isDir targetPath) =
+      fail "If the input path is a directory then the output path must be a directory as well"
+  | equalFilePath sourcePath targetPath =
+      fail "The output path cannot be the same as the input path"
+  | watchMode                      = watchPath opts
+  | null (takeFileName sourcePath) = actions opts
+  | otherwise                      = action emitError opts
+
+```
+
+Converted Scala output (after formatting):
+
+``` scala
+def process: Opts => IO[Unit] =
+  case (opts @ Opts(watchMode, sourcePath, targetPath)) =>
+    if isDir(sourcePath) && not(isDir(targetPath)) then
+      fail(
+        "If the input path is a directory then the output path must be a directory as well"
+      )
+    else if equalFilePath(sourcePath)(targetPath) then
+      fail("The output path cannot be the same as the input path")
+    else if watchMode then watchPath(opts)
+    else if null (takeFileName(sourcePath)) then actions(opts)
+    else action(emitError)(opts)
+
+```
 
 
 Sample Haskell snippet:
