@@ -11,7 +11,7 @@ import Utils.String   (joinWords, wrapCurly', wrapDoubleQuotes', wrapParens',
 
 import Bookhound.Parser            (ParseError, Parser, check, runParser)
 import Bookhound.ParserCombinators (IsMatch (is, isNot, noneOf, oneOf), (<|>),
-                                    (>>>), (|*), (|+), (|?))
+                                    (->>-), (|*), (|+), (|?))
 import Bookhound.Parsers.Char      (char, space)
 import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
                                     withinQuotes, word)
@@ -59,14 +59,14 @@ layout (x, y, z, t) str = runParser layoutParser $ pack str
 
 
 parensLayout :: Parser [String]
-parensLayout = (((spacing |?) >>> elem'
+parensLayout = (((spacing |?) ->>- elem'
                <|> parensParser
-               <|> (wrapParens' . fold <$> withinParens parensLayout) >>>
+               <|> (wrapParens' . fold <$> withinParens parensLayout) ->>-
                    (spacing |?)) |*)
   where
     elem' = lexeme' id
     parensParser = wrapParens' <$> withinParens
-                ((spacing |?) >>> layoutBegin >>> spacing >>>
+                ((spacing |?) ->>- layoutBegin ->>- spacing ->>-
                  (wrapCurly' . fold <$> parensLayout))
 
 
@@ -92,7 +92,7 @@ layoutBegin = oneOf layoutTokens
 otherText :: Parser String
 otherText = fold <$> elems
   where
-    elems = (((check "" (`notElem` layoutTokens) lexeme) >>> (space |*)) |*)
+    elems = (((check "" (`notElem` layoutTokens) lexeme) ->>- (space |*)) |*)
 
 
 lexeme :: Parser String
@@ -108,7 +108,7 @@ otherText' = lexeme' (check "" (`notElem` layoutTokens))
 
 
 lexeme' :: (Parser String -> Parser String) -> Parser String
-lexeme' f = (spacing |?) >>> f parser >>> (spacing |?)
+lexeme' f = (spacing |?) ->>- f parser ->>- (spacing |?)
   where
     parser = wrapDoubleQuotes'      <$> withinDoubleQuotes (isNot '"'  |+)
              <|> wrapQuotes' . pure <$> withinQuotes (char <|> (is '\\' |?) *> char)

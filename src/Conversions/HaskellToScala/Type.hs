@@ -4,7 +4,7 @@ import qualified SyntaxTrees.Haskell.Type as H
 import qualified SyntaxTrees.Scala.Common as S
 import qualified SyntaxTrees.Scala.Type   as S
 
-import Conversions.HaskellToScala.Common (find, module', qClass, qualifier')
+import Conversions.HaskellToScala.Common (find, qClass, qualifier')
 
 import Data.Char (toUpper)
 import Data.Map  (Map)

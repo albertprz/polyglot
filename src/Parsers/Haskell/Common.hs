@@ -6,7 +6,7 @@ import Data.Foldable (Foldable (fold))
 import Bookhound.Parser            (Parser, check, withTransform)
 import Bookhound.ParserCombinators (IsMatch (inverse, is, isNot, noneOf, oneOf),
                                     maybeWithin, someSepBy, within, withinBoth,
-                                    (<|>), (>>>), (|*), (|+), (|?))
+                                    (<|>), (->>-), (|*), (|+), (|?))
 import Bookhound.Parsers.Char      (alpha, alphaNum, char, colon, dot, lower,
                                     newLine, quote, underscore, upper)
 import Bookhound.Parsers.Number    (double, int)
@@ -32,7 +32,7 @@ literal = token $
 
   where
     charLit = noneOf ['\'', '\\']
-    charLitEscaped = read . wrapQuotes <$> (is '\\' >>> alpha)
+    charLitEscaped = read . wrapQuotes <$> (is '\\' ->>- alpha)
                      <|> (is '\\' *> char)
     stringLit = noneOf ['"', '\\']
 
@@ -131,13 +131,13 @@ anyComment :: Parser String
 anyComment = pragma <|> blockComment <|> lineComment
 
 lineComment :: Parser String
-lineComment = is "--" >>> (pure <$> newLine <|>
-                          noneOf symbolChars >>> (inverse newLine |*))
+lineComment = is "--" ->>- (pure <$> newLine <|>
+                          noneOf symbolChars ->>- (inverse newLine |*))
 
 
 blockComment :: Parser String
 blockComment = wrap "{-"  "-}" . fold <$> withinBoth (is "{-") (is "-}")
-                         ((:) <$> (isNot "#") <*> ((isNot "-" >>> isNot "}") |*))
+                         ((:) <$> (isNot "#") <*> ((isNot "-" ->>- isNot "}") |*))
 
 
 pragma :: Parser String

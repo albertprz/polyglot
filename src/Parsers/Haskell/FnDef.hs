@@ -14,7 +14,7 @@ import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   MaybeGuardedFnBody (..), PatternGuard (..))
 
 import Bookhound.Parser              (Parser, andThen, check)
-import Bookhound.ParserCombinators   (IsMatch (is), someSepBy, (<|>), (>>>),
+import Bookhound.ParserCombinators   (IsMatch (is), someSepBy, (<|>), (->>-),
                                       (|*), (|+), (|?))
 import Bookhound.Parsers.Char        (comma, dot)
 import Bookhound.Parsers.Collections (listOf, tupleOf)
@@ -159,17 +159,17 @@ patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>
 
 adaptFnBody :: Parser String
 adaptFnBody = do start <- otherText
-                 next <- ((is "where" >>> string) |?)
-                 other <- ((is ";" >>> string) |?)
+                 next <- ((is "where" ->>- string) |?)
+                 other <- ((is ";" ->>- string) |?)
                  let x = maybe start ((wrapCurly start) ++) next ++ fold other
                  pure x
 
 
 otherText :: Parser String
-otherText = (spacing |?) >>> (textElem |*)
+otherText = (spacing |?) ->>- (textElem |*)
 
  where
-   textElem = check "" (`notElem` ["where", ";"]) lexeme >>> (spacing |?)
+   textElem = check "" (`notElem` ["where", ";"]) lexeme ->>- (spacing |?)
 
 
 statements :: Parser a -> Parser [a]

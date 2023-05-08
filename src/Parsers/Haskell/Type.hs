@@ -2,7 +2,7 @@ module Parsers.Haskell.Type where
 
 
 import Bookhound.Parser              (Parser)
-import Bookhound.ParserCombinators   (IsMatch (is), manySepBy, someSepBy, (<|>),
+import Bookhound.ParserCombinators   (IsMatch (is), multipleSepBy, someSepBy, (<|>),
                                       (|+))
 import Bookhound.Parsers.Char        (comma, dot, lower, upper)
 import Bookhound.Parsers.Collections (tupleOf)
@@ -54,9 +54,9 @@ type' = typeScope <|> classScope <|> type'' <|> maybeWithinParens (type'')
                 NestedTypeApply <$> withinParens typeApply <*> (typeApplyElem |+)
 
     arrow = CtorTypeApply (QTypeCtor Nothing Arrow)
-            <$> manySepBy (is "->") arrowElem
+            <$> multipleSepBy (is "->") arrowElem
     tuple = CtorTypeApply (QTypeCtor Nothing TupleType)
-            <$> (withinParens $ manySepBy comma type'')
+            <$> (withinParens $ multipleSepBy comma type'')
     list  = CtorTypeApply (QTypeCtor Nothing ListType)
             <$> (pure <$> withinSquareBrackets type'')
 

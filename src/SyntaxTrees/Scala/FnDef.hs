@@ -62,8 +62,8 @@ data FnBody
       , namedArgs :: [(Var, FnBody)]
       }
   | InfixFnApply
-      { fnOp :: [FnOp]
-      , args :: [FnBody]
+      { fnOps :: [FnOp]
+      , args  :: [FnBody]
       }
   | LambdaExpr
       { vars :: [Var]
