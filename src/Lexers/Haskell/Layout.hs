@@ -42,18 +42,18 @@ layout (x, y, z, t) str = runParser layoutParser $ pack str
          spaces'' <- (space |*)
          rest <- otherText
          let hasIn = maybe False ("in" ==) (safeHead $ words start)
-         let hasCurly = isPrefixOf "{" rest
-         let indents = when z [length spaces'] ++
+             hasCurly = isPrefixOf "{" rest
+             indents = when z [length spaces'] ++
                 if not hasIn then y
                 else (length spaces' + 1) : (fold $ safeTail y)
-         let layoutNextLine = hasSome layoutText && hasNone rest
-         let contextIndent = length $ spaces' ++ start ++ fold layoutText ++ spaces''
-         let (newIndents, beginSep, stop) = calcIndent indents (length spaces')
+             layoutNextLine = hasSome layoutText && hasNone rest
+             contextIndent = length $ spaces' ++ start ++ fold layoutText ++ spaces''
+             (newIndents, beginSep, stop) = calcIndent indents (length spaces')
                                 (t || hasCurly)
-         let endSep = when (hasSome layoutText && not hasCurly) " {"
-         let indents' = when (hasSome layoutText && hasSome rest)
+             endSep = when (hasSome layoutText && not hasCurly) " {"
+             indents' = when (hasSome layoutText && hasSome rest)
                         [contextIndent] ++ newIndents
-         let text = x ++ [spaces' ++ beginSep ++ start ++ fold layoutText ++
+             text = x ++ [spaces' ++ beginSep ++ start ++ fold layoutText ++
                           endSep ++  spaces'' ++ rest]
          pure $ (text, indents', layoutNextLine, stop || hasCurly)
 

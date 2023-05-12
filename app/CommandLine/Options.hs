@@ -38,5 +38,5 @@ opts = Opts
 optsInfo :: ParserInfo Opts
 optsInfo = info (helper <*> opts)
            ( fullDesc
-           <> progDesc "Translate Haskell file(s) into Scala"
+           <> progDesc "Compile Haskell file(s) into Scala 3"
            <> header "haskala" )

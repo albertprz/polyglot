@@ -27,6 +27,25 @@ Also, bear in mind that due to different semantics (call-by-need vs strict) and 
 
 In any case, it can be helpful to check the output Scala files and manually adapt them as desired, because many Haskell idioms may not be the best match in Scala. 
 
+## Command Line Application
+
+```
+haskala
+
+Usage: haskala (-i|--input ARG) (-o|--output ARG) [-f|--format] [-w|--watch]
+                   [--clear]
+
+   Compile Haskell file(s) into Scala 3
+
+Available options:
+  -h,--help                Show this help text
+  -i,--input ARG           Path of input Haskell file or directory
+  -o,--output ARG          Path of output Scala file or directory
+  -f,--format              Apply Scala formatter (scalafmt) on output file(s)
+  -w,--watch               Watch for changes and convert automatically
+  --clear                  Clear the output directory contents before conversion
+```
+
 ## Examples
 
 Sample Haskell snippet:
