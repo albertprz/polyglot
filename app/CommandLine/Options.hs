@@ -1,13 +1,23 @@
 module CommandLine.Options where
 
-import Options.Applicative (Parser, ParserInfo, fullDesc, header, help, helper,
-                            info, long, progDesc, short, strOption, switch)
+import Options.Applicative
+import Data.List (intercalate)
+import Data.Text (pack)
+import Data.Either.Extra (mapLeft)
+
+import qualified Bookhound.Parser as Bookhound
+import Bookhound.ParserCombinators
+
+
+data Language = Scala
+  deriving (Eq, Ord, Enum, Show, Bounded)
 
 
 data Opts
   = Opts
       { sourcePath    :: FilePath
       , targetPath    :: FilePath
+      , language      :: Language
       , autoFormat    :: Bool
       , watchMode     :: Bool
       , clearContents :: Bool
@@ -22,11 +32,15 @@ opts = Opts
     <*> strOption
         ( long "output"
         <> short 'o'
-        <> help "Path of output Scala file or directory" )
+        <> help "Path of output file or directory" )
+    <*> parserOption language
+        ( long "language"
+        <> short 'l'
+        <> help "Target language")
     <*> switch
         ( long "format"
         <> short 'f'
-        <> help "Apply Scala formatter (scalafmt) on output file(s)" )
+        <> help "Apply formatter on output file(s)" )
     <*> switch
         ( long "watch"
         <> short 'w'
@@ -38,5 +52,20 @@ opts = Opts
 optsInfo :: ParserInfo Opts
 optsInfo = info (helper <*> opts)
            ( fullDesc
-           <> progDesc "Compile Haskell file(s) into Scala 3"
-           <> header "haskala" )
+           <> progDesc "Compile Haskell file(s) into a target language. \n"
+           <> footer ("Supported languages: "
+            <> (intercalate ", " $ show <$> ([minBound .. maxBound] :: [Language])))
+           <> header "polyglot" )
+
+
+language :: Bookhound.Parser Language
+language = Scala <$ is "Scala"
+
+
+parserToReader :: Bookhound.Parser b -> String -> Either String b
+parserToReader parser =
+  mapLeft show . Bookhound.runParser parser . pack
+
+parserOption :: Bookhound.Parser a -> Options.Applicative.Mod Options.Applicative.OptionFields a -> Parser a
+parserOption parser =
+  option $ eitherReader $ parserToReader parser

@@ -1,6 +1,6 @@
-name:                haskala
+name:                polyglot
 version:             0.1.0.0
-github:              "albertprz/haskala"
+github:              "albertprz/polyglot"
 license:             BSD3
 author:              "Alberto Perez Lopez"
 maintainer:          "albertoperez1994@gmail.com"
@@ -16,7 +16,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/albertprz/haskala#readme>
+description:         Please see the README on GitHub at <https://github.com/albertprz/polyglot#readme>
 
 dependencies:
 - bookhound >= 0.1.11 && < 0.2
@@ -95,7 +95,7 @@ library:
   source-dirs: src
 
 executables:
-  haskala:
+  polyglot:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -103,4 +103,4 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - haskala
+    - polyglot

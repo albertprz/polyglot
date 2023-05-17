@@ -1,85 +1,53 @@
-# haskala
+# polyglot
 
 ## Description
 
-CLI tool to partially transpile Haskell modules to Scala 3 packages.
+CLI tool to transpile Haskell modules to several target languages.
 
 The CLI can convert individual Haskell files as well as recursively
 convert directory trees (or projects, for that matter).
 
 There are a few options available to, for example, 
 watch a file / directory and reactively convert it whenever modified,
-as well as to format the output Scala files.
+as well as to format the output target language files.
 
-This is still WIP. At the moment, only parsing of Haskell 98 / 2010 files along with a limited subset of GHC Extensions is supported (for example, there is currently no support for Template Haskell).
+At the moment, only parsing of Haskell 98 / 2010 standards along with a limited subset of GHC Extensions is supported (for example, there is currently no support for Template Haskell or many of the GHC Extensions).
 
-
-## Details
-
-This CLI tool aims to perform a one-to-one mapping between Haskell and Scala 3 constructs.
-This can be done in most cases, because Scala 3 supports many of Haskell key features that are not necessarily available in other mainstream languages, such as Higher Kinded Types, Typeclasses, (G)ADTs & Higher Rank Polymorphism.
-
-However, the conversion can be lossy, so some information can be lost in the process. At the same time, it can be necessary to provide some extra information in the Scala version (most prominently function signatures, due to type inference needs).
-
-The resulting Scala files will have a dependency on at least Cats for the base typeclasses and Cats Effect for a lazy effect monad, as well as on some kind of prelude Scala library.
-
-Also, bear in mind that due to different semantics (call-by-need vs strict) and also runtime characteristics (such as stack safety), the resulting Scala files will probably need on most cases to be manually adapted post conversion, to preserve the original semantics and guarantee there will be no errors at runtime.
-
-In any case, it can be helpful to check the output Scala files and manually adapt them as desired, because many Haskell idioms may not be the best match in Scala. 
-
-## Command Line Application
+## Usage
 
 ```
-haskala
+Usage: polyglot (-i|--input ARG) (-o|--output ARG) (-l|--language ARG) 
+               [-f|--format] [-w|--watch] [--clear]
 
-Usage: haskala (-i|--input ARG) (-o|--output ARG) [-f|--format] [-w|--watch]
-                   [--clear]
-
-   Compile Haskell file(s) into Scala 3
+  Compile Haskell file(s) into a target language.
 
 Available options:
   -h,--help                Show this help text
   -i,--input ARG           Path of input Haskell file or directory
-  -o,--output ARG          Path of output Scala file or directory
-  -f,--format              Apply Scala formatter (scalafmt) on output file(s)
+  -o,--output ARG          Path of output file or directory
+  -l,--language ARG        Target language
+  -f,--format              Apply formatter on output file(s)
   -w,--watch               Watch for changes and convert automatically
   --clear                  Clear the output directory contents before conversion
+
+Supported languages: Scala
 ```
+
+## Details
+
+This CLI tool aims to perform a one-to-one mapping between Haskell and target language constructs.
+This can be done in most cases, because all of the available target languages support many of Haskell key features that are not necessarily available in other mainstream languages, such as Higher Kinded Types, Typeclasses, GADTs & Higher Rank Polymorphism.
+
+However, the conversion can be lossy, so some information can be lost in the process. At the same time, it can be necessary to provide some extra information in the target language version of the source file (most prominently function signatures, due to type inference).
+
+The resulting files will have a dependency on some kind of prelude library that will expose all of .
+
+Also, bear in mind that in some cases due to different call semantics (lazy or call-by-need vs strict) and also runtime support for features (such as tail call optimization), the resulting files in the target language will probably need on some cases to be manually adapted post conversion, to preserve or approximate to the original Haskell code runtime characteristics.
+
+In any case, it can be helpful to check the output files and manually adapt them as desired, because many Haskell idioms may not be the best match in the target language (This can be specially true for languages that are not in the ML family, such as Scala). 
+
 
 ## Examples
-
-Sample Haskell snippet:
-
-``` haskell
-
-process :: Opts -> IO ()
-process opts@Opts{watchMode, sourcePath, targetPath}
-  | isDir sourcePath && not (isDir targetPath) =
-      fail "If the input path is a directory then the output path must be a directory as well"
-  | equalFilePath sourcePath targetPath =
-      fail "The output path cannot be the same as the input path"
-  | watchMode                      = watchPath opts
-  | null (takeFileName sourcePath) = actions opts
-  | otherwise                      = action emitError opts
-
-```
-
-Converted Scala output (after formatting):
-
-``` scala
-def process: Opts => IO[Unit] =
-  case (opts @ Opts(watchMode, sourcePath, targetPath)) =>
-    if isDir(sourcePath) && not(isDir(targetPath)) then
-      fail(
-        "If the input path is a directory then the output path must be a directory as well"
-      )
-    else if equalFilePath(sourcePath)(targetPath) then
-      fail("The output path cannot be the same as the input path")
-    else if watchMode then watchPath(opts)
-    else if null (takeFileName(sourcePath)) then actions(opts)
-    else action(emitError)(opts)
-
-```
 
 
 Sample Haskell snippet:
