@@ -1,6 +1,6 @@
 module CommandLine.FileIO where
 
-import CommandLine.Options (Opts (..))
+import CommandLine.Options (Opts (..), Language (..))
 
 import Lexers.Haskell.Layout (adaptLayout)
 
@@ -24,30 +24,30 @@ import System.FSNotify       (ActionPredicate, Event (..))
 
 import qualified Data.ByteString as B (readFile, writeFile)
 
-import qualified Conversions.HaskellToScala.ModuleDef as Conversions
+import qualified Conversions.ToScala.ModuleDef as ToScala
 import qualified Parsers.Haskell.ModuleDef            as Parser
 
 import Bookhound.Parser (ParseError, runParser)
 
 
-
-toScala :: Text -> Either ParseError String
-toScala = adaptLayout >=> convert
+toTargetLanguage :: Language -> Text -> Either ParseError String
+toTargetLanguage language = adaptLayout >=> convert
   where
-        convert = show . Conversions.moduleDef <<$>> runParser Parser.moduleDef
+    convert = show . syntaxConverter <<$>> runParser Parser.moduleDef
+    syntaxConverter = case language of
+      Scala -> ToScala.moduleDef
 
 
-
-convertDirTree :: DirTree Text -> DirTree Text
-convertDirTree (File x y)
+convertDirTree :: Language -> DirTree Text -> DirTree Text
+convertDirTree language (File x y)
   | isHaskellFile x = applyTransform y
     where
       applyTransform = either (Failed x . userError . const "Parse Error")
-                              (File $ pathToScala x)
-                       . (pack <$>) . toScala
+                              (File $ pathToLanguage language x)
+                       . (pack <$>) . toTargetLanguage language
 
-convertDirTree (Dir x y) = Dir x (parMap rseq convertDirTree y)
-convertDirTree x = x
+convertDirTree language (Dir x y) = Dir x (parMap rseq (convertDirTree language) y)
+convertDirTree _ x = x
 
 
 moveTree :: FilePath -> FilePath -> AnchoredDirTree a -> AnchoredDirTree a
@@ -61,12 +61,10 @@ moveTree fp1 fp2 (_ :/ x@(Dir _ _)) = "." :/ newDirTree
 moveTree _ _ x                      = x
 
 
-
 reportFailure :: DirTree a -> IO ()
 reportFailure (Failed x y) = putStrLn $
   "Failure when converting file " ++ x ++ ": " ++ show y
 reportFailure _ = pure ()
-
 
 
 watchPred :: Foldable t => t FilePath -> ActionPredicate
@@ -91,7 +89,6 @@ getWatchPath fp Opts{sourcePath, targetPath} =
                                           (splitPath fp1)
 
 
-
 getDirTreeContents :: Int -> DirTree a -> [DirTree a]
 getDirTreeContents 0 x         = [x]
 getDirTreeContents n (Dir _ x) =  x  >>= getDirTreeContents (n - 1)
@@ -108,11 +105,14 @@ isDir = null . takeFileName
 isHaskellFile :: FilePath -> Bool
 isHaskellFile = (`elem` [".hs", ".lhs"]) . takeExtensions
 
-pathToScala :: FilePath -> FilePath
-pathToScala = (-<.> "scala")
+pathToLanguage :: Language -> FilePath -> FilePath
+pathToLanguage language = (-<.> extension)
+  where
+    extension = case language of
+      Scala -> "scala"
 
-formatterExec :: FilePath
-formatterExec = "scalafmt"
+formatterExec :: Language -> FilePath
+formatterExec Scala = "scalafmt"
 
 emitError :: ParseError -> IO ()
 emitError = fail . ("\n\n" ++) . take 50 . show

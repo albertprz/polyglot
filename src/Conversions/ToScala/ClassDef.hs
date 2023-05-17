@@ -1,4 +1,4 @@
-module Conversions.HaskellToScala.ClassDef where
+module Conversions.ToScala.ClassDef where
 
 import qualified SyntaxTrees.Haskell.ClassDef as H
 import qualified SyntaxTrees.Haskell.Common   as H
@@ -6,8 +6,8 @@ import qualified SyntaxTrees.Scala.DataDef    as S
 import qualified SyntaxTrees.Scala.FnDef      as S
 import qualified SyntaxTrees.Scala.Type       as S
 
-import Conversions.HaskellToScala.FnDef (fnDefOrSigs, fnDefs)
-import Conversions.HaskellToScala.Type  (anyKindedType, classConstraint,
+import Conversions.ToScala.FnDef (fnDefOrSigs, fnDefs)
+import Conversions.ToScala.Type  (anyKindedType, classConstraint,
                                          findAnyKindedTypeParams, typeParam,
                                          usingArgList)
 

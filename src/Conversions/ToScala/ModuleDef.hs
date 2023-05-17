@@ -1,15 +1,15 @@
-module Conversions.HaskellToScala.ModuleDef where
+module Conversions.ToScala.ModuleDef where
 
 import qualified SyntaxTrees.Haskell.ModuleDef as H
 import qualified SyntaxTrees.Scala.DataDef     as S
 import qualified SyntaxTrees.Scala.FnDef       as S
 import qualified SyntaxTrees.Scala.PackageDef  as S
 
-import Conversions.HaskellToScala.ClassDef (classDef, instanceDef)
-import Conversions.HaskellToScala.Common   (module', qualifier', var)
-import Conversions.HaskellToScala.DataDef  (dataDef, newtypeDef, typeDef)
-import Conversions.HaskellToScala.FnDef    (fnDefOrSigs, fnDefs)
-import Conversions.HaskellToScala.Type     (typeVar)
+import Conversions.ToScala.ClassDef (classDef, instanceDef)
+import Conversions.ToScala.Common   (module', qualifier', var)
+import Conversions.ToScala.DataDef  (dataDef, newtypeDef, typeDef)
+import Conversions.ToScala.FnDef    (fnDefOrSigs, fnDefs)
+import Conversions.ToScala.Type     (typeVar)
 
 import Data.Maybe     (mapMaybe, maybeToList)
 import Utils.Foldable (wrapMaybe)

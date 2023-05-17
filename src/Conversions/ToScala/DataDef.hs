@@ -1,12 +1,12 @@
-module Conversions.HaskellToScala.DataDef where
+module Conversions.ToScala.DataDef where
 
 import qualified SyntaxTrees.Haskell.DataDef as H
 import qualified SyntaxTrees.Scala.Common    as S
 import qualified SyntaxTrees.Scala.DataDef   as S
 import qualified SyntaxTrees.Scala.Type      as S
 
-import Conversions.HaskellToScala.Common (autoIds, class', ctor, var)
-import Conversions.HaskellToScala.Type   (anyKindedType, type', typeParam,
+import Conversions.ToScala.Common (autoIds, class', ctor, var)
+import Conversions.ToScala.Type   (anyKindedType, type', typeParam,
                                           typeVar)
 
 

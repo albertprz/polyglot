@@ -9,23 +9,14 @@ import qualified Bookhound.Parser as Bookhound
 import Bookhound.ParserCombinators
 
 
-data Language = Scala
-  deriving (Eq, Ord, Enum, Show, Bounded)
-
-
-data Opts
-  = Opts
-      { sourcePath    :: FilePath
-      , targetPath    :: FilePath
-      , language      :: Language
-      , autoFormat    :: Bool
-      , watchMode     :: Bool
-      , clearContents :: Bool
-      }
 
 opts :: Parser Opts
 opts = Opts
-    <$> strOption
+    <$> parserOption language
+        ( long "language"
+        <> short 'l'
+        <> help "Target language")
+    <*> strOption
         ( long "input"
         <> short 'i'
         <> help "Path of input Haskell file or directory" )
@@ -33,10 +24,6 @@ opts = Opts
         ( long "output"
         <> short 'o'
         <> help "Path of output file or directory" )
-    <*> parserOption language
-        ( long "language"
-        <> short 'l'
-        <> help "Target language")
     <*> switch
         ( long "format"
         <> short 'f'
@@ -57,15 +44,25 @@ optsInfo = info (helper <*> opts)
             <> (intercalate ", " $ show <$> ([minBound .. maxBound] :: [Language])))
            <> header "polyglot" )
 
+data Opts
+  = Opts
+      { language      :: Language
+      , sourcePath    :: FilePath
+      , targetPath    :: FilePath
+      , autoFormat    :: Bool
+      , watchMode     :: Bool
+      , clearContents :: Bool
+      }
+
+data Language = Scala
+  deriving (Eq, Ord, Enum, Show, Bounded)
+
 
 language :: Bookhound.Parser Language
 language = Scala <$ is "Scala"
 
 
-parserToReader :: Bookhound.Parser b -> String -> Either String b
-parserToReader parser =
-  mapLeft show . Bookhound.runParser parser . pack
-
 parserOption :: Bookhound.Parser a -> Options.Applicative.Mod Options.Applicative.OptionFields a -> Parser a
-parserOption parser =
-  option $ eitherReader $ parserToReader parser
+parserOption parser = option $ eitherReader $ reader
+  where
+    reader = mapLeft show . Bookhound.runParser parser . pack

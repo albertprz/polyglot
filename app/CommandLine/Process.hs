@@ -3,8 +3,8 @@ module CommandLine.Process where
 
 import CommandLine.FileIO  (convertDirTree, emitError, filterPred,
                             formatterExec, getWatchPath, isDir, moveTree,
-                            pathToScala, readFileUtf8, reportFailure, toScala,
-                            watchPred, writeFileUtf8)
+                            pathToLanguage, readFileUtf8, reportFailure, toTargetLanguage,
+                            watchPred, writeFileUtf8, pathToLanguage)
 import CommandLine.Options (Opts (..))
 
 
@@ -45,16 +45,16 @@ process opts@Opts{watchMode, sourcePath, targetPath}
 
 
 action :: (ParseError -> IO ()) -> Opts -> IO ()
-action errorAction Opts{sourcePath, targetPath, autoFormat} =
+action errorAction Opts{language, sourcePath, targetPath, autoFormat} =
   readFileUtf8 sourcePath
-  >>= (pack <<$>>) . traverse format . toScala
+  >>= (pack <<$>>) . traverse format . toTargetLanguage language
   >>= either errorAction createDirAndWriteFile
 
   where
     createDirAndWriteFile x = createDirectoryIfMissing True finalDir *>
                               writeFileUtf8 finalPath x
     finalDir                = takeDirectory finalPath
-    finalPath               = pathToScala targetPath'
+    finalPath               = pathToLanguage language targetPath'
 
     targetPath' = if isDir targetPath then
                     replaceFileName targetPath (takeFileName sourcePath)
@@ -62,13 +62,14 @@ action errorAction Opts{sourcePath, targetPath, autoFormat} =
                     targetPath
 
     format      = if autoFormat then
-                    readProcess formatterExec ["--stdin", finalPath]
+                    readProcess (formatterExec language)
+                                ["--stdin", finalPath]
                   else
                     pure
 
 
 actions :: Opts -> IO ()
-actions Opts{sourcePath, targetPath, autoFormat, clearContents} =
+actions Opts{language, sourcePath, targetPath, autoFormat, clearContents} =
   when clearContents (removeDirIfExists targetPath)
   >>= const (migrateDirTree sourcePath targetPath)
   >>= writeDirectoryWith writeFileUtf8
@@ -80,10 +81,10 @@ actions Opts{sourcePath, targetPath, autoFormat, clearContents} =
                                  (removeDirectoryRecursive fp)
     removeDirPred fp = andM [doesDirectoryExist fp,
                              (/= fp) <$> getHomeDirectory]
-    migrateDirTree fp1 fp2 = convertDirTree . filterDir filterPred
+    migrateDirTree fp1 fp2 = convertDirTree language . filterDir filterPred
                              </$> (moveTree fp1 fp2 <$>
                                    readDirectoryWith readFileUtf8 fp1)
-    format = when autoFormat $ callProcess formatterExec [targetPath]
+    format = when autoFormat $ callProcess (formatterExec language) [targetPath]
 
 
 

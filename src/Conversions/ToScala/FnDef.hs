@@ -1,4 +1,4 @@
-module Conversions.HaskellToScala.FnDef where
+module Conversions.ToScala.FnDef where
 
 import qualified SyntaxTrees.Haskell.Common as H
 import qualified SyntaxTrees.Haskell.FnDef  as H
@@ -7,10 +7,10 @@ import qualified SyntaxTrees.Scala.Common   as S
 import qualified SyntaxTrees.Scala.FnDef    as S
 import qualified SyntaxTrees.Scala.Pattern  as S
 
-import Conversions.HaskellToScala.Common  (autoIds, literal, qCtor, qCtorOp,
+import Conversions.ToScala.Common  (autoIds, literal, qCtor, qCtorOp,
                                            qVar, qVarOp, var)
-import Conversions.HaskellToScala.Pattern (allVars, extractVars, pattern')
-import Conversions.HaskellToScala.Type    (argLists, classScopeSplit,
+import Conversions.ToScala.Pattern (allVars, extractVars, pattern')
+import Conversions.ToScala.Type    (argLists, classScopeSplit,
                                            findTypeParams, typeParam, typeSplit,
                                            usingArgList)
 

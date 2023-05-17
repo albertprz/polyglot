@@ -16,16 +16,16 @@ At the moment, only parsing of Haskell 98 / 2010 standards along with a limited 
 ## Usage
 
 ```
-Usage: polyglot (-i|--input ARG) (-o|--output ARG) (-l|--language ARG) 
+Usage: polyglot (-l|--language ARG) (-i|--input ARG) (-o|--output ARG) 
                [-f|--format] [-w|--watch] [--clear]
 
   Compile Haskell file(s) into a target language.
 
 Available options:
   -h,--help                Show this help text
+  -l,--language ARG        Target language
   -i,--input ARG           Path of input Haskell file or directory
   -o,--output ARG          Path of output file or directory
-  -l,--language ARG        Target language
   -f,--format              Apply formatter on output file(s)
   -w,--watch               Watch for changes and convert automatically
   --clear                  Clear the output directory contents before conversion
@@ -40,7 +40,7 @@ This can be done in most cases, because all of the available target languages su
 
 However, the conversion can be lossy, so some information can be lost in the process. At the same time, it can be necessary to provide some extra information in the target language version of the source file (most prominently function signatures, due to type inference).
 
-The resulting files will have a dependency on some kind of prelude library that will expose all of .
+The resulting files will have a dependency on some kind of prelude library that will expose all of the usual functions, data types, type classes and instances included in the Haskell prelude.
 
 Also, bear in mind that in some cases due to different call semantics (lazy or call-by-need vs strict) and also runtime support for features (such as tail call optimization), the resulting files in the target language will probably need on some cases to be manually adapted post conversion, to preserve or approximate to the original Haskell code runtime characteristics.
 
@@ -55,16 +55,16 @@ Sample Haskell snippet:
 ```haskell
 
 action :: (ParseError -> IO ()) -> Opts -> IO ()
-action errorAction Opts{sourcePath, targetPath, autoFormat} =
+action errorAction Opts{language, sourcePath, targetPath, autoFormat} =
   readFileUtf8 sourcePath
-  >>= (pack <<$>>) . traverse format . toScala
+  >>= (pack <<$>>) . traverse format . toTargetLanguage language
   >>= either errorAction createDirAndWriteFile
 
   where
     createDirAndWriteFile x = createDirectoryIfMissing True finalDir *>
                               writeFileUtf8 finalPath x
     finalDir                = takeDirectory finalPath
-    finalPath               = pathToScala targetPath'
+    finalPath               = pathToLanguage language targetPath'
 
     targetPath' = if isDir targetPath then
                     replaceFileName targetPath (takeFileName sourcePath)
@@ -72,7 +72,8 @@ action errorAction Opts{sourcePath, targetPath, autoFormat} =
                     targetPath
 
     format      = if autoFormat then
-                    readProcess formatterExec ["--stdin", finalPath]
+                    readProcess (formatterExec language)
+                                ["--stdin", finalPath]
                   else
                     pure
 
@@ -84,24 +85,24 @@ Converted Scala output (after formatting):
 
 def action(x: ParseError => IO[Unit])(y: Opts): IO[Unit] =
   (x, y) match
-    case (errorAction, Opts(sourcePath, targetPath, autoFormat)) =>
+    case (errorAction, Opts(language, sourcePath, targetPath, autoFormat)) =>
       def createDirAndWriteFile =
         createDirectoryIfMissing(true)(finalDir) *> writeFileUtf8(finalPath)(x)
       def finalDir =
         takeDirectory(finalPath)
       def finalPath =
-        pathToScala(targetPath$)
+        pathToLanguage(language, targetPath$)
       def targetPath$ =
         if isDir(targetPath) then
           replaceFileName(targetPath)(takeFileName(sourcePath))
         else targetPath
       def format =
         if autoFormat then
-          readProcess(formatterExec)(List("--stdin", finalPath))
+          readProcess(formatterExec(language))(List("--stdin", finalPath))
         else pure
 
       readFileUtf8(sourcePath)
-      >>= (pack <<&>> _) ^ traverse(format) ^ toScala
+      >>= (pack <<&>> _) ^ traverse(format) ^ toTargetLanguage(language)
       >>= either(errorAction)(createDirAndWriteFile)
 
 ```

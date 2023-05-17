@@ -1,4 +1,4 @@
-module Conversions.HaskellToScala.Common where
+module Conversions.ToScala.Common where
 
 import qualified SyntaxTrees.Haskell.Common as H
 import qualified SyntaxTrees.Scala.Common   as S

@@ -1,11 +1,11 @@
-module Conversions.HaskellToScala.Pattern where
+module Conversions.ToScala.Pattern where
 
 import qualified SyntaxTrees.Haskell.Common  as H
 import qualified SyntaxTrees.Haskell.Pattern as H
 import qualified SyntaxTrees.Scala.Common    as S
 import qualified SyntaxTrees.Scala.Pattern   as S
 
-import Conversions.HaskellToScala.Common
+import Conversions.ToScala.Common
 import Data.Maybe                        (mapMaybe)
 
 
