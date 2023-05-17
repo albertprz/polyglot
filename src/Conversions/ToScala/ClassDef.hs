@@ -5,6 +5,7 @@ import qualified SyntaxTrees.Haskell.Common   as H
 import qualified SyntaxTrees.Scala.DataDef    as S
 import qualified SyntaxTrees.Scala.FnDef      as S
 import qualified SyntaxTrees.Scala.Type       as S
+import qualified SyntaxTrees.Scala.Common as S
 
 import Conversions.ToScala.FnDef (fnDefOrSigs, fnDefs)
 import Conversions.ToScala.Type  (anyKindedType, classConstraint,
@@ -28,4 +29,12 @@ instanceDef (H.InstanceDef x (H.Class y) z t) =
         (mconcat ((typeParam <$>) . toList . findAnyKindedTypeParams <$> z))
         [usingArgList $ classConstraint <$> x]
         (S.CtorTypeApply (S.QTypeCtor Nothing $ S.TypeCtor y) $ anyKindedType <$> z)
-        (fnDefs <$> fnDefOrSigs t)
+        (Right $ fnDefs <$> fnDefOrSigs t)
+
+derivingDef :: H.DerivingDef -> S.GivenDef
+derivingDef (H.DerivingDef _ x (H.Class y) z _) =
+  S.GivenDef [] Nothing
+        (mconcat ((typeParam <$>) . toList . findAnyKindedTypeParams <$> z))
+        [usingArgList $ classConstraint <$> x]
+        (S.CtorTypeApply (S.QTypeCtor Nothing $ S.TypeCtor y) $ anyKindedType <$> z)
+        (Left $ S.FnVar' $ S.Var' (S.QVar Nothing $ S.Var "derived"))

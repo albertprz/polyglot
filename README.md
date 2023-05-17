@@ -11,7 +11,7 @@ There are a few options available to, for example,
 watch a file / directory and reactively convert it whenever modified,
 as well as to format the output target language files.
 
-At the moment, only parsing of Haskell 98 / 2010 standards along with a limited subset of GHC Extensions is supported (for example, there is currently no support for Template Haskell or many of the GHC Extensions).
+At the moment, only parsing of Haskell 98 / 2010 standards along with a subset of GHC Syntax Extensions is supported (for example, there is currently no support for either Template Haskell or some of the GHC Syntax Extensions, such as GADTs and Type Families).
 
 ## Usage
 
@@ -107,11 +107,11 @@ def action(x: ParseError => IO[Unit])(y: Opts): IO[Unit] =
 
 ```
 
-## Supported GHC Extensions
+## Supported GHC Syntax Extensions
 
 ``` yaml
 
-# Syntax
+# Syntax Sugar
 - LambdaCase
 - MultiWayIf
 - PostfixOperators
@@ -131,5 +131,12 @@ def action(x: ParseError => IO[Unit])(y: Opts): IO[Unit] =
 # Type Classes
 - ConstrainedClassMethods
 - MultiParamTypeClasses
+
+# Deriving 
+- StandaloneDeriving
+- DerivingVia
+- NewTypeDeriving
+- AnyClassDeriving
+- DerivingStrategies
 
 ```

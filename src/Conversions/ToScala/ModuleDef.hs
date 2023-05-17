@@ -5,7 +5,7 @@ import qualified SyntaxTrees.Scala.DataDef     as S
 import qualified SyntaxTrees.Scala.FnDef       as S
 import qualified SyntaxTrees.Scala.PackageDef  as S
 
-import Conversions.ToScala.ClassDef (classDef, instanceDef)
+import Conversions.ToScala.ClassDef (classDef, instanceDef, derivingDef)
 import Conversions.ToScala.Common   (module', qualifier', var)
 import Conversions.ToScala.DataDef  (dataDef, newtypeDef, typeDef)
 import Conversions.ToScala.FnDef    (fnDefOrSigs, fnDefs)
@@ -71,6 +71,7 @@ internalDef (H.NewTypeDef' x)        = Just $ S.OpaqueType $ newtypeDef x
 internalDef (H.DataDef' x)           = Just $ S.Enum $ dataDef x
 internalDef (H.ClassDef' x)          = Just $ S.Trait $ classDef x
 internalDef (H.InstanceDef' x)       = Just $ S.Fn $ S.FnGiven $ instanceDef x
+internalDef (H.DerivingDef' x)       = Just $ S.Fn $ S.FnGiven $ derivingDef x
 internalDef (H.FnDefOrSig' _)        = Nothing
 internalDef (H.InfixFnAnnotation' _) = Nothing
 

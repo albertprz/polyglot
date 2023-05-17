@@ -2,11 +2,10 @@ module Parsers.Haskell.DataDef where
 
 import Parsers.Haskell.Common      (class', ctor, var)
 import Parsers.Haskell.Type        (anyKindedType, type', typeParam, typeVar)
-import SyntaxTrees.Haskell.Common  (Class)
 import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
                                     FieldDef (..), NamedFieldDef (..),
                                     NewTypeDef (..), TypeDef (..),
-                                    UnNamedFieldDef (..))
+                                    UnNamedFieldDef (..), DerivingClause (..))
 
 import Bookhound.Parser              (Parser)
 import Bookhound.ParserCombinators   (IsMatch (..), anySepBy, someSepBy, (<#>),
@@ -29,13 +28,13 @@ newtypeDef = NewTypeDef <$> (is "newtype" *> typeVar)
                         <*> (typeParam |*) <* equal
                         <*> ctor
                         <*> fieldDef
-                        <*> derivingList
+                        <*> (derivingClause |*)
 
 dataDef :: Parser DataDef
 dataDef = DataDef <$> (is "data" *> typeVar)
                   <*> (typeParam |*)
                   <*> (fold <$> alternatives)
-                  <*> derivingList
+                  <*> (derivingClause |*)
   where
     alternatives = ((equal *> someSepBy (is "|") dataCtorDef) |?)
 
@@ -57,6 +56,15 @@ dataCtorDef = NamedFieldsCtor   <$> ctor
               UnNamedFieldsCtor <$> ctor
                                 <*> (unNamedFieldDef |*)
 
-derivingList :: Parser [Class]
-derivingList = fold <$> ((is "deriving" *> (tupleOf class' <|>
-                                            pure <$> maybeWithinParens class')) |?)
+derivingClause :: Parser DerivingClause
+derivingClause = (is "deriving" *>
+                  ((is "stock" |?) *>
+                      (StandardDeriving <$> derivingList))
+                  <|> (is "newtype" *>
+                       (NewTypeDeriving <$> derivingList))
+                  <|> (is "anyclass" *>
+                       (AnyClassDeriving <$> derivingList))
+                  <|> (DerivingVia <$> derivingList
+                                   <*> (is "via" *> anyKindedType)))
+  where
+    derivingList = (tupleOf class' <|> pure <$> maybeWithinParens class')

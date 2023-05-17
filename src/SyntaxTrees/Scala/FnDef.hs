@@ -48,7 +48,7 @@ data GivenDef
       , typeParams   :: [TypeParam]
       , usingArgs    :: [UsingArgList]
       , returnType   :: Type
-      , internalDefs :: [InternalFnDef]
+      , bodyOrDefs   :: Either FnBody [InternalFnDef]
       }
 
 
@@ -232,14 +232,19 @@ showDef x y z = show x ++ (fold $ show <$> y)
 
 
 showGiven :: Maybe Var -> [TypeParam] -> [UsingArgList]
-             -> Type -> [InternalFnDef] -> String
+             -> Type -> Either FnBody [InternalFnDef] -> String
+
 showGiven x y z t u = joinWords [foldMap show x,
                                  wrapSquareCsv y,
                                  str " " z,
                                  when displaySep ":",
-                                 show t,
-                                 "with",
-                                 wrapSpacedBlock u]
+                                 show t]
+   ++ case u of
+        Left body -> joinWords ["=",
+                               show body]
+        Right defs -> joinWords ["with",
+                                wrapSpacedBlock defs]
+
   where
     displaySep = hasSome x || hasSome y || hasSome (foldMap fields z)
     fields (UsingArgList h) = h

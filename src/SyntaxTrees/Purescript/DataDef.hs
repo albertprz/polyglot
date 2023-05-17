@@ -1,7 +1,7 @@
-module SyntaxTrees.Haskell.DataDef where
+module SyntaxTrees.Purescript.DataDef where
 
-import SyntaxTrees.Haskell.Common (Class, Ctor, Var)
-import SyntaxTrees.Haskell.Type   (AnyKindedType, Type, TypeParam, TypeVar)
+import SyntaxTrees.Purescript.Common (Ctor, Var)
+import SyntaxTrees.Purescript.Type   (AnyKindedType, Type, TypeParam, TypeVar)
 
 
 data TypeDef
@@ -18,7 +18,6 @@ data NewTypeDef
       , typeParams :: [TypeParam]
       , ctor       :: Ctor
       , field      :: FieldDef
-      , deriving'  :: [DerivingClause]
       }
   deriving (Show)
 
@@ -27,15 +26,7 @@ data DataDef
       { type'      :: TypeVar
       , typeParams :: [TypeParam]
       , ctorDefs   :: [DataCtorDef]
-      , deriving'  :: [DerivingClause]
       }
-  deriving (Show)
-
-data DerivingClause =
-  StandardDeriving [Class]
-  | NewTypeDeriving [Class]
-  | AnyClassDeriving [Class]
-  | DerivingVia [Class] AnyKindedType
   deriving (Show)
 
 data DataCtorDef

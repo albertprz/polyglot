@@ -1,7 +1,7 @@
 module Parsers.Haskell.ModuleDef where
 
 
-import Parsers.Haskell.ClassDef (classDef, instanceDef)
+import Parsers.Haskell.ClassDef (classDef, instanceDef, derivingDef)
 import Parsers.Haskell.Common   (module', token, var)
 import Parsers.Haskell.DataDef  (dataDef, newtypeDef, typeDef)
 import Parsers.Haskell.FnDef    (fnDef, fnSig, infixAnnotation,
@@ -68,17 +68,18 @@ moduleImportDef = FnImport            <$> var                    <|>
 
 
 internalDef :: Parser InternalDef
-internalDef = FnDefOrSig' . Def <$> fnDef        <|>
-              FnDefOrSig' . Sig <$> fnSig        <|>
-              TypeDef'          <$> typeDef      <|>
-              NewTypeDef'       <$> newtypeDef   <|>
-              DataDef'          <$> dataDef      <|>
-              ClassDef'         <$> classDef     <|>
-              InstanceDef'      <$> instanceDef  <|>
+internalDef = FnDefOrSig' . Def  <$> fnDef        <|>
+              FnDefOrSig' . Sig  <$> fnSig        <|>
+              TypeDef'           <$> typeDef      <|>
+              NewTypeDef'        <$> newtypeDef   <|>
+              DataDef'           <$> dataDef      <|>
+              ClassDef'          <$> classDef     <|>
+              InstanceDef'       <$> instanceDef  <|>
+              DerivingDef'       <$> derivingDef  <|>
               InfixFnAnnotation' <$> infixAnnotation
 
 
 
 moduleMember :: Parser ModuleMember
 moduleMember = VarMember  <$> var     <|>
-              DataMember  <$> typeVar
+               DataMember <$> typeVar

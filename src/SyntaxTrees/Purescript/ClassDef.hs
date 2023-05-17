@@ -1,8 +1,8 @@
-module SyntaxTrees.Haskell.ClassDef where
+module SyntaxTrees.Purescript.ClassDef where
 
-import SyntaxTrees.Haskell.Common (Class)
-import SyntaxTrees.Haskell.FnDef  (FnDefOrSig)
-import SyntaxTrees.Haskell.Type   (AnyKindedType, ClassConstraint, TypeParam)
+import SyntaxTrees.Purescript.Common (Class, Var)
+import SyntaxTrees.Purescript.FnDef  (FnDefOrSig)
+import SyntaxTrees.Purescript.Type   (AnyKindedType, ClassConstraint, TypeParam)
 
 
 data ClassDef
@@ -20,21 +20,16 @@ data InstanceDef
       , class'      :: Class
       , types       :: [AnyKindedType]
       , defs        :: [FnDefOrSig]
+      , name        :: Maybe Var
       }
   deriving (Show)
 
 data DerivingDef
   = DerivingDef
-      { strategy    :: DerivingStrategy
-      , constraints :: [ClassConstraint]
+      { constraints :: [ClassConstraint]
       , class'      :: Class
       , types       :: [AnyKindedType]
       , derivingVia :: Maybe Class
+      , name        :: Maybe Var
       }
   deriving (Show)
-
-data DerivingStrategy =
-  StandardDeriving
-  | NewTypeDeriving
-  | AnyClassDeriving
-  deriving Show

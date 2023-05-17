@@ -1,6 +1,7 @@
 module Conversions.ToScala.DataDef where
 
 import qualified SyntaxTrees.Haskell.DataDef as H
+import qualified SyntaxTrees.Haskell.Common as H
 import qualified SyntaxTrees.Scala.Common    as S
 import qualified SyntaxTrees.Scala.DataDef   as S
 import qualified SyntaxTrees.Scala.Type      as S
@@ -18,13 +19,21 @@ typeDef (H.TypeDef x y z) =
 newtypeDef :: H.NewTypeDef -> S.OpaqueTypeDef
 newtypeDef (H.NewTypeDef x y _  z t) =
   S.OpaqueTypeDef (typeVar x) (typeParam <$> y)
-                  ((.type') $ fieldDef z) (class' <$> t)
+                  ((.type') $ fieldDef z)
+                  (class' <$> foldMap derivingClasses t)
 
 
 dataDef :: H.DataDef -> S.EnumDef
 dataDef (H.DataDef x y z t) =
-  S.EnumDef [] (typeVar x) (typeParam <$> y) [] [] (class' <$> t)
+  S.EnumDef [] (typeVar x) (typeParam <$> y) [] []
+               (class' <$> foldMap derivingClasses t)
                (dataCtorDef <$> z)
+
+derivingClasses :: H.DerivingClause -> [H.Class]
+derivingClasses (H.StandardDeriving xs) = xs
+derivingClasses (H.NewTypeDeriving xs) = xs
+derivingClasses (H.AnyClassDeriving xs) = xs
+derivingClasses (H.DerivingVia xs _) = xs
 
 
 dataCtorDef :: H.DataCtorDef -> S.EnumCaseDef

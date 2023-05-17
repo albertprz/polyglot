@@ -1,10 +1,10 @@
-module SyntaxTrees.Haskell.ModuleDef where
+module SyntaxTrees.Purescript.ModuleDef where
 
-import SyntaxTrees.Haskell.ClassDef (ClassDef, InstanceDef, DerivingDef)
-import SyntaxTrees.Haskell.Common   (Module, Var)
-import SyntaxTrees.Haskell.DataDef  (DataDef, NewTypeDef, TypeDef)
-import SyntaxTrees.Haskell.FnDef    (FnDefOrSig, InfixFnAnnotation)
-import SyntaxTrees.Haskell.Type     (TypeVar)
+import SyntaxTrees.Purescript.ClassDef (ClassDef, InstanceDef, DerivingDef)
+import SyntaxTrees.Purescript.Common   (Module, Var)
+import SyntaxTrees.Purescript.DataDef  (DataDef, NewTypeDef, TypeDef)
+import SyntaxTrees.Purescript.FnDef    (FnDefOrSig, InfixFnDef)
+import SyntaxTrees.Purescript.Type     (TypeVar)
 
 
 data ModuleDef
@@ -46,7 +46,7 @@ data InternalDef
   | ClassDef' ClassDef
   | InstanceDef' InstanceDef
   | DerivingDef' DerivingDef
-  | InfixFnAnnotation' InfixFnAnnotation
+  | InfixFnDef' InfixFnDef
   deriving (Show)
 
 data ModuleMember
