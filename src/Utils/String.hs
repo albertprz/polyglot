@@ -35,7 +35,6 @@ wrapDoubleQuotes :: String -> String
 wrapDoubleQuotes = wrapBoth "\""
 
 
-
 wrap' :: String -> String -> String -> String
 wrap' beg end x = beg ++ x ++ end
 
@@ -45,14 +44,8 @@ wrapBoth' x = wrap' x x
 wrapParens' :: String -> String
 wrapParens' = wrap' "(" ")"
 
-wrapSquare' :: String -> String
-wrapSquare' = wrap' "[" "]"
-
 wrapCurly' :: String -> String
 wrapCurly' = wrap' "{" "}"
-
-wrapSpaces' :: String -> String
-wrapSpaces' = wrapBoth' " "
 
 wrapQuotes' :: String -> String
 wrapQuotes' = wrapBoth' "'"
@@ -61,6 +54,10 @@ wrapDoubleQuotes' :: String -> String
 wrapDoubleQuotes' = wrapBoth' "\""
 
 
+wrapCsv :: Show a => [a] -> String
+wrapCsv []  = mempty
+wrapCsv [x] = show x
+wrapCsv x   = wrapParensCsv x
 
 wrapParensCsv :: Show a => [a] -> String
 wrapParensCsv = wrapParens . str ", "
@@ -107,10 +104,29 @@ joinLines :: [String] -> String
 joinLines x = intercalate "\n\n\n" $ filter hasSome x
 
 joinMaybe :: Show a => String -> Maybe a -> String
-joinMaybe sep x = foldMap ((sep +++) . show) x
+joinMaybe start x = foldMap ((start +++) . show) x
+
+joinMaybePost :: Show a => Maybe a -> String ->  String
+joinMaybePost x end = foldMap ((+++ end) . show) x
 
 joinList :: Show a => String -> String -> [a] -> String
 joinList start sep x = foldMap ((start +++) . str sep) (wrapMaybe x)
 
+joinListPost :: Show a => String -> [a] -> String -> String
+joinListPost sep x end = foldMap ((+++ end) . str sep) (wrapMaybe x)
+
+
 (+++) :: String -> String -> String
 (+++) x y = x ++ " " ++ y
+
+data Wrapper
+  = Wrapper String
+
+instance Show Wrapper where
+  show (Wrapper x) = x
+
+data Empty
+  = Empty
+
+instance Show Empty where
+  show Empty = mempty

@@ -1,12 +1,13 @@
 module SyntaxTrees.Scala.DataDef where
 
 import Data.Monoid.HT           (when)
-import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass, Wrapper (Wrapper))
+import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass)
 import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef)
 import SyntaxTrees.Scala.Type   (ArgList (..), Type, TypeParam, TypeVar,
                                  UsingArgList)
-import Utils.Foldable           (hasSome, wrapMaybe)
-import Utils.String
+import Utils.Foldable           (hasSome)
+import Utils.String             (Empty (Empty), joinList, joinWords, str,
+                                 wrapSpacedBlock, wrapSquareCsv)
 
 
 data TypeDef
@@ -120,15 +121,22 @@ data InternalDef
   | Extension ExtensionDef
 
 
-
 instance Show TypeDef where
   show (TypeDef x y z) =
-    joinWords ["type", show x, wrapSquareCsv y, "=", show z]
+    joinWords ["type",
+               show x,
+               wrapSquareCsv y,
+               "=",
+               show z]
 
 instance Show OpaqueTypeDef where
   show (OpaqueTypeDef x y z t) =
-    joinWords ["opaque type", show x, wrapSquareCsv y, "=", show z,
-      joinMaybe "derives" $ Wrapper <$> wrapMaybe (wrapParens $ str ", " t)]
+    joinWords ["opaque type",
+               show x,
+               wrapSquareCsv y,
+               "=",
+               show z,
+               joinList "derives" "," t]
 
 instance Show TraitDef where
   show (TraitDef x y z t u v w) =
@@ -167,15 +175,16 @@ instance Show ExtensionDef where
 showStructure :: (Show a, Show b) => String -> [Modifier] -> a -> [TypeParam]
                  -> [ArgList] -> [UsingArgList] -> [TypeClass] -> [Type] -> [b]
                  -> String
-showStructure  x y z t u v w r s = joinWords [x,
-                                              str " " y,
-                                              show z,
-                                              wrapSquareCsv t,
-                                              str " " u,
-                                              str " " v,
-                                              joinList "derives" ", " w,
-                                              joinList "extends" ", " r,
-                                              sep ++ wrapSpacedBlock s]
+showStructure  x y z t u v w r s =
+  joinWords [x,
+             str " " y,
+             show z,
+             wrapSquareCsv t,
+             str " " u,
+             str " " v,
+             joinList "derives" ", " w,
+             joinList "extends" ", " r,
+             sep ++ wrapSpacedBlock s]
   where
     sep = when (x /= "extension" && hasSome s) ": "
 
@@ -191,10 +200,3 @@ instance Show InternalDef where
   show (CaseClass x)  = show x
   show (CaseObject x) = show x
   show (Extension x)  = show x
-
-
-data Empty
-  = Empty
-
-instance Show Empty where
-  show Empty = mempty

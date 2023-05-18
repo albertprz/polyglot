@@ -45,6 +45,11 @@ mergeUnion x y =  a ++ b
     b = (tupleReverse . (first Just)) <$> zipWithKey y x
 
 
+mix :: [a] -> [a] -> [a]
+mix (x : xs) (y : ys) = x : y : mix xs ys
+mix [] ys             = ys
+mix xs []             = xs
+
 
 tupleReverse :: (b, a) -> (a, b)
 tupleReverse (x, y) = (y, x)

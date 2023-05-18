@@ -2,7 +2,7 @@ module Parsers.Haskell.Type where
 
 
 import Bookhound.Parser              (Parser)
-import Bookhound.ParserCombinators   (IsMatch (is), multipleSepBy, someSepBy, (<|>),
+import Bookhound.ParserCombinators   (IsMatch (is), multipleSepBy, (<|>),
                                       (|+))
 import Bookhound.Parsers.Char        (comma, dot, lower, upper)
 import Bookhound.Parsers.Collections (tupleOf)
@@ -64,7 +64,7 @@ type' = typeScope <|> classScope <|> type'' <|> maybeWithinParens (type'')
     typeVar'   = TypeVar'   <$> (qTypeVar <|> QTypeVar Nothing <$> typeVar)
     typeParam' = TypeParam' <$> typeParam
 
-    typeScope = TypeScope <$> (is "forall" *> someSepBy dot typeParam <* dot)
+    typeScope = TypeScope <$> (is "forall" *> (typeParam |+) <* dot)
                           <*> (classScope <|> type'')
     classScope = ClassScope <$> (classConstraints' <* (is "=>"))
                             <*> type''

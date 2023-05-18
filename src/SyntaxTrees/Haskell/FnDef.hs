@@ -112,11 +112,6 @@ data FnOp
   | CtorOp' QCtorOp
   deriving (Show)
 
-data OperatorPosition
-  = LeftPos
-  | RightPos
-  deriving (Show)
-
 data DoStep
   = DoBinding [Var] FnBody
   | LetBinding [FnDefOrSig]

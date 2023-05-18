@@ -29,14 +29,17 @@ data PackageMember
 
 
 instance Show PackageDef where
-  show (PackageDef x y z) = joinLines ["package" +++ show x,
-                                      intercalate "\n" (show <$> y),
-                                      joinLines (show <$> z)]
+  show (PackageDef x y z) =
+    joinLines ["package" +++ show x,
+               intercalate "\n" (show <$> y),
+               joinLines (show <$> z)]
 
 instance Show PackageImport where
-  show (PackageImport x y z) = joinWords ["import", show x,
-                                          "as" `joinMaybe` y] ++
-                                          foldMap (("." ++) . show) z
+  show (PackageImport x y z) =
+    joinWords ["import",
+               show x,
+               "as" `joinMaybe` y]
+    ++ "." `joinMaybe` z
 
 instance Show PackageImportDef where
   show FullImport                   = "_"

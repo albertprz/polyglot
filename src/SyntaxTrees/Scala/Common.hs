@@ -3,21 +3,26 @@ module SyntaxTrees.Scala.Common where
 import Data.List (intercalate)
 
 
-
 newtype Var
   = Var String
+  deriving Show
 
 newtype Ctor
   = Ctor String
+  deriving Show
+
 
 newtype VarOp
   = VarOp String
+  deriving Show
 
 newtype CtorOp
   = CtorOp String
+  deriving Show
 
 newtype TypeClass
   = TypeClass String
+  deriving Show
 
 newtype Package
   = Package [String]
@@ -59,23 +64,6 @@ data QTypeClass
   = QTypeClass (Maybe Package) TypeClass
 
 
-instance Show Var where
-  show (Var x) = x
-
-instance Show Ctor where
-  show (Ctor x) = x
-
-
-instance Show VarOp where
-  show (VarOp x) = x
-
-instance Show CtorOp where
-  show (CtorOp x) = x
-
-
-instance Show TypeClass where
-  show (TypeClass x) = x
-
 instance Show Package where
   show (Package x) = intercalate "." x
 
@@ -101,7 +89,6 @@ instance Show Modifier where
   show Open      = "open"
 
 
-
 instance Show QVar where
   show (QVar x y) = showQualified x y
 
@@ -117,12 +104,6 @@ instance Show QCtorOp where
 instance Show QTypeClass where
   show (QTypeClass x y) = showQualified x y
 
-
-data Wrapper
-  = Wrapper String
-
-instance Show Wrapper where
-  show (Wrapper x) = x
 
 showQualified :: (Show a, Show b) => Maybe a -> b -> String
 showQualified x y = foldMap ((++ ".") . show) x ++ show y

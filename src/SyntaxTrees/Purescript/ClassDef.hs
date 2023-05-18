@@ -1,8 +1,14 @@
 module SyntaxTrees.Purescript.ClassDef where
 
+import Data.List                     (intercalate)
 import SyntaxTrees.Purescript.Common (Class, Var)
 import SyntaxTrees.Purescript.FnDef  (FnDefOrSig)
-import SyntaxTrees.Purescript.Type   (AnyKindedType, ClassConstraint, TypeParam)
+import SyntaxTrees.Purescript.Type   (AnyKindedType, ClassConstraint, TypeParam,
+                                      showAnyKindedTypeNested)
+import Utils.Foldable                (wrapMaybe)
+import Utils.String                  (Wrapper (Wrapper), joinMaybe,
+                                      joinMaybePost, joinWords, str, wrapBlock,
+                                      wrapParensCsv, (+++))
 
 
 data ClassDef
@@ -12,24 +18,48 @@ data ClassDef
       , typeParams  :: [TypeParam]
       , defs        :: [FnDefOrSig]
       }
-  deriving (Show)
 
 data InstanceDef
   = InstanceDef
       { constraints :: [ClassConstraint]
+      , name        :: Maybe Var
       , class'      :: Class
       , types       :: [AnyKindedType]
       , defs        :: [FnDefOrSig]
-      , name        :: Maybe Var
       }
-  deriving (Show)
 
 data DerivingDef
   = DerivingDef
       { constraints :: [ClassConstraint]
+      , name        :: Maybe Var
       , class'      :: Class
       , types       :: [AnyKindedType]
       , derivingVia :: Maybe Class
-      , name        :: Maybe Var
       }
-  deriving (Show)
+
+
+instance Show ClassDef where
+  show (ClassDef x y z t) =
+    joinWords ["class",
+               wrapParensCsv x +++ "<=",
+               show y,
+               str " " z,
+               wrapBlock t]
+
+instance Show InstanceDef where
+  show (InstanceDef x y z t u) =
+    joinWords ["instance",
+               (Wrapper <$> wrapMaybe (wrapParensCsv x)) `joinMaybePost` "<=",
+               y `joinMaybePost` "::",
+               show z,
+               intercalate " " $ showAnyKindedTypeNested <$> t,
+               wrapBlock u]
+
+instance Show DerivingDef where
+  show (DerivingDef x y z t u) =
+    joinWords ["deriving",
+               (Wrapper <$> wrapMaybe (wrapParensCsv x)) `joinMaybePost` "<=",
+               y `joinMaybePost` "::",
+               show z,
+               intercalate " " $ showAnyKindedTypeNested <$> t,
+               "via" `joinMaybe` u]

@@ -21,7 +21,6 @@ data Pattern
 
 
 instance Show Pattern where
-  show (CtorPattern x [])     = show x
   show (CtorPattern x y)      = show x +++ wrapParensCsv y
   show (InfixCtorPattern x y) = str (wrapSpaces $ show x) y
   show (AliasedPattern x y)   = wrapParens $ show x +++ "@" +++ show y

@@ -1,18 +1,21 @@
 module SyntaxTrees.Scala.Type where
 
 import SyntaxTrees.Scala.Common (Modifier, Package, QTypeClass, Var,
-                                 Wrapper (..), showQualified)
+                                  showQualified)
 import Utils.Foldable           (wrapMaybe)
 import Utils.String             (joinMaybe, joinWords, str, wrapParens,
                                  wrapParensCsv, wrapSpaces, wrapSquareCsv,
-                                 (+++))
+                                 (+++), Wrapper (..))
+import Data.List (intercalate)
 
 
 newtype TypeParam
   = TypeParam String
+  deriving Show
 
 newtype TypeVar
   = TypeVar String
+  deriving Show
 
 
 data TypeCtor
@@ -62,42 +65,43 @@ data QTypeCtor
   = QTypeCtor (Maybe Package) TypeCtor
 
 
-instance Show TypeParam where
-  show (TypeParam x) = x
-
-instance Show TypeVar where
-  show (TypeVar x) = x
-
 instance Show TypeCtor where
   show (TypeCtor x) = x
   show Arrow        = "->"
   show TupleType    = "()"
 
 instance Show Type where
+  show (CtorTypeApply (QTypeCtor _ Arrow) x) = intercalate (wrapSpaces "=>") $ showTypeNested <$> x
   show (CtorTypeApply x@(QTypeCtor _ (TypeCtor _)) z) = show x ++ wrapSquareCsv z
-  show (CtorTypeApply (QTypeCtor _ Arrow) x)        = str (wrapSpaces "=>") x
   show (CtorTypeApply (QTypeCtor _ TupleType) x)    = wrapParensCsv x
   show (ParamTypeApply x y) = show x ++ wrapSquareCsv y
-  show (NestedTypeApply x y) = show x ++ wrapSquareCsv y
+  show (NestedTypeApply x y) = showTypeNested x ++ wrapSquareCsv y
   show (TypeVar' x) = show x
   show (TypeParam' x) = show x
   show ExistentialType = "?"
-  show (TypeScope x y) = wrapParens (wrapSquareCsv x +++ "=>" +++ show y)
-  show (ClassScope x y) = wrapParens (wrapParensCsv x +++ "?=>" +++ show y)
+  show (TypeScope x y) = wrapSquareCsv x +++ "=>" +++ showTypeScopeNested y
+  show (ClassScope x y) = wrapParensCsv x +++ "?=>" +++ showClassScopeNested y
+
 
 
 instance Show ArgList where
   show (ArgList x) = wrapParensCsv x
 
 instance Show UsingArgList where
-  show (UsingArgList x) = wrapParens $ "using" `joinMaybe` (Wrapper <$>
-                                                            wrapMaybe ( str ", " x))
+  show (UsingArgList x) = wrapParens $
+    "using" `joinMaybe` (Wrapper <$> wrapMaybe (str ", " x))
 
 instance Show ArgField where
-  show (ArgField x y z) = joinWords [str " " x, show y ++ ":", show z]
+  show (ArgField x y z) =
+    joinWords [str " " x,
+               show y ++ ":",
+               show z]
 
 instance Show UsingArgField where
-  show (UsingArgField x y z) = joinWords [str " " x, ":" `joinMaybe` y, show z]
+  show (UsingArgField x y z) =
+    joinWords [str " " x,
+               ":" `joinMaybe` y,
+               show z]
 
 instance Show ClassConstraint where
   show (ClassConstraint x y) = show x ++ wrapSquareCsv y
@@ -108,3 +112,31 @@ instance Show QTypeVar where
 
 instance Show QTypeCtor where
   show (QTypeCtor x y) = showQualified x y
+
+
+showTypeNested :: Type -> String
+showTypeNested x = transformFn $ show x
+  where
+    transformFn = if shouldWrap then wrapParens else id
+    shouldWrap = case x of
+      (CtorTypeApply (QTypeCtor _ Arrow) _) -> True
+      (TypeScope _ _) -> True
+      (ClassScope _ _) -> True
+      _ -> False
+
+showTypeScopeNested :: Type -> String
+showTypeScopeNested x = transformFn $ show x
+  where
+    transformFn = if shouldWrap then wrapParens else id
+    shouldWrap = case x of
+      (TypeScope _ _) -> True
+      _ -> False
+
+showClassScopeNested :: Type -> String
+showClassScopeNested x = transformFn $ show x
+  where
+    transformFn = if shouldWrap then wrapParens else id
+    shouldWrap = case x of
+      (TypeScope _ _) -> True
+      (ClassScope _ _) -> True
+      _ -> False

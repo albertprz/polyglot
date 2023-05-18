@@ -3,7 +3,7 @@ module SyntaxTrees.Scala.FnDef where
 import Data.Foldable             (Foldable (fold))
 import Data.Monoid.HT            (when)
 import SyntaxTrees.Scala.Common  (Literal, Modifier, QCtor, QCtorOp, QVar,
-                                  QVarOp, Var, Wrapper (..))
+                                  QVarOp, Var)
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam,
                                   UsingArgList (UsingArgList))
@@ -11,7 +11,7 @@ import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam,
 import Data.List (intercalate)
 
 import Utils.Foldable (hasSome, wrapMaybe)
-import Utils.String   (joinMaybe, joinWords, str, strs, wrapBlock,
+import Utils.String   (Wrapper (..), joinMaybe, joinWords, str, strs, wrapBlock,
                        wrapLetContext, wrapParens, wrapParensCsv,
                        wrapSingleBlock, wrapSpacedBlock, wrapSpaces,
                        wrapSquareCsv, (+++))
@@ -43,12 +43,12 @@ data MethodDef
 
 data GivenDef
   = GivenDef
-      { qualifiers   :: [Modifier]
-      , name         :: Maybe Var
-      , typeParams   :: [TypeParam]
-      , usingArgs    :: [UsingArgList]
-      , returnType   :: Type
-      , bodyOrDefs   :: Either FnBody [InternalFnDef]
+      { qualifiers :: [Modifier]
+      , name       :: Maybe Var
+      , typeParams :: [TypeParam]
+      , usingArgs  :: [UsingArgList]
+      , returnType :: Type
+      , bodyOrDefs :: Either FnBody [InternalFnDef]
       }
 
 
@@ -132,31 +132,36 @@ data WhenExpr
 
 
 instance Show FnSig where
-  show (FnSig x y z t) = ("" `joinMaybe` (Wrapper <$> wrapMaybe
-                         (joinWords [wrapSquareCsv x,
-                                    str " " y,
-                                    str " " z])))
-                         ++ ":" `joinMaybe` t
+  show (FnSig x y z t) =
+    ("" `joinMaybe`
+     (Wrapper <$> wrapMaybe (joinWords [wrapSquareCsv x,
+                                        str " " y,
+                                        str " " z])))
+    ++ ":" `joinMaybe` t
 
 instance Show ValDef where
-  show (ValDef x y z t) = joinWords [str " " x,
-                                     "val",
-                                     showVal y z t]
+  show (ValDef x y z t) =
+    joinWords [str " " x,
+               "val",
+               showVal y z t]
 
 instance Show MethodDef where
-  show (MethodDef x y z t) = joinWords [str " " x,
-                                        "def",
-                                        showDef y z t]
+  show (MethodDef x y z t) =
+    joinWords [str " " x,
+               "def",
+               showDef y z t]
 
 instance Show GivenDef where
-  show (GivenDef x y z t u v) = joinWords [str " " x,
-                                          "given",
-                                          showGiven y z t u v]
+  show (GivenDef x y z t u v) =
+    joinWords [str " " x,
+               "given",
+               showGiven y z t u v]
 
 instance Show FnBody where
   show (FnApply x y)
     | (FnVar' (Ctor' _)) <- x = joinWords [show x, wrapParensCsv y]
-    | otherwise = joinWords [show x, joinWords $ wrapParens . show <$> y]
+    | otherwise = joinWords [show x,
+                             joinWords $ wrapParens . show <$> y]
   show (NamedFnApply x y) = joinWords [show x, wrapParensCsv $ Wrapper .
                                       (\(a, b) -> show a +++ "=" +++ show b) <$> y]
   show (InfixFnApply x [y]) = showForInfix y +++ foldMap show x
