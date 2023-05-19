@@ -36,8 +36,8 @@ toTargetLanguage language = adaptLayout >=> convert
   where
     convert = syntaxConverter <<$>> runParser Parser.moduleDef
     syntaxConverter = case language of
-      Scala      -> show . ToScala.moduleDef
       Purescript -> show . ToPurescript.moduleDef
+      Scala      -> show . ToScala.moduleDef
 
 
 convertDirTree :: Language -> DirTree Text -> DirTree Text
@@ -111,12 +111,12 @@ pathToLanguage :: Language -> FilePath -> FilePath
 pathToLanguage language = (-<.> extension)
   where
     extension = case language of
-      Scala      -> "scala"
       Purescript -> "purs"
+      Scala      -> "scala"
 
 formatterExec :: Language -> FilePath
-formatterExec Scala      = "scalafmt"
 formatterExec Purescript = "purs-tidy"
+formatterExec Scala      = "scalafmt"
 
 emitError :: ParseError -> IO ()
 emitError = fail . ("\n\n" ++) . take 50 . show

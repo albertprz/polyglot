@@ -57,10 +57,8 @@ instance Show ModuleDef where
                show x,
                foldMap show y,
                "where",
-               "\n\n",
-               unlines $ show <$> z,
-               "\n\n",
-               intercalate "\n\n" $ show <$> t]
+               "\n\n" ++ unlines (show <$> z),
+               "\n\n" ++ intercalate "\n\n" (show <$> t)]
 
 instance Show ModuleExport where
   show (ModuleExport x) = wrapParensCsv x

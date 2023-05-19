@@ -1,22 +1,31 @@
 module Conversions.ToPurescript.FnDef where
 
 import qualified SyntaxTrees.Haskell.FnDef     as H
+import qualified SyntaxTrees.Haskell.Type      as H
 import qualified SyntaxTrees.Purescript.Common as P
 import qualified SyntaxTrees.Purescript.FnDef  as P
 
+import Bookhound.Utils.Foldable         (hasNone)
 import Conversions.ToPurescript.Common
 import Conversions.ToPurescript.Pattern
 import Conversions.ToPurescript.Type
+import Data.Foldable                    (Foldable (toList))
 
 
 fnSig :: H.FnSig -> P.FnSig
-fnSig (H.FnSig x y) =
-  P.FnSig (var x) (type' y)
+fnSig (H.FnSig x y) = P.FnSig (var x) (type' typeScoped)
+  where
+    typeScoped
+      | (H.TypeScope _ _) <- y = y
+      | hasNone $ findTypeParams y = y
+      | otherwise             = H.TypeScope (toList $ findTypeParams y) y
 
 fnDef :: H.FnDef -> P.FnDef
 fnDef (H.FnDef x y z) =
   P.FnDef (var <$> x) (pattern' <$> y) (maybeGuardedFnBody z)
 
+
+-- TODO: Infix annotations for infix functions
 infixFnAnnotation :: H.InfixFnAnnotation -> P.InfixFnDef
 infixFnAnnotation (H.InfixFnAnnotation x y z) =
   P.InfixFnDef (associativity x) y (P.Var "var") (varOp z)
@@ -33,7 +42,7 @@ fnBody (H.LeftOpSection x y)    = P.LeftOpSection (fnOp x) (fnBody y)
 fnBody (H.RightOpSection x y)   = P.RightOpSection (fnBody x) (fnOp y)
 fnBody (H.PostFixOpSection x y) = P.PostFixOpSection (fnBody x) (fnOp y)
 
-fnBody (H.LambdaExpr x y)   = P.LambdaExpr (var <$> x) (fnBody y)
+fnBody (H.LambdaExpr x y)   = P.LambdaExpr (pattern' <$> x) (fnBody y)
 fnBody (H.LetExpr x y)      = P.LetExpr (fnDefOrSig <$> x) (fnBody y)
 fnBody (H.WhereExpr x y)    = P.WhereExpr (fnBody x) (fnDefOrSig <$> y)
 

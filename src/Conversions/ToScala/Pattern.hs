@@ -33,3 +33,13 @@ extractVars x = mapMaybe extractVar x
 
 allVars :: [H.Pattern] -> Bool
 allVars x = length (mapMaybe extractVar x) == length x
+
+extractVar' :: S.Pattern -> Maybe S.Var
+extractVar' (S.VarPattern x) = Just x
+extractVar' _                = Nothing
+
+extractVars' :: [S.Pattern] -> [S.Var]
+extractVars' x = mapMaybe extractVar' x
+
+allVars' :: [S.Pattern] -> Bool
+allVars' x = length (mapMaybe extractVar' x) == length x

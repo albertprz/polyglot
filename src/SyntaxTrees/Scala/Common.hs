@@ -5,24 +5,19 @@ import Data.List (intercalate)
 
 newtype Var
   = Var String
-  deriving Show
 
 newtype Ctor
   = Ctor String
-  deriving Show
 
 
 newtype VarOp
   = VarOp String
-  deriving Show
 
 newtype CtorOp
   = CtorOp String
-  deriving Show
 
 newtype TypeClass
   = TypeClass String
-  deriving Show
 
 newtype Package
   = Package [String]
@@ -62,6 +57,22 @@ data QCtorOp
 
 data QTypeClass
   = QTypeClass (Maybe Package) TypeClass
+
+
+instance Show Var where
+  show (Var x) = x
+
+instance Show Ctor where
+  show (Ctor x) = x
+
+instance Show VarOp where
+  show (VarOp x) = x
+
+instance Show CtorOp where
+  show (CtorOp x) = x
+
+instance Show TypeClass where
+  show (TypeClass x) = x
 
 
 instance Show Package where

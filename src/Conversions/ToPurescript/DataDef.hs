@@ -11,11 +11,13 @@ typeDef (H.TypeDef x y z) =
   P.TypeDef (typeVar x) (typeParam <$> y) (anyKindedType z)
 
 
+-- TODO: Newtype Deriving to standalone deriving
 newtypeDef :: H.NewTypeDef -> P.NewTypeDef
 newtypeDef (H.NewTypeDef x y z t _) =
   P.NewTypeDef (typeVar x) (typeParam <$> y) (ctor z) (fieldDef t)
 
 
+-- TODO: Data Deriving to standalone deriving
 dataDef :: H.DataDef -> P.DataDef
 dataDef (H.DataDef x y z _) =
   P.DataDef (typeVar x) (typeParam <$> y) (dataCtorDef <$> z)

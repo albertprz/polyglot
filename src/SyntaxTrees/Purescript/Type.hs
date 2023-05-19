@@ -7,11 +7,10 @@ import Utils.String
 
 newtype TypeParam
   = TypeParam String
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord)
 
 newtype TypeVar
   = TypeVar String
-  deriving (Show)
 
 data TypeCtor
   = TypeCtor String
@@ -41,6 +40,13 @@ data QTypeVar
 data QTypeCtor
   = QTypeCtor (Maybe Module) TypeCtor
 
+
+
+instance Show TypeParam where
+  show (TypeParam x) = x
+
+instance Show TypeVar where
+  show (TypeVar x) = x
 
 instance Show TypeCtor where
   show (TypeCtor x) = x

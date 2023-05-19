@@ -14,7 +14,7 @@ import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   MaybeGuardedFnBody (..), PatternGuard (..))
 
 import Bookhound.Parser              (Parser, andThen, check)
-import Bookhound.ParserCombinators   (IsMatch (is), someSepBy, (<|>), (->>-),
+import Bookhound.ParserCombinators   (IsMatch (is), someSepBy, (->>-), (<|>),
                                       (|*), (|+), (|?))
 import Bookhound.Parsers.Char        (comma, dot)
 import Bookhound.Parsers.Collections (listOf, tupleOf)
@@ -70,7 +70,7 @@ fnBody = openForm
     opSection = leftOpSection <|> rightOpSection
 
 
-    lambdaExpr = LambdaExpr <$> (is '\\' *> (tupleOf var <|> (var |*)))
+    lambdaExpr = LambdaExpr <$> (is '\\' *> (pattern' |*))
                             <*> (is "->" *> openForm)
 
     letExpr = LetExpr <$> (is "let" *> withinContext fnDefOrSig)

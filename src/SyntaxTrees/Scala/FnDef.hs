@@ -10,11 +10,9 @@ import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam,
 
 import Data.List (intercalate)
 
-import Utils.Foldable (hasSome, wrapMaybe)
-import Utils.String   (Wrapper (..), joinMaybe, joinWords, str, strs, wrapBlock,
-                       wrapLetContext, wrapParens, wrapParensCsv,
-                       wrapSingleBlock, wrapSpacedBlock, wrapSpaces,
-                       wrapSquareCsv, (+++))
+import Conversions.ToScala.Pattern (allVars')
+import Utils.Foldable              (hasSome, wrapMaybe)
+import Utils.String
 
 
 data FnSig
@@ -66,8 +64,8 @@ data FnBody
       , args  :: [FnBody]
       }
   | LambdaExpr
-      { vars :: [Var]
-      , body :: FnBody
+      { patterns :: [Pattern]
+      , body     :: FnBody
       }
   | LetExpr
       { fnBindings :: [InternalFnDef]
@@ -167,9 +165,14 @@ instance Show FnBody where
   show (InfixFnApply x [y]) = showForInfix y +++ foldMap show x
   show (InfixFnApply x y) = strs (wrapSpaces . show <$> x)
                                  (showForInfix <$> y)
+
   show (LambdaExpr [] y)  = wrapParens $ show y
-  show (LambdaExpr [x] y) = wrapParens $ joinWords [show x, "=>", show y]
-  show (LambdaExpr x y)   = wrapParens $ joinWords [wrapParensCsv x, "=>", show y]
+  show (LambdaExpr [x] y)
+    | allVars' [x] = wrapParens $ joinWords [show x, "=>", show y]
+  show (LambdaExpr x y)
+    | allVars' x = wrapParens $ joinWords [wrapParensCsv x, "=>", show y]
+    | otherwise  = wrapCurly $ joinWords ["case", wrapParensCsv x,
+                                          "=>", show y]
   show (LetExpr x y)      = wrapLetContext x y
   show (Tuple [x])        = show x
   show (Tuple x)          = wrapParensCsv x
@@ -178,7 +181,8 @@ instance Show FnBody where
   show (IfExpr x y z)     = joinWords ["if", show x,
                                        "then", show y,
                                        "else", show z]
-  show (CondExpr x y)     = str "\n  else " (Wrapper <$> ((show <$> x) ++ [show y]))
+  show (CondExpr x y)     = str ("\n" +++ wrapSpaces "else")
+                                (Wrapper <$> ((show <$> x) ++ [show y]))
   show (ForExpr x y)      = joinWords ["for",
                                       wrapBlock x,
                                       "yield",

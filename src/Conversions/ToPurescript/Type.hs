@@ -49,24 +49,6 @@ type' (H.ClassScope x y)      = P.ClassScope (classConstraint <$> x)
                                              (type' y)
 
 
-typeSplit :: Int -> H.Type -> ([P.Type], P.Type)
-typeSplit 0 tpe = ([], type' tpe)
-typeSplit n tpe = (args, P.CtorTypeApply (P.QTypeCtor Nothing P.Arrow) ret)
-  where
-    (args, ret) = splitAt (min n (length types - 1)) (type' <$> types)
-    types = extractTypes tpe
-
-
-classScopeSplit :: H.Type -> ([P.ClassConstraint], H.Type)
-classScopeSplit (H.ClassScope x y) = (classConstraint <$> x, y)
-classScopeSplit x                  = ([], x)
-
-
-findAnyKindedTypeParams :: H.AnyKindedType -> Set H.TypeParam
-findAnyKindedTypeParams (H.TypeValue x) = findTypeParams x
-findAnyKindedTypeParams _               = Set.empty
-
-
 findTypeParams :: H.Type -> Set H.TypeParam
 findTypeParams (H.CtorTypeApply _ y)   = mconcat $ findTypeParams <$> y
 findTypeParams (H.ParamTypeApply x y)  = (Set.singleton x) <>

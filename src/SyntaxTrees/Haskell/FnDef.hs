@@ -57,8 +57,8 @@ data FnBody
       , fnOp :: FnOp
       }
   | LambdaExpr
-      { vars :: [Var]
-      , body :: FnBody
+      { patterns :: [Pattern]
+      , body     :: FnBody
       }
   | LetExpr
       { fnBindings :: [FnDefOrSig]

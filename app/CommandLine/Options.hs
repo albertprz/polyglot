@@ -55,14 +55,15 @@ data Opts
       }
 
 data Language
-  = Scala
-  | Purescript
+  = Purescript
+  | Scala
   deriving (Bounded, Enum, Eq, Ord, Show)
 
 
 language :: Bookhound.Parser Language
-language = Scala <$ is "Scala" <|>
-           Purescript <$ is "Purescript"
+language = Purescript <$ oneOf ["Purescript", "purescript", "purs"] <|>
+           Scala      <$ oneOf ["Scala", "scala"]
+
 
 
 parserOption :: Bookhound.Parser a -> Options.Applicative.Mod Options.Applicative.OptionFields a -> Parser a

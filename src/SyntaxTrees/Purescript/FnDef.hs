@@ -57,8 +57,8 @@ data FnBody
       , fnOp :: FnOp
       }
   | LambdaExpr
-      { vars :: [Var]
-      , body :: FnBody
+      { patterns :: [Pattern]
+      , body     :: FnBody
       }
   | LetExpr
       { fnBindings :: [FnDefOrSig]
@@ -171,7 +171,8 @@ instance Show FnBody where
                intercalate " " $ showNestedFnBody <$> args]
 
   show (InfixFnApply fnOps args) =
-    intercalate "" $ mix (showNestedFnBody <$> args) (show <$> fnOps)
+    intercalate "" $ mix (showNestedInfixFnBody <$> args)
+                         (wrapSpaces . show <$> fnOps)
 
   show (LeftOpSection x y) =
     joinWords ["_",
@@ -188,35 +189,24 @@ instance Show FnBody where
                show y]
 
   show (LambdaExpr x y) =
-    joinWords ["\\",
-               str " " x,
+    joinWords ["\\" ++ intercalate " " (showPatternNested <$> x),
                "->",
                show y]
 
   show (LetExpr x y) =
-    joinWords ["let",
-               wrapBlock x,
-               "in",
-               show y]
+    "\n" ++ wrapContext ("let" ++ wrapBlock x ++ "in" ++ "\n" ++ show y)
 
   show (WhereExpr x y) =
-    joinWords [show x,
-               "\n",
-               "where",
-               wrapBlock y]
+    show x ++ "\n" ++ wrapContext ("where" ++ wrapBlock y)
 
   show (IfExpr x y z) =
-    joinWords ["if",
-               show x,
-               "then", "\n",
-               show y,
-               "else", "\n",
-               show z]
+    "if" +++ show x ++ "\n" ++
+    "then" ++ "\n" ++ wrapBlock [y] ++
+    "else" ++ "\n" ++ wrapBlock [z]
 
   show (MultiWayIfExpr x) =
-    joinWords ["if",
-               wrapBlock $ Wrapper . ("|" ++) .
-                 showGuardedFnBody "->" <$> x]
+    "if" ++ wrapBlock (Wrapper . ("|" ++) .
+            showGuardedFnBody "->" <$> x)
 
   show (DoExpr x) =
     "do" ++ wrapBlock x
@@ -293,7 +283,7 @@ instance Show Associativity where
 showMaybeGuardedFnBody :: String -> MaybeGuardedFnBody -> String
 showMaybeGuardedFnBody op (Guarded x) =
   wrapBlock $ Wrapper . ("|" ++) . showGuardedFnBody op <$> x
-showMaybeGuardedFnBody _ (Standard x) = show x
+showMaybeGuardedFnBody op (Standard x) = op +++ show x
 
 showGuardedFnBody :: String -> GuardedFnBody -> String
 showGuardedFnBody op (GuardedFnBody x y) =
@@ -307,6 +297,22 @@ showNestedFnBody x = transformFn $ show x
     transformFn = if shouldWrap then wrapParens else id
     shouldWrap = case x of
       FnApply _ _          -> True
+      InfixFnApply _ _     -> True
+      LeftOpSection _ _    -> True
+      RightOpSection _ _   -> True
+      PostFixOpSection _ _ -> True
+      LambdaExpr _ _       -> True
+      LetExpr _ _          -> True
+      WhereExpr _ _        -> True
+      RecordCreate _ _     -> True
+      RecordUpdate _ _     -> True
+      _                    -> False
+
+showNestedInfixFnBody :: FnBody -> String
+showNestedInfixFnBody x = transformFn $ show x
+  where
+    transformFn = if shouldWrap then wrapParens else id
+    shouldWrap = case x of
       InfixFnApply _ _     -> True
       LeftOpSection _ _    -> True
       RightOpSection _ _   -> True

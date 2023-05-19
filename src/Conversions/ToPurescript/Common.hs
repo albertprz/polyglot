@@ -71,6 +71,7 @@ charMap = Map.empty
 
 varOpMap :: Map String String
 varOpMap = Map.fromList [(".", "<<<"), ("++", "<>"),
+                         ("<&>", "<#>"),
                          (",", "Tuple2"), (",,", "Tuple3"),
                          (",,,", "Tuple4")]
 
@@ -78,7 +79,15 @@ ctorOpMap :: Map String String
 ctorOpMap = Map.empty
 
 varMap :: Map String String
-varMap = Map.empty
+varMap = Map.fromList [("fmap", "map")]
 
 ctorMap :: Map String String
 ctorMap = Map.fromList [("True", "true"), ("False", "false")]
+
+varOpFnMap :: Map String String
+varOpFnMap = Map.fromList [("==", "eq"), ("/=", "notEq"),
+                         ("<>", "append"), ("<$>", "map"),
+                         ("<&>", "mapFlipped"), ("<*>", "apply"),
+                         ("<*", "applyFirst"), ("*>", "applySecond"),
+                         ("<$", "voidRight"), ("$>", "voidLeft"),
+                         (">>=", "bind"), ("<<=", "bindFlipped")]

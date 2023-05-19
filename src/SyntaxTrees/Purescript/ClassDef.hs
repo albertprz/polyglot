@@ -8,7 +8,7 @@ import SyntaxTrees.Purescript.Type   (AnyKindedType, ClassConstraint, TypeParam,
 import Utils.Foldable                (wrapMaybe)
 import Utils.String                  (Wrapper (Wrapper), joinMaybe,
                                       joinMaybePost, joinWords, str, wrapBlock,
-                                      wrapParensCsv, (+++))
+                                      wrapParensCsv)
 
 
 data ClassDef
@@ -41,7 +41,8 @@ data DerivingDef
 instance Show ClassDef where
   show (ClassDef x y z t) =
     joinWords ["class",
-               wrapParensCsv x +++ "<=",
+               (Wrapper <$> wrapMaybe (wrapParensCsv x))
+                `joinMaybePost` "<=",
                show y,
                str " " z,
                wrapBlock t]
@@ -49,7 +50,8 @@ instance Show ClassDef where
 instance Show InstanceDef where
   show (InstanceDef x y z t u) =
     joinWords ["instance",
-               (Wrapper <$> wrapMaybe (wrapParensCsv x)) `joinMaybePost` "<=",
+               (Wrapper <$> wrapMaybe (wrapParensCsv x))
+                `joinMaybePost` "<=",
                y `joinMaybePost` "::",
                show z,
                intercalate " " $ showAnyKindedTypeNested <$> t,

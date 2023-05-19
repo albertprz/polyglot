@@ -7,12 +7,11 @@ import qualified SyntaxTrees.Scala.Common   as S
 import qualified SyntaxTrees.Scala.FnDef    as S
 import qualified SyntaxTrees.Scala.Pattern  as S
 
-import Conversions.ToScala.Common  (autoIds, literal, qCtor, qCtorOp,
-                                           qVar, qVarOp, var)
+import Conversions.ToScala.Common  (autoIds, literal, qCtor, qCtorOp, qVar,
+                                    qVarOp, var)
 import Conversions.ToScala.Pattern (allVars, extractVars, pattern')
-import Conversions.ToScala.Type    (argLists, classScopeSplit,
-                                           findTypeParams, typeParam, typeSplit,
-                                           usingArgList)
+import Conversions.ToScala.Type    (argLists, classScopeSplit, findTypeParams,
+                                    typeParam, typeSplit, usingArgList)
 
 import Data.Foldable           (Foldable (fold, toList))
 import Data.List               (nubBy)
@@ -121,7 +120,8 @@ fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp y]
 
 fnBody (H.PostFixOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp y]
                                                    [fnBody x])
-fnBody (H.LambdaExpr x y)   = S.LambdaExpr (var <$> x) (fnBody y)
+fnBody (H.LambdaExpr x y)   = S.LambdaExpr (pattern' <$> x)
+                                          (fnBody y)
 fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
 fnBody (H.DoExpr x)         = S.ForExpr (doStep <$> init x) (extractDoStep $ last x)
 fnBody (H.MultiWayIfExpr x) = maybeGuardedBody $ H.Guarded x

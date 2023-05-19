@@ -1,21 +1,19 @@
 module SyntaxTrees.Scala.Type where
 
+import Data.List                (intercalate)
 import SyntaxTrees.Scala.Common (Modifier, Package, QTypeClass, Var,
-                                  showQualified)
+                                 showQualified)
 import Utils.Foldable           (wrapMaybe)
-import Utils.String             (joinMaybe, joinWords, str, wrapParens,
-                                 wrapParensCsv, wrapSpaces, wrapSquareCsv,
-                                 (+++), Wrapper (..))
-import Data.List (intercalate)
+import Utils.String             (Wrapper (..), joinMaybe, joinWords, str,
+                                 wrapParens, wrapParensCsv, wrapSpaces,
+                                 wrapSquareCsv, (+++))
 
 
 newtype TypeParam
   = TypeParam String
-  deriving Show
 
 newtype TypeVar
   = TypeVar String
-  deriving Show
 
 
 data TypeCtor
@@ -65,6 +63,13 @@ data QTypeCtor
   = QTypeCtor (Maybe Package) TypeCtor
 
 
+
+instance Show TypeParam where
+  show (TypeParam x) = x
+
+instance Show TypeVar where
+  show (TypeVar x) = x
+
 instance Show TypeCtor where
   show (TypeCtor x) = x
   show Arrow        = "->"
@@ -81,7 +86,6 @@ instance Show Type where
   show ExistentialType = "?"
   show (TypeScope x y) = wrapSquareCsv x +++ "=>" +++ showTypeScopeNested y
   show (ClassScope x y) = wrapParensCsv x +++ "?=>" +++ showClassScopeNested y
-
 
 
 instance Show ArgList where
@@ -120,9 +124,9 @@ showTypeNested x = transformFn $ show x
     transformFn = if shouldWrap then wrapParens else id
     shouldWrap = case x of
       (CtorTypeApply (QTypeCtor _ Arrow) _) -> True
-      (TypeScope _ _) -> True
-      (ClassScope _ _) -> True
-      _ -> False
+      (TypeScope _ _)                       -> True
+      (ClassScope _ _)                      -> True
+      _                                     -> False
 
 showTypeScopeNested :: Type -> String
 showTypeScopeNested x = transformFn $ show x
@@ -130,13 +134,13 @@ showTypeScopeNested x = transformFn $ show x
     transformFn = if shouldWrap then wrapParens else id
     shouldWrap = case x of
       (TypeScope _ _) -> True
-      _ -> False
+      _               -> False
 
 showClassScopeNested :: Type -> String
 showClassScopeNested x = transformFn $ show x
   where
     transformFn = if shouldWrap then wrapParens else id
     shouldWrap = case x of
-      (TypeScope _ _) -> True
+      (TypeScope _ _)  -> True
       (ClassScope _ _) -> True
-      _ -> False
+      _                -> False
