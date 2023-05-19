@@ -95,7 +95,7 @@ data FnBody
       , namedFields :: [(Var, FnBody)]
       }
   | Tuple [FnBody]
-  | List [FnBody]
+  | Array [FnBody]
   | FnVar' FnVar
   | Literal' Literal
 
@@ -215,7 +215,8 @@ instance Show FnBody where
 
   show (MultiWayIfExpr x) =
     joinWords ["if",
-               wrapBlock $ Wrapper . ("|" ++) . showGuardedFnBody "=" <$> x]
+               wrapBlock $ Wrapper . ("|" ++) .
+                 showGuardedFnBody "->" <$> x]
 
   show (DoExpr x) =
     "do" ++ wrapBlock x
@@ -242,7 +243,7 @@ instance Show FnBody where
       format (z, t) = show z +++ "=" +++ show t
 
   show (Tuple x) = wrapParensCsv x
-  show (List x) = wrapSquareCsv x
+  show (Array x) = wrapSquareCsv x
   show (FnVar' x) = show x
   show (Literal' x) = show x
 

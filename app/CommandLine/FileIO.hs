@@ -1,6 +1,6 @@
 module CommandLine.FileIO where
 
-import CommandLine.Options (Opts (..), Language (..))
+import CommandLine.Options (Language (..), Opts (..))
 
 import Lexers.Haskell.Layout (adaptLayout)
 
@@ -24,8 +24,9 @@ import System.FSNotify       (ActionPredicate, Event (..))
 
 import qualified Data.ByteString as B (readFile, writeFile)
 
-import qualified Conversions.ToScala.ModuleDef as ToScala
-import qualified Parsers.Haskell.ModuleDef            as Parser
+import qualified Conversions.ToPurescript.ModuleDef as ToPurescript
+import qualified Conversions.ToScala.ModuleDef      as ToScala
+import qualified Parsers.Haskell.ModuleDef          as Parser
 
 import Bookhound.Parser (ParseError, runParser)
 
@@ -33,9 +34,10 @@ import Bookhound.Parser (ParseError, runParser)
 toTargetLanguage :: Language -> Text -> Either ParseError String
 toTargetLanguage language = adaptLayout >=> convert
   where
-    convert = show . syntaxConverter <<$>> runParser Parser.moduleDef
+    convert = syntaxConverter <<$>> runParser Parser.moduleDef
     syntaxConverter = case language of
-      Scala -> ToScala.moduleDef
+      Scala      -> show . ToScala.moduleDef
+      Purescript -> show . ToPurescript.moduleDef
 
 
 convertDirTree :: Language -> DirTree Text -> DirTree Text
@@ -109,10 +111,12 @@ pathToLanguage :: Language -> FilePath -> FilePath
 pathToLanguage language = (-<.> extension)
   where
     extension = case language of
-      Scala -> "scala"
+      Scala      -> "scala"
+      Purescript -> "purs"
 
 formatterExec :: Language -> FilePath
-formatterExec Scala = "scalafmt"
+formatterExec Scala      = "scalafmt"
+formatterExec Purescript = "purs-tidy"
 
 emitError :: ParseError -> IO ()
 emitError = fail . ("\n\n" ++) . take 50 . show

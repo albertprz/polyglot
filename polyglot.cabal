@@ -24,6 +24,13 @@ source-repository head
 
 library
   exposed-modules:
+      Conversions.ToPurescript.ClassDef
+      Conversions.ToPurescript.Common
+      Conversions.ToPurescript.DataDef
+      Conversions.ToPurescript.FnDef
+      Conversions.ToPurescript.ModuleDef
+      Conversions.ToPurescript.Pattern
+      Conversions.ToPurescript.Type
       Conversions.ToScala.ClassDef
       Conversions.ToScala.Common
       Conversions.ToScala.DataDef

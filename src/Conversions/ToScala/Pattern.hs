@@ -6,7 +6,7 @@ import qualified SyntaxTrees.Scala.Common    as S
 import qualified SyntaxTrees.Scala.Pattern   as S
 
 import Conversions.ToScala.Common
-import Data.Maybe                        (mapMaybe)
+import Data.Maybe                 (mapMaybe)
 
 
 pattern' :: H.Pattern -> S.Pattern
@@ -33,7 +33,3 @@ extractVars x = mapMaybe extractVar x
 
 allVars :: [H.Pattern] -> Bool
 allVars x = length (mapMaybe extractVar x) == length x
-
-
-namedFieldFn :: (H.Var, Maybe H.Pattern) -> (S.Var, Maybe S.Pattern)
-namedFieldFn (x, y) = (var x, pattern' <$> y)

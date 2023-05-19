@@ -1,12 +1,12 @@
 module CommandLine.Options where
 
-import Options.Applicative
-import Data.List (intercalate)
-import Data.Text (pack)
-import Data.Either.Extra (mapLeft)
+import Data.Either.Extra   (mapLeft)
+import Data.List           (intercalate)
+import Data.Text           (pack)
+import Options.Applicative hiding ((<|>))
 
-import qualified Bookhound.Parser as Bookhound
-import Bookhound.ParserCombinators
+import qualified Bookhound.Parser            as Bookhound
+import           Bookhound.ParserCombinators
 
 
 
@@ -54,12 +54,15 @@ data Opts
       , clearContents :: Bool
       }
 
-data Language = Scala
-  deriving (Eq, Ord, Enum, Show, Bounded)
+data Language
+  = Scala
+  | Purescript
+  deriving (Bounded, Enum, Eq, Ord, Show)
 
 
 language :: Bookhound.Parser Language
-language = Scala <$ is "Scala"
+language = Scala <$ is "Scala" <|>
+           Purescript <$ is "Purescript"
 
 
 parserOption :: Bookhound.Parser a -> Options.Applicative.Mod Options.Applicative.OptionFields a -> Parser a
