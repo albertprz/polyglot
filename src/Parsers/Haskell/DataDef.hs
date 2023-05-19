@@ -1,11 +1,11 @@
 module Parsers.Haskell.DataDef where
 
 import Parsers.Haskell.Common      (class', ctor, var)
-import Parsers.Haskell.Type        (anyKindedType, type', typeParam, typeVar)
+import Parsers.Haskell.Type        (anyKindedType, type', typeCtor, typeParam)
 import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
-                                    FieldDef (..), NamedFieldDef (..),
-                                    NewTypeDef (..), TypeDef (..),
-                                    UnNamedFieldDef (..), DerivingClause (..))
+                                    DerivingClause (..), FieldDef (..),
+                                    NamedFieldDef (..), NewTypeDef (..),
+                                    TypeDef (..), UnNamedFieldDef (..))
 
 import Bookhound.Parser              (Parser)
 import Bookhound.ParserCombinators   (IsMatch (..), anySepBy, someSepBy, (<#>),
@@ -19,19 +19,19 @@ import Data.Foldable (Foldable (fold))
 
 
 typeDef :: Parser TypeDef
-typeDef = TypeDef <$> ((is "type") *> typeVar)
+typeDef = TypeDef <$> ((is "type") *> typeCtor)
                   <*> (typeParam |*) <* equal
                   <*> anyKindedType
 
 newtypeDef :: Parser NewTypeDef
-newtypeDef = NewTypeDef <$> (is "newtype" *> typeVar)
+newtypeDef = NewTypeDef <$> (is "newtype" *> typeCtor)
                         <*> (typeParam |*) <* equal
                         <*> ctor
                         <*> fieldDef
                         <*> (derivingClause |*)
 
 dataDef :: Parser DataDef
-dataDef = DataDef <$> (is "data" *> typeVar)
+dataDef = DataDef <$> (is "data" *> typeCtor)
                   <*> (typeParam |*)
                   <*> (fold <$> alternatives)
                   <*> (derivingClause |*)

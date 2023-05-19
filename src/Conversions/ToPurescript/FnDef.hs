@@ -6,9 +6,10 @@ import qualified SyntaxTrees.Purescript.Common as P
 import qualified SyntaxTrees.Purescript.FnDef  as P
 
 import Bookhound.Utils.Foldable         (hasNone)
-import Conversions.ToPurescript.Common
-import Conversions.ToPurescript.Pattern
-import Conversions.ToPurescript.Type
+import Conversions.ToPurescript.Common  (literal, qCtor, qCtorOp, qVar, qVarOp,
+                                         var, varOp)
+import Conversions.ToPurescript.Pattern (pattern')
+import Conversions.ToPurescript.Type    (findTypeParams, type')
 import Data.Foldable                    (Foldable (toList))
 
 
@@ -25,10 +26,9 @@ fnDef (H.FnDef x y z) =
   P.FnDef (var <$> x) (pattern' <$> y) (maybeGuardedFnBody z)
 
 
--- TODO: Infix annotations for infix functions
 infixFnAnnotation :: H.InfixFnAnnotation -> P.InfixFnDef
 infixFnAnnotation (H.InfixFnAnnotation x y z) =
-  P.InfixFnDef (associativity x) y (P.Var "var") (varOp z)
+  P.InfixFnDef (associativity x) y (P.Var "infixFn") (varOp z)
 
 fnDefOrSig :: H.FnDefOrSig -> P.FnDefOrSig
 fnDefOrSig (H.Def x) = P.Def $ fnDef x

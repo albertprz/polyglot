@@ -4,7 +4,7 @@ import qualified SyntaxTrees.Haskell.Pattern    as H
 import qualified SyntaxTrees.Purescript.Common  as P
 import qualified SyntaxTrees.Purescript.Pattern as P
 
-import Conversions.ToPurescript.Common
+import Conversions.ToPurescript.Common (literal, qCtor, qCtorOp, var)
 
 
 pattern' :: H.Pattern -> P.Pattern

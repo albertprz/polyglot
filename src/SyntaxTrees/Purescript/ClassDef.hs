@@ -6,9 +6,8 @@ import SyntaxTrees.Purescript.FnDef  (FnDefOrSig)
 import SyntaxTrees.Purescript.Type   (AnyKindedType, ClassConstraint, TypeParam,
                                       showAnyKindedTypeNested)
 import Utils.Foldable                (wrapMaybe)
-import Utils.String                  (Wrapper (Wrapper), joinMaybe,
-                                      joinMaybePost, joinWords, str, wrapBlock,
-                                      wrapParensCsv)
+import Utils.String                  (Wrapper (Wrapper), joinMaybePost,
+                                      joinWords, str, wrapBlock, wrapParensCsv)
 
 
 data ClassDef
@@ -34,7 +33,6 @@ data DerivingDef
       , name        :: Maybe Var
       , class'      :: Class
       , types       :: [AnyKindedType]
-      , derivingVia :: Maybe Class
       }
 
 
@@ -58,10 +56,9 @@ instance Show InstanceDef where
                wrapBlock u]
 
 instance Show DerivingDef where
-  show (DerivingDef x y z t u) =
+  show (DerivingDef x y z t) =
     joinWords ["deriving",
                (Wrapper <$> wrapMaybe (wrapParensCsv x)) `joinMaybePost` "<=",
                y `joinMaybePost` "::",
                show z,
-               intercalate " " $ showAnyKindedTypeNested <$> t,
-               "via" `joinMaybe` u]
+               intercalate " " $ showAnyKindedTypeNested <$> t]

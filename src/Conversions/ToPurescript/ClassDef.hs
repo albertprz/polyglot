@@ -3,9 +3,10 @@ module Conversions.ToPurescript.ClassDef where
 import qualified SyntaxTrees.Haskell.ClassDef    as H
 import qualified SyntaxTrees.Purescript.ClassDef as P
 
-import Conversions.ToPurescript.Common
-import Conversions.ToPurescript.FnDef
-import Conversions.ToPurescript.Type
+import Conversions.ToPurescript.Common (class')
+import Conversions.ToPurescript.FnDef  (fnDefOrSig)
+import Conversions.ToPurescript.Type   (anyKindedType, classConstraint,
+                                        typeParam)
 
 
 classDef :: H.ClassDef -> P.ClassDef
@@ -20,6 +21,6 @@ instanceDef (H.InstanceDef x y z t) =
                 (anyKindedType <$> z) (fnDefOrSig <$> t)
 
 derivingDef :: H.DerivingDef -> P.DerivingDef
-derivingDef (H.DerivingDef _ x y z t) =
+derivingDef (H.DerivingDef _ x y z _) =
   P.DerivingDef (classConstraint <$> x) Nothing (class' y)
-                (anyKindedType <$> z) (class' <$> t)
+                (anyKindedType <$> z)

@@ -1,8 +1,9 @@
 module SyntaxTrees.Purescript.Type where
 
 import Data.List                     (intercalate)
-import SyntaxTrees.Purescript.Common
-import Utils.String
+import SyntaxTrees.Purescript.Common (Module, QClass, showQualified)
+import Utils.String                  (str, wrapParens, wrapParensCsv,
+                                      wrapSpaces, (+++))
 
 
 newtype TypeParam

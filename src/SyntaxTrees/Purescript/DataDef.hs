@@ -1,21 +1,21 @@
 module SyntaxTrees.Purescript.DataDef where
 
 import SyntaxTrees.Purescript.Common (Ctor, Var)
-import SyntaxTrees.Purescript.Type   (AnyKindedType, Type, TypeParam, TypeVar,
+import SyntaxTrees.Purescript.Type   (AnyKindedType, Type, TypeCtor, TypeParam,
                                       showTypeNested)
 import Utils.String                  (joinWords, str, wrapCurlyCsv, wrapSpaces)
 
 
 data TypeDef
   = TypeDef
-      { alias      :: TypeVar
+      { alias      :: TypeCtor
       , typeParams :: [TypeParam]
       , type'      :: AnyKindedType
       }
 
 data NewTypeDef
   = NewTypeDef
-      { type'      :: TypeVar
+      { type'      :: TypeCtor
       , typeParams :: [TypeParam]
       , ctor       :: Ctor
       , field      :: FieldDef
@@ -23,7 +23,7 @@ data NewTypeDef
 
 data DataDef
   = DataDef
-      { type'      :: TypeVar
+      { type'      :: TypeCtor
       , typeParams :: [TypeParam]
       , ctorDefs   :: [DataCtorDef]
       }

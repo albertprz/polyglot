@@ -1,26 +1,36 @@
 module Conversions.ToPurescript.DataDef where
 
-import qualified SyntaxTrees.Haskell.DataDef    as H
-import qualified SyntaxTrees.Purescript.DataDef as P
+import qualified SyntaxTrees.Haskell.DataDef     as H
+import qualified SyntaxTrees.Haskell.Type        as H
+import qualified SyntaxTrees.Purescript.ClassDef as P
+import qualified SyntaxTrees.Purescript.DataDef  as P
+import qualified SyntaxTrees.Purescript.Type     as P
 
-import Conversions.ToPurescript.Common
-import Conversions.ToPurescript.Type
+import Conversions.ToPurescript.Common (class', ctor, var)
+import Conversions.ToPurescript.Type   (anyKindedType, type', typeCtor,
+                                        typeParam)
+import SyntaxTrees.Haskell.DataDef     (derivingClasses)
+
 
 typeDef :: H.TypeDef -> P.TypeDef
 typeDef (H.TypeDef x y z) =
-  P.TypeDef (typeVar x) (typeParam <$> y) (anyKindedType z)
+  P.TypeDef (typeCtor x) (typeParam <$> y) (anyKindedType z)
 
 
--- TODO: Newtype Deriving to standalone deriving
-newtypeDef :: H.NewTypeDef -> P.NewTypeDef
-newtypeDef (H.NewTypeDef x y z t _) =
-  P.NewTypeDef (typeVar x) (typeParam <$> y) (ctor z) (fieldDef t)
+newtypeDef :: H.NewTypeDef -> (P.NewTypeDef, [P.DerivingDef])
+newtypeDef (H.NewTypeDef x y z t u) =
+  (newtype', extractDerivingDefs x y u)
+  where
+    newtype' = P.NewTypeDef (typeCtor x) (typeParam <$> y)
+                            (ctor z) (fieldDef t)
 
 
--- TODO: Data Deriving to standalone deriving
-dataDef :: H.DataDef -> P.DataDef
-dataDef (H.DataDef x y z _) =
-  P.DataDef (typeVar x) (typeParam <$> y) (dataCtorDef <$> z)
+dataDef :: H.DataDef -> (P.DataDef, [P.DerivingDef])
+dataDef (H.DataDef x y z u) =
+  (data', extractDerivingDefs x y u)
+  where
+    data' = P.DataDef (typeCtor  x) (typeParam <$> y)
+                      (dataCtorDef <$> z)
 
 
 dataCtorDef :: H.DataCtorDef -> P.DataCtorDef
@@ -41,3 +51,14 @@ unnamedFieldDef (H.UnNamedFieldDef x) =
 namedFieldDef :: H.NamedFieldDef -> P.NamedFieldDef
 namedFieldDef (H.NamedFieldDef x y) =
   P.NamedFieldDef (var x) (type' y)
+
+
+extractDerivingDefs :: H.TypeCtor -> [H.TypeParam] -> [H.DerivingClause]
+                    -> [P.DerivingDef]
+extractDerivingDefs x y z =
+  buildDeriving <$> foldMap derivingClasses z
+  where
+    buildDeriving cls = P.DerivingDef [] Nothing (class' cls) [classType]
+    classType = P.TypeValue $ P.CtorTypeApply
+                (P.QTypeCtor Nothing $ typeCtor x)
+                ((P.TypeParam' . typeParam <$> y))

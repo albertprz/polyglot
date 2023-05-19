@@ -6,7 +6,10 @@ import SyntaxTrees.Purescript.Common  (Literal, QCtor, QCtorOp, QVar, QVarOp,
 import SyntaxTrees.Purescript.Pattern (Pattern, showPatternNested)
 import SyntaxTrees.Purescript.Type    (Type)
 import Utils.List                     (mix)
-import Utils.String
+import Utils.String                   (Wrapper (Wrapper), joinWords, str,
+                                       wrapBlock, wrapContext, wrapCsv,
+                                       wrapCurlyCsv, wrapParens, wrapParensCsv,
+                                       wrapSpaces, wrapSquareCsv, (+++))
 
 
 

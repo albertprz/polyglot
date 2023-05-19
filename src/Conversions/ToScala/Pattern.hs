@@ -5,7 +5,7 @@ import qualified SyntaxTrees.Haskell.Pattern as H
 import qualified SyntaxTrees.Scala.Common    as S
 import qualified SyntaxTrees.Scala.Pattern   as S
 
-import Conversions.ToScala.Common
+import Conversions.ToScala.Common (literal, qCtor, qCtorOp, var)
 import Data.Maybe                 (mapMaybe)
 
 

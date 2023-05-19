@@ -3,7 +3,7 @@ module Conversions.ToPurescript.Type where
 import qualified SyntaxTrees.Haskell.Type    as H
 import qualified SyntaxTrees.Purescript.Type as P
 
-import Conversions.ToPurescript.Common
+import Conversions.ToPurescript.Common (find, module', qClass)
 
 import Data.Map (Map)
 import Data.Set (Set)

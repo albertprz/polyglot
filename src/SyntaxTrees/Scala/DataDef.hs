@@ -3,7 +3,7 @@ module SyntaxTrees.Scala.DataDef where
 import Data.Monoid.HT           (when)
 import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass)
 import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef)
-import SyntaxTrees.Scala.Type   (ArgList (..), Type, TypeParam, TypeVar,
+import SyntaxTrees.Scala.Type   (ArgList (..), Type, TypeCtor, TypeParam,
                                  UsingArgList)
 import Utils.Foldable           (hasSome)
 import Utils.String             (Empty (Empty), joinList, joinWords, str,
@@ -12,14 +12,14 @@ import Utils.String             (Empty (Empty), joinList, joinWords, str,
 
 data TypeDef
   = TypeDef
-      { alias      :: TypeVar
+      { alias      :: TypeCtor
       , typeParams :: [TypeParam]
       , type'      :: Type
       }
 
 data OpaqueTypeDef
   = OpaqueTypeDef
-      { alias      :: TypeVar
+      { alias      :: TypeCtor
       , typeParams :: [TypeParam]
       , type'      :: Type
       , derives    :: [TypeClass]
@@ -28,7 +28,7 @@ data OpaqueTypeDef
 data TraitDef
   = TraitDef
       { modifiers     :: [Modifier]
-      , name          :: TypeVar
+      , name          :: TypeCtor
       , typeParams    :: [TypeParam]
       , argLists      :: [ArgList]
       , usingArgLists :: [UsingArgList]
@@ -39,7 +39,7 @@ data TraitDef
 data ClassDef
   = ClassDef
       { modifiers     :: [Modifier]
-      , name          :: TypeVar
+      , name          :: TypeCtor
       , typeParams    :: [TypeParam]
       , argLists      :: [ArgList]
       , usingArgLists :: [UsingArgList]
@@ -50,7 +50,7 @@ data ClassDef
 data ObjectDef
   = ObjectDef
       { modifiers    :: [Modifier]
-      , name         :: TypeVar
+      , name         :: TypeCtor
       , extends      :: [Type]
       , internalDefs :: [InternalDef]
       }
@@ -59,7 +59,7 @@ data ObjectDef
 data EnumDef
   = EnumDef
       { modifiers     :: [Modifier]
-      , name          :: TypeVar
+      , name          :: TypeCtor
       , typeParams    :: [TypeParam]
       , argLists      :: [ArgList]
       , usingArgLists :: [UsingArgList]
@@ -80,7 +80,7 @@ data EnumCaseDef
 data CaseClassDef
   = CaseClassDef
       { modifiers     :: [Modifier]
-      , name          :: TypeVar
+      , name          :: TypeCtor
       , typeParams    :: [TypeParam]
       , argLists      :: [ArgList]
       , usingArgLists :: [UsingArgList]
@@ -92,7 +92,7 @@ data CaseClassDef
 data CaseObjectDef
   = CaseObjectDef
       { modifiers    :: [Modifier]
-      , name         :: TypeVar
+      , name         :: TypeCtor
       , derives      :: [TypeClass]
       , extends      :: [Type]
       , internalDefs :: [InternalFnDef]

@@ -2,15 +2,15 @@ module Conversions.ToScala.ClassDef where
 
 import qualified SyntaxTrees.Haskell.ClassDef as H
 import qualified SyntaxTrees.Haskell.Common   as H
+import qualified SyntaxTrees.Scala.Common     as S
 import qualified SyntaxTrees.Scala.DataDef    as S
 import qualified SyntaxTrees.Scala.FnDef      as S
 import qualified SyntaxTrees.Scala.Type       as S
-import qualified SyntaxTrees.Scala.Common as S
 
 import Conversions.ToScala.FnDef (fnDefOrSigs, fnDefs)
 import Conversions.ToScala.Type  (anyKindedType, classConstraint,
-                                         findAnyKindedTypeParams, typeParam,
-                                         usingArgList)
+                                  findAnyKindedTypeParams, typeParam,
+                                  usingArgList)
 
 import Data.Foldable (Foldable (toList))
 
@@ -18,7 +18,7 @@ import Data.Foldable (Foldable (toList))
 
 classDef :: H.ClassDef -> S.TraitDef
 classDef (H.ClassDef x (H.Class y) z t) =
-  S.TraitDef [] (S.TypeVar y)
+  S.TraitDef [] (S.TypeCtor y)
         (typeParam <$> z) [] [usingArgList $ classConstraint <$> x] []
         (S.Fn . fnDefs <$> fnDefOrSigs t)
 

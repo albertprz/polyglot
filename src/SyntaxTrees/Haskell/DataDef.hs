@@ -1,12 +1,12 @@
 module SyntaxTrees.Haskell.DataDef where
 
 import SyntaxTrees.Haskell.Common (Class, Ctor, Var)
-import SyntaxTrees.Haskell.Type   (AnyKindedType, Type, TypeParam, TypeVar)
+import SyntaxTrees.Haskell.Type   (AnyKindedType, Type, TypeCtor, TypeParam)
 
 
 data TypeDef
   = TypeDef
-      { alias      :: TypeVar
+      { alias      :: TypeCtor
       , typeParams :: [TypeParam]
       , type'      :: AnyKindedType
       }
@@ -14,7 +14,7 @@ data TypeDef
 
 data NewTypeDef
   = NewTypeDef
-      { type'      :: TypeVar
+      { type'      :: TypeCtor
       , typeParams :: [TypeParam]
       , ctor       :: Ctor
       , field      :: FieldDef
@@ -24,15 +24,15 @@ data NewTypeDef
 
 data DataDef
   = DataDef
-      { type'      :: TypeVar
+      { type'      :: TypeCtor
       , typeParams :: [TypeParam]
       , ctorDefs   :: [DataCtorDef]
       , deriving'  :: [DerivingClause]
       }
   deriving (Show)
 
-data DerivingClause =
-  StandardDeriving [Class]
+data DerivingClause
+  = StandardDeriving [Class]
   | NewTypeDeriving [Class]
   | AnyClassDeriving [Class]
   | DerivingVia [Class] AnyKindedType
@@ -66,3 +66,11 @@ data NamedFieldDef
       , type' :: Type
       }
   deriving (Show)
+
+
+
+derivingClasses :: DerivingClause -> [Class]
+derivingClasses (StandardDeriving xs) = xs
+derivingClasses (NewTypeDeriving xs)  = xs
+derivingClasses (AnyClassDeriving xs) = xs
+derivingClasses (DerivingVia xs _)    = xs
