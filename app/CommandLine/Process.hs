@@ -27,13 +27,13 @@ import System.FilePath        (equalFilePath, replaceFileName, takeDirectory,
 import System.FSNotify        (Action, Event (..), watchTree, withManager)
 import System.Process.Extra   (callProcess, readProcess)
 
-
 import Bookhound.Parser (ParseError)
 
 
-
-process :: Opts -> IO ()
-process opts@Opts{watchMode, sourcePath, targetPath}
+process :: Opts -> FilePath -> IO ()
+process opts@Opts{watchMode, sourcePath, targetPath} homeDir
+  | any (equalFilePath homeDir) [sourcePath, targetPath] =
+      fail "Neither source nor target paths can be the home directory"
   | isDir sourcePath && not (isDir targetPath) =
       fail "If the input path is a directory then the output path must be a directory as well"
   | equalFilePath sourcePath targetPath =

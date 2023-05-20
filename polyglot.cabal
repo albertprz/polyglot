@@ -109,7 +109,7 @@ library
       DeriveTraversable
       DeriveGeneric
       GeneralizedNewtypeDeriving
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
     , bookhound >=0.1.11 && <0.2
@@ -170,7 +170,7 @@ executable polyglot
       DeriveTraversable
       DeriveGeneric
       GeneralizedNewtypeDeriving
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , bookhound >=0.1.11 && <0.2
