@@ -1,10 +1,10 @@
 module CommandLine.Process where
 
 
-import CommandLine.FileIO  (convertDirTree, emitError, filterPred,
-                            formatterExec, getWatchPath, isDir, moveTree,
-                            pathToLanguage, readFileUtf8, reportFailure, toTargetLanguage,
-                            watchPred, writeFileUtf8, pathToLanguage)
+import CommandLine.FileIO  (convertDirTree, dirPred, emitError, formatterExec,
+                            getWatchPath, isDir, moveTree, pathToLanguage,
+                            readFileUtf8, reportFailure, toTargetLanguage,
+                            watchPred, writeFileUtf8)
 import CommandLine.Options (Opts (..))
 
 
@@ -39,7 +39,7 @@ process opts@Opts{watchMode, sourcePath, targetPath}
   | equalFilePath sourcePath targetPath =
       fail "The output path cannot be the same as the input path"
   | watchMode                      = watchPath opts
-  | null (takeFileName sourcePath) = actions opts
+  | null (takeFileName sourcePath)    = actions opts
   | otherwise                      = action emitError opts
 
 
@@ -81,9 +81,10 @@ actions Opts{language, sourcePath, targetPath, autoFormat, clearContents} =
                                  (removeDirectoryRecursive fp)
     removeDirPred fp = andM [doesDirectoryExist fp,
                              (/= fp) <$> getHomeDirectory]
-    migrateDirTree fp1 fp2 = convertDirTree language . filterDir filterPred
-                             </$> (moveTree fp1 fp2 <$>
-                                   readDirectoryWith readFileUtf8 fp1)
+    migrateDirTree fp1 fp2 = convertDirTree language
+                             </$> (moveTree fp2
+                              <$> (filterDir dirPred
+                             </$>  readDirectoryWith readFileUtf8 fp1))
     format = when autoFormat $ callProcess (formatterExec language) [targetPath]
 
 

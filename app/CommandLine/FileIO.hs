@@ -9,8 +9,7 @@ import Control.Parallel.Strategies (parMap, rseq)
 import Data.List                   (isPrefixOf)
 import Data.Text                   (Text, pack)
 import Data.Text.Encoding          (decodeUtf8, encodeUtf8)
-import Data.Tuple.Extra            (both)
-import Utils.Foldable              (wrapMaybe)
+import Utils.Foldable              (andPred, orPred, wrapMaybe)
 import Utils.Functor               ((<<$>>))
 
 
@@ -52,15 +51,16 @@ convertDirTree language (Dir x y) = Dir x (parMap rseq (convertDirTree language)
 convertDirTree _ x = x
 
 
-moveTree :: FilePath -> FilePath -> AnchoredDirTree a -> AnchoredDirTree a
-moveTree fp1 fp2 (_ :/ x@(Dir _ _)) = "." :/ newDirTree
+moveTree :: FilePath -> AnchoredDirTree a -> AnchoredDirTree a
+moveTree fp2 (_ :/ x@(Dir _ _)) = "." :/ newDirTree
   where
+
     newDirTree    = foldr (\curr acc -> Dir curr [acc]) prunedDirTree
                                                       (init outputDirs)
-    prunedDirTree = Dir (last outputDirs) (getDirTreeContents (length inputDirs) x)
-    (inputDirs, outputDirs) = both (splitDirectories . takeDirectory . normalise)
-                                   (fp1, fp2)
-moveTree _ _ x                      = x
+    prunedDirTree = Dir (last outputDirs)
+                        (getDirTreeContents 1 x)
+    outputDirs = splitDirectories $ takeDirectory $ normalise fp2
+moveTree _ x                      = x
 
 
 reportFailure :: DirTree a -> IO ()
@@ -92,13 +92,9 @@ getWatchPath fp Opts{sourcePath, targetPath} =
 
 
 getDirTreeContents :: Int -> DirTree a -> [DirTree a]
-getDirTreeContents 0 x         = [x]
-getDirTreeContents n (Dir _ x) =  x  >>= getDirTreeContents (n - 1)
+getDirTreeContents n (Dir _ x)
+  | n > 0 = x  >>= getDirTreeContents (n - 1)
 getDirTreeContents _ x         = [x]
-
-filterPred :: DirTree a -> Bool
-filterPred (Dir x _) = (not . isPrefixOf ".")  x
-filterPred _         = True
 
 
 isDir :: FilePath -> Bool
@@ -106,6 +102,10 @@ isDir = null . takeFileName
 
 isHaskellFile :: FilePath -> Bool
 isHaskellFile = (`elem` [".hs", ".lhs"]) . takeExtensions
+
+isDotFile :: String -> Bool
+isDotFile = andPred [isPrefixOf ".", (/= "."), (/= "..")]
+
 
 pathToLanguage :: Language -> FilePath -> FilePath
 pathToLanguage language = (-<.> extension)
@@ -122,8 +122,18 @@ emitError :: ParseError -> IO ()
 emitError = fail . ("\n\n" ++) . take 50 . show
 
 
+dirNamePred :: String -> Bool
+dirNamePred = not . orPred [isDotFile, (== "bin")]
+
+dirPred :: DirTree a -> Bool
+dirPred (Dir x _) = dirNamePred x
+dirPred _         = True
+
+
 readFileUtf8 :: FilePath -> IO Text
-readFileUtf8 fp = decodeUtf8 <$> B.readFile fp
+readFileUtf8 fp | all dirNamePred (splitDirectories fp)
+  = decodeUtf8 <$> B.readFile fp
+readFileUtf8 _ = pure mempty
 
 writeFileUtf8 :: FilePath -> Text -> IO ()
 writeFileUtf8 fp = B.writeFile fp . encodeUtf8
