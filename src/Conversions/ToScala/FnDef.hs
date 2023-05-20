@@ -129,6 +129,13 @@ fnBody (H.CaseOfExpr x y)   = simplifyMatch $
                               S.MatchExpr (fnBody x) (caseBinding <$> y)
 fnBody (H.LambdaCaseExpr x) = S.LambdaExpr [] (fnBody $ H.CaseOfExpr
                               (H.FnVar' $ H.Var' $ H.QVar Nothing $ H.Var "_") x)
+
+fnBody (H.TypeAnnotation x _) = fnBody x
+fnBody (H.ListRange x (Just y)) = S.InfixFnApply
+    [S.VarOp' $ S.QVarOp Nothing $ S.VarOp "to"] [fnBody x, fnBody y]
+fnBody (H.ListRange x Nothing)  = S.InfixFnApply
+    [S.VarOp' $ S.QVarOp Nothing $ S.VarOp "to"]
+    [fnBody x, S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "maxBound"]
 fnBody (H.Tuple x)          = S.Tuple $ fnBody <$> x
 fnBody (H.FnVar' x)         = fnVar x
 fnBody (H.Literal' x)       = S.Literal' $ literal x
@@ -143,12 +150,11 @@ fnBody (H.LetExpr x y)   = S.LetExpr (fnDefs <$> fnDefOrSigs x)
                                      (fnBody y)
 fnBody (H.WhereExpr x y) = S.LetExpr (fnDefs <$> fnDefOrSigs y)
                                      (fnBody x)
-fnBody (H.RecordCreate x y) = S.NamedFnApply (S.FnVar' $ S.Ctor' $ qCtor x)
+fnBody (H.RecordCreate x y) = S.NamedFnApply (fnBody x)
                                              ((var *** fnBody) <$> y)
-fnBody (H.RecordUpdate x y) = S.NamedFnApply (S.FnVar' $ S.Selection (qVar x)
-                                              [S.Var "copy"])
-                                             ((var *** fnBody) <$> y)
-
+fnBody (H.RecordUpdate x y) =
+  S.NamedFnApply (S.BodySelection (fnBody x) [S.Var "copy"])
+                 ((var *** fnBody) <$> y)
 
 
 

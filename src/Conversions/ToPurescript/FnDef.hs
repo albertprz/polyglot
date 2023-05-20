@@ -40,7 +40,8 @@ fnBody (H.InfixFnApply x y) = P.InfixFnApply (fnOp <$> x) (fnBody <$> y)
 
 fnBody (H.LeftOpSection x y)    = P.LeftOpSection (fnOp x) (fnBody y)
 fnBody (H.RightOpSection x y)   = P.RightOpSection (fnBody x) (fnOp y)
-fnBody (H.PostFixOpSection x y) = P.PostFixOpSection (fnBody x) (fnOp y)
+fnBody (H.PostFixOpSection x y) = P.RightOpSection (fnBody x) (fnOp y)
+
 
 fnBody (H.LambdaExpr x y)   = P.LambdaExpr (pattern' <$> x) (fnBody y)
 fnBody (H.LetExpr x y)      = P.LetExpr (fnDefOrSig <$> x) (fnBody y)
@@ -51,10 +52,15 @@ fnBody (H.MultiWayIfExpr x) = P.MultiWayIfExpr $ guardedFnBody <$> x
 fnBody (H.DoExpr x)         = P.DoExpr $ doStep <$> x
 fnBody (H.CaseOfExpr x y)   = P.CaseOfExpr (fnBody x) (caseBinding <$> y)
 fnBody (H.LambdaCaseExpr x) = P.LambdaCaseExpr $ caseBinding <$> x
-fnBody (H.RecordCreate x y) = P.RecordCreate (qCtor x)
+fnBody (H.RecordCreate x y) = P.RecordCreate (fnBody x)
                                 ((\(z, t) -> (var z, fnBody t)) <$> y)
-fnBody (H.RecordUpdate x y) = P.RecordUpdate (qVar x)
+fnBody (H.RecordUpdate x y) = P.RecordUpdate (fnBody x)
                                 ((\(z, t) -> (var z, fnBody t)) <$> y)
+
+fnBody (H.TypeAnnotation x y) = P.TypeAnnotation (fnBody x) (type' y)
+fnBody (H.ListRange x (Just y)) = P.ArrayRange (fnBody x) (fnBody y)
+fnBody (H.ListRange x Nothing)  = P.ArrayRange (fnBody x)
+  (P.FnVar' $ P.Var' $ P.QVar Nothing $ P.Var "maxBound")
 fnBody (H.Tuple x)          = P.Tuple $ fnBody <$> x
 fnBody (H.List x)           = P.Array $ fnBody <$> x
 fnBody (H.FnVar' x)         = P.FnVar' $ fnVar x

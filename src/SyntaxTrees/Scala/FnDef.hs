@@ -63,6 +63,7 @@ data FnBody
       { fnOps :: [FnOp]
       , args  :: [FnBody]
       }
+  | BodySelection FnBody [Var]
   | LambdaExpr
       { patterns :: [Pattern]
       , body     :: FnBody
@@ -165,6 +166,8 @@ instance Show FnBody where
   show (InfixFnApply x [y]) = showForInfix y +++ foldMap show x
   show (InfixFnApply x y) = strs (wrapSpaces . show <$> x)
                                  (showForInfix <$> y)
+
+  show (BodySelection x y) = intercalate "." (show x : (show <$> y))
 
   show (LambdaExpr [] y)  = wrapParens $ show y
   show (LambdaExpr [x] y)

@@ -55,10 +55,6 @@ data FnBody
       { arg  :: FnBody
       , fnOp :: FnOp
       }
-  | PostFixOpSection
-      { arg  :: FnBody
-      , fnOp :: FnOp
-      }
   | LambdaExpr
       { patterns :: [Pattern]
       , body     :: FnBody
@@ -90,13 +86,15 @@ data FnBody
       { cases :: [CaseBinding]
       }
   | RecordCreate
-      { ctor        :: QCtor
+      { ctor        :: FnBody
       , namedFields :: [(Var, FnBody)]
       }
   | RecordUpdate
-      { var         :: QVar
+      { var         :: FnBody
       , namedFields :: [(Var, FnBody)]
       }
+  | TypeAnnotation FnBody Type
+  | ArrayRange FnBody FnBody
   | Tuple [FnBody]
   | Array [FnBody]
   | FnVar' FnVar
@@ -187,10 +185,6 @@ instance Show FnBody where
                show y,
                "_"]
 
-  show (PostFixOpSection x y) =
-    joinWords [showNestedFnBody x,
-               show y]
-
   show (LambdaExpr x y) =
     joinWords ["\\" ++ intercalate " " (showPatternNested <$> x),
                "->",
@@ -203,9 +197,9 @@ instance Show FnBody where
     show x ++ "\n" ++ wrapContext ("where" ++ wrapBlock y)
 
   show (IfExpr x y z) =
-    "if" +++ show x ++ "\n" ++
-    "then" ++ "\n" ++ wrapBlock [y] ++
-    "else" ++ "\n" ++ wrapBlock [z]
+    "if" +++ show x +++
+    "then" ++ wrapBlock [y] ++ "\n" ++
+    "else" ++ wrapBlock [z]
 
   show (MultiWayIfExpr x) =
     "if" ++ wrapBlock (Wrapper . ("|" ++) .
@@ -235,6 +229,8 @@ instance Show FnBody where
     where
       format (z, t) = show z +++ "=" +++ show t
 
+  show (TypeAnnotation x y) = joinWords [show x, "::", show y]
+  show (ArrayRange x y) = joinWords [show x, "..", show y]
   show (Tuple x) = wrapParensCsv x
   show (Array x) = wrapSquareCsv x
   show (FnVar' x) = show x
@@ -299,30 +295,32 @@ showNestedFnBody x = transformFn $ show x
   where
     transformFn = if shouldWrap then wrapParens else id
     shouldWrap = case x of
-      FnApply _ _          -> True
-      InfixFnApply _ _     -> True
-      LeftOpSection _ _    -> True
-      RightOpSection _ _   -> True
-      PostFixOpSection _ _ -> True
-      LambdaExpr _ _       -> True
-      LetExpr _ _          -> True
-      WhereExpr _ _        -> True
-      RecordCreate _ _     -> True
-      RecordUpdate _ _     -> True
-      _                    -> False
+      FnApply _ _        -> True
+      InfixFnApply _ _   -> True
+      LeftOpSection _ _  -> True
+      RightOpSection _ _ -> True
+      LambdaExpr _ _     -> True
+      LetExpr _ _        -> True
+      WhereExpr _ _      -> True
+      RecordCreate _ _   -> True
+      RecordUpdate _ _   -> True
+      ArrayRange _ _     -> True
+      TypeAnnotation _ _ -> True
+      _                  -> False
 
 showNestedInfixFnBody :: FnBody -> String
 showNestedInfixFnBody x = transformFn $ show x
   where
     transformFn = if shouldWrap then wrapParens else id
     shouldWrap = case x of
-      InfixFnApply _ _     -> True
-      LeftOpSection _ _    -> True
-      RightOpSection _ _   -> True
-      PostFixOpSection _ _ -> True
-      LambdaExpr _ _       -> True
-      LetExpr _ _          -> True
-      WhereExpr _ _        -> True
-      RecordCreate _ _     -> True
-      RecordUpdate _ _     -> True
-      _                    -> False
+      InfixFnApply _ _   -> True
+      LeftOpSection _ _  -> True
+      RightOpSection _ _ -> True
+      LambdaExpr _ _     -> True
+      LetExpr _ _        -> True
+      WhereExpr _ _      -> True
+      RecordCreate _ _   -> True
+      RecordUpdate _ _   -> True
+      ArrayRange _ _     -> True
+      TypeAnnotation _ _ -> True
+      _                  -> False

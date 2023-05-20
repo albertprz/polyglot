@@ -1,10 +1,9 @@
 module SyntaxTrees.Purescript.ModuleDef where
 
-import Data.List                       (intercalate)
 import SyntaxTrees.Purescript.ClassDef (ClassDef, DerivingDef, InstanceDef)
 import SyntaxTrees.Purescript.Common   (Module, Var)
 import SyntaxTrees.Purescript.DataDef  (DataDef, NewTypeDef, TypeDef)
-import SyntaxTrees.Purescript.FnDef    (FnDefOrSig, InfixFnDef)
+import SyntaxTrees.Purescript.FnDef    (FnDefOrSig (Sig), InfixFnDef)
 import SyntaxTrees.Purescript.Type     (TypeVar)
 import Utils.String                    (joinMaybe, joinWords, wrapParens,
                                         wrapParensCsv)
@@ -59,7 +58,7 @@ instance Show ModuleDef where
                foldMap show y,
                "where",
                "\n\n" ++ unlines (show <$> z),
-               "\n\n" ++ intercalate "\n\n" (show <$> t)]
+               "\n\n" ++ foldMap (\l -> show l ++ internalDefSeparator l) t]
 
 instance Show ModuleExport where
   show (ModuleExport x) = wrapParensCsv x
@@ -96,3 +95,8 @@ instance Show InternalDef where
 instance Show ModuleMember where
   show (VarMember x)  = show x
   show (DataMember x) = show x
+
+
+internalDefSeparator :: InternalDef -> String
+internalDefSeparator (FnDefOrSig' (Sig _)) = "\n"
+internalDefSeparator _                     =  "\n\n"

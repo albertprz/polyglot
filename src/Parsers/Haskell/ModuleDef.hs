@@ -1,7 +1,7 @@
 module Parsers.Haskell.ModuleDef where
 
 
-import Parsers.Haskell.ClassDef (classDef, instanceDef, derivingDef)
+import Parsers.Haskell.ClassDef (classDef, derivingDef, instanceDef)
 import Parsers.Haskell.Common   (module', token, var)
 import Parsers.Haskell.DataDef  (dataDef, newtypeDef, typeDef)
 import Parsers.Haskell.FnDef    (fnDef, fnSig, infixAnnotation,
@@ -41,11 +41,11 @@ moduleExport = ModuleExport <$> withinParens (anySepBy comma moduleExportDef)
 
 moduleExportDef :: Parser ModuleExportDef
 moduleExportDef = FnExport            <$> var                    <|>
-                  DataExport          <$> typeVar                <|>
                   FullDataExport      <$> typeVar
                                       <*  withinParens (is "..") <|>
                   FilteredDataExport  <$> typeVar
-                                      <*> withinParens (anySepBy comma moduleMember)
+                                      <*> withinParens (anySepBy comma moduleMember)          <|>
+                  DataExport          <$> typeVar
 
 moduleImport :: Parser ModuleImport
 moduleImport = ModuleImport <$> (token (is "import") *>

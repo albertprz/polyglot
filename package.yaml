@@ -37,7 +37,7 @@ dependencies:
 
 
 ghc-options:
-- -Werror
+# - -Werror
 - -Wall
 - -Wcompat
 - -Wincomplete-record-updates
@@ -50,6 +50,7 @@ default-extensions:
 - MultiWayIf
 - TupleSections
 - PostfixOperators
+- BlockArguments
 
 # Types
 - RankNTypes

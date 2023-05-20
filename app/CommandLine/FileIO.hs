@@ -28,6 +28,7 @@ import qualified Conversions.ToScala.ModuleDef      as ToScala
 import qualified Parsers.Haskell.ModuleDef          as Parser
 
 import Bookhound.Parser (ParseError, runParser)
+import Utils.String     (wrapNewLines)
 
 
 toTargetLanguage :: Language -> Text -> Either ParseError String
@@ -43,7 +44,8 @@ convertDirTree :: Language -> DirTree Text -> DirTree Text
 convertDirTree language (File x y)
   | isHaskellFile x = applyTransform y
     where
-      applyTransform = either (Failed x . userError . const "Parse Error")
+      applyTransform = either (Failed x . userError . wrapNewLines
+                               . ("  Parse Error: " ++) . show)
                               (File $ pathToLanguage language x)
                        . (pack <$>) . toTargetLanguage language
 
@@ -94,7 +96,7 @@ getWatchPath fp Opts{sourcePath, targetPath} =
 getDirTreeContents :: Int -> DirTree a -> [DirTree a]
 getDirTreeContents n (Dir _ x)
   | n > 0 = x  >>= getDirTreeContents (n - 1)
-getDirTreeContents _ x         = [x]
+getDirTreeContents _ x = [x]
 
 
 isDir :: FilePath -> Bool

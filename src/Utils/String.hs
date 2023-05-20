@@ -86,6 +86,9 @@ wrapContext = intercalate "\n" . (indent 2 <$>) . lines
   where
     indent n x = when (hasSome x) (replicate n ' ' ++ x)
 
+wrapNewLines :: String -> String
+wrapNewLines = ("\n" ++) . (++ "\n")
+
 
 
 str :: Show a => String -> [a] -> String

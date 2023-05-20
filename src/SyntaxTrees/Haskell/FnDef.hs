@@ -87,13 +87,15 @@ data FnBody
       { cases :: [CaseBinding]
       }
   | RecordCreate
-      { ctor        :: QCtor
+      { ctor        :: FnBody
       , namedFields :: [(Var, FnBody)]
       }
   | RecordUpdate
-      { var         :: QVar
+      { var         :: FnBody
       , namedFields :: [(Var, FnBody)]
       }
+  | TypeAnnotation FnBody Type
+  | ListRange FnBody (Maybe FnBody)
   | Tuple [FnBody]
   | List [FnBody]
   | FnVar' FnVar
