@@ -6,7 +6,7 @@ import Data.Foldable (Foldable (fold))
 import Bookhound.Parser            (Parser, check, withTransform)
 import Bookhound.ParserCombinators (IsMatch (inverse, is, isNot, noneOf, oneOf),
                                     maybeWithin, someSepBy, within, withinBoth,
-                                    (<|>), (->>-), (|*), (|+), (|?))
+                                    (->>-), (<|>), (|*), (|+), (|?))
 import Bookhound.Parsers.Char      (alpha, alphaNum, char, colon, dot, lower,
                                     newLine, quote, underscore, upper)
 import Bookhound.Parsers.Number    (double, int)

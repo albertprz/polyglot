@@ -62,6 +62,7 @@ moveTree fp2 (_ :/ x@(Dir _ _)) = "." :/ newDirTree
     prunedDirTree = Dir (last outputDirs)
                         (getDirTreeContents 1 x)
     outputDirs = splitDirectories $ takeDirectory $ normalise fp2
+
 moveTree _ x                      = x
 
 

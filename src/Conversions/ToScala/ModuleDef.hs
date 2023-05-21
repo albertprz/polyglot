@@ -5,7 +5,7 @@ import qualified SyntaxTrees.Scala.DataDef     as S
 import qualified SyntaxTrees.Scala.FnDef       as S
 import qualified SyntaxTrees.Scala.PackageDef  as S
 
-import Conversions.ToScala.ClassDef (classDef, instanceDef, derivingDef)
+import Conversions.ToScala.ClassDef (classDef, derivingDef, instanceDef)
 import Conversions.ToScala.Common   (module', qualifier', var)
 import Conversions.ToScala.DataDef  (dataDef, newtypeDef, typeDef)
 import Conversions.ToScala.FnDef    (fnDefOrSigs, fnDefs)
@@ -23,12 +23,12 @@ moduleDef (H.ModuleDef x _ z t) =
 
 
 moduleImport :: H.ModuleImport -> [S.PackageImport]
-moduleImport (H.ModuleImport True x Nothing z) =
-  moduleImport $ H.ModuleImport True x (Just x) z
-moduleImport (H.ModuleImport x y z []) =
+moduleImport (H.ModuleImport True x Nothing _ y) =
+  moduleImport $ H.ModuleImport True x (Just x) False y
+moduleImport (H.ModuleImport x y z _ []) =
   [S.PackageImport (module' y) (qualifier' <$> z)
    (cond (not x) S.FullImport)]
-moduleImport (H.ModuleImport x y z t) =
+moduleImport (H.ModuleImport x y z _ t) =
   S.PackageImport (module' y) (qualifier' <$> z) . (cond (not x))
   <$> moduleImportDefs t
 

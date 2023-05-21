@@ -6,13 +6,13 @@ import Parsers.Haskell.Common (anyComment)
 import Utils.Foldable (hasNone, hasSome)
 import Utils.List     (safeHead, safeTail)
 import Utils.String   (joinWords, wrapCurly', wrapDoubleQuotes', wrapParens',
-                       wrapQuotes')
+                       wrapQuotes, wrapQuotes')
 
 
 import Bookhound.Parser            (ParseError, Parser, check, runParser)
 import Bookhound.ParserCombinators (IsMatch (is, isNot, noneOf, oneOf), (->>-),
                                     (<|>), (|*), (|+), (|?))
-import Bookhound.Parsers.Char      (char, space)
+import Bookhound.Parsers.Char      (alpha, char, space)
 import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
                                     withinQuotes, word)
 
@@ -93,6 +93,13 @@ layoutTokens = [("(" ++), id] <*> ["where", "let", "do", "of", "\\case"]
 layoutBegin :: Parser String
 layoutBegin = oneOf layoutTokens
 
+lexeme :: Parser String
+lexeme = wrapDoubleQuotes' <$> withinDoubleQuotes (isNot '"'  |+)
+  <|> wrapQuotes' . pure <$> withinQuotes (char <|> (is '\\' |?) *> char)
+  <|> anyComment
+  <|> word
+
+
 
 otherText :: Parser String
 otherText = fold <$> elems
@@ -100,25 +107,12 @@ otherText = fold <$> elems
     elems = (((check "" (`notElem` layoutTokens) lexeme) ->>- (space |*)) |*)
 
 
-lexeme :: Parser String
-lexeme = wrapDoubleQuotes'      <$> withinDoubleQuotes (isNot '"'  |+)
-         <|> wrapQuotes' . pure <$> withinQuotes (char <|> ((is '\\' |?) *> char))
-         <|> anyComment
-         <|> word
-
-
+lexeme' :: (Parser String -> Parser String) -> Parser String
+lexeme' f = (spacing |?) ->>- f lexeme ->>- (spacing |?)
 
 otherText' :: Parser String
 otherText' = lexeme' (check "" (`notElem` layoutTokens))
 
-
-lexeme' :: (Parser String -> Parser String) -> Parser String
-lexeme' f = (spacing |?) ->>- f parser ->>- (spacing |?)
-  where
-    parser = wrapDoubleQuotes'      <$> withinDoubleQuotes (isNot '"'  |+)
-             <|> wrapQuotes' . pure <$> withinQuotes (char <|> (is '\\' |?) *> char)
-             <|> anyComment
-             <|> word'
 
 word' :: Parser String
 word' = ((noneOf [' ', '\n', '\t', '(', ')']) |+)

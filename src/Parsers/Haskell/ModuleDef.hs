@@ -52,6 +52,7 @@ moduleImport = ModuleImport <$> (token (is "import") *>
                                  (isJust <$> (is "qualified" |?)))
                             <*> module'
                             <*> ((is "as" *> module') |?)
+                            <*> (isJust <$> (is "hiding" |?))
                             <*> (fold <$> (defs |?))
   where
     defs = withinParens $ anySepBy comma $ maybeWithin spacing moduleImportDef

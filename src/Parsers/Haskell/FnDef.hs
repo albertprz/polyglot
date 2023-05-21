@@ -49,7 +49,7 @@ fnDefOrSig = Def <$> fnDef <|>
              Sig <$> fnSig
 
 fnBody :: Parser FnBody
-fnBody = topLevelFnApply <|> openForm
+fnBody = openForm <|> topLevelFnApply
 
   where
     topLevelFnApply = FnApply <$> delimitedForm
@@ -58,7 +58,8 @@ fnBody = topLevelFnApply <|> openForm
     fnApply = FnApply <$> delimitedForm
                       <*> (delimitedForm |+)
 
-    infixFnApply = uncurry InfixFnApply <$> sepByOps fnOp infixArgForm
+    infixFnApply = uncurry InfixFnApply <$>
+      sepByOps fnOp (infixArgForm <|> withinParens typeAnnotation)
 
     leftOpSection = uncurry LeftOpSection
       <$> withinParens ((,) <$> fnOp <*> openForm)
@@ -138,13 +139,14 @@ fnBody = topLevelFnApply <|> openForm
     singleForm = fnVar <|> literal' <|> tuple <|> listRange <|> list
                        <|> postfixOpSection <|> opSection
 
-    complexForm = typeAnnotation <|> infixFnApply <|> complexInfixForm
-              <|> recordCreate <|> recordUpdate
+    complexForm = infixFnApply <|> complexInfixForm <|> typeAnnotation
+
 
     complexInfixForm = fnApply <|> lambdaCaseExpr <|>
                        lambdaExpr <|> letExpr <|> whereExpr <|>
                        ifExpr <|> multiWayIfExpr <|> doExpr <|>
-                       caseOfExpr <|> withinParens infixFnApply
+                       caseOfExpr <|> withinParens infixFnApply <|>
+                       recordCreate <|> recordUpdate
 
 
 doStep :: Parser DoStep

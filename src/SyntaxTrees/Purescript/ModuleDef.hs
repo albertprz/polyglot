@@ -1,5 +1,6 @@
 module SyntaxTrees.Purescript.ModuleDef where
 
+import Data.Monoid.HT                  (when)
 import SyntaxTrees.Purescript.ClassDef (ClassDef, DerivingDef, InstanceDef)
 import SyntaxTrees.Purescript.Common   (Module, Var)
 import SyntaxTrees.Purescript.DataDef  (DataDef, NewTypeDef, TypeDef)
@@ -27,7 +28,7 @@ data ModuleExportDef
   | FilteredDataExport TypeVar [ModuleMember]
 
 data ModuleImport
-  = ModuleImport Module (Maybe Module) [ModuleImportDef]
+  = ModuleImport Module (Maybe Module) Bool [ModuleImportDef]
 
 data ModuleImportDef
   = FnImport Var
@@ -70,11 +71,12 @@ instance Show ModuleExportDef where
   show (FilteredDataExport x y) = show x ++ wrapParensCsv y
 
 instance Show ModuleImport where
-  show (ModuleImport x y z) =
+  show (ModuleImport x y z t) =
     joinWords ["import",
                show x,
                "as" `joinMaybe` y,
-               wrapParensCsv z]
+               when z "hiding",
+               wrapParensCsv t]
 
 instance Show ModuleImportDef where
   show (FnImport x)             = show x

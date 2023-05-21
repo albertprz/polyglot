@@ -44,6 +44,7 @@ optsInfo = info (helper <*> opts)
             <> (intercalate ", " $ show <$> ([minBound .. maxBound] :: [Language])))
            <> header "polyglot" )
 
+
 data Opts
   = Opts
       { language      :: Language

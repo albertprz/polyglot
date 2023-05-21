@@ -28,8 +28,8 @@ moduleExportDef (H.FilteredDataExport x y) =
   P.FilteredDataExport (typeVar x) (moduleMember <$> y)
 
 moduleImport :: H.ModuleImport -> P.ModuleImport
-moduleImport (H.ModuleImport _ x y z) =
-  P.ModuleImport (module' x) (module' <$> y) (moduleImportDef <$> z)
+moduleImport (H.ModuleImport _ x y z t) =
+  P.ModuleImport (module' x) (module' <$> y) z (moduleImportDef <$> t)
 
 
 moduleImportDef :: H.ModuleImportDef -> P.ModuleImportDef

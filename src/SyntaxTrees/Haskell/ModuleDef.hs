@@ -1,6 +1,6 @@
 module SyntaxTrees.Haskell.ModuleDef where
 
-import SyntaxTrees.Haskell.ClassDef (ClassDef, InstanceDef, DerivingDef)
+import SyntaxTrees.Haskell.ClassDef (ClassDef, DerivingDef, InstanceDef)
 import SyntaxTrees.Haskell.Common   (Module, Var)
 import SyntaxTrees.Haskell.DataDef  (DataDef, NewTypeDef, TypeDef)
 import SyntaxTrees.Haskell.FnDef    (FnDefOrSig, InfixFnAnnotation)
@@ -28,7 +28,7 @@ data ModuleExportDef
   deriving (Show)
 
 data ModuleImport
-  = ModuleImport Bool Module (Maybe Module) [ModuleImportDef]
+  = ModuleImport Bool Module (Maybe Module) Bool [ModuleImportDef]
   deriving (Show)
 
 data ModuleImportDef
