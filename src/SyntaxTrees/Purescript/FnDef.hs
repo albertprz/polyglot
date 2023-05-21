@@ -97,6 +97,7 @@ data FnBody
   | ArrayRange FnBody FnBody
   | Tuple [FnBody]
   | Array [FnBody]
+  | FnOp' FnOp
   | FnVar' FnVar
   | Literal' Literal
 
@@ -233,6 +234,7 @@ instance Show FnBody where
   show (ArrayRange x y) = joinWords [show x, "..", show y]
   show (Tuple x) = wrapParensCsv x
   show (Array x) = wrapSquareCsv x
+  show (FnOp' x) = wrapParens $ show x
   show (FnVar' x) = show x
   show (Literal' x) = show x
 

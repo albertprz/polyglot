@@ -118,8 +118,6 @@ fnBody (H.LeftOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp x]
 fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp y]
         [fnBody x, S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "_"])
 
-fnBody (H.PostFixOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp y]
-                                                   [fnBody x])
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (pattern' <$> x)
                                           (fnBody y)
 fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
@@ -137,6 +135,7 @@ fnBody (H.ListRange x Nothing)  = S.InfixFnApply
     [S.VarOp' $ S.QVarOp Nothing $ S.VarOp "to"]
     [fnBody x, S.FnVar' $ S.Var' $ S.QVar Nothing $ S.Var "maxBound"]
 fnBody (H.Tuple x)          = S.Tuple $ fnBody <$> x
+fnBody (H.FnOp' x)          = S.FnOp' $ fnOp x
 fnBody (H.FnVar' x)         = fnVar x
 fnBody (H.Literal' x)       = S.Literal' $ literal x
 

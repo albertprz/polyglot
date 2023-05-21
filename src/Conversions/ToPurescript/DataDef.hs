@@ -59,6 +59,12 @@ extractDerivingDefs x y z =
   buildDeriving <$> foldMap derivingClasses z
   where
     buildDeriving cls = P.DerivingDef [] Nothing (class' cls) [classType]
-    classType = P.TypeValue $ P.CtorTypeApply
+    classType = case y of
+      [] -> P.TypeValue $ P.TypeVar' $ P.QTypeVar
+             (Nothing) (typeCtorToVar $ typeCtor x)
+      _ -> P.TypeValue $ P.CtorTypeApply
                 (P.QTypeCtor Nothing $ typeCtor x)
                 ((P.TypeParam' . typeParam <$> y))
+
+    typeCtorToVar (P.TypeCtor name) = P.TypeVar name
+    typeCtorToVar _                 = P.TypeVar mempty

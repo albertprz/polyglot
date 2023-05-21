@@ -40,7 +40,6 @@ fnBody (H.InfixFnApply x y) = P.InfixFnApply (fnOp <$> x) (fnBody <$> y)
 
 fnBody (H.LeftOpSection x y)    = P.LeftOpSection (fnOp x) (fnBody y)
 fnBody (H.RightOpSection x y)   = P.RightOpSection (fnBody x) (fnOp y)
-fnBody (H.PostFixOpSection x y) = P.RightOpSection (fnBody x) (fnOp y)
 
 
 fnBody (H.LambdaExpr x y)   = P.LambdaExpr (pattern' <$> x) (fnBody y)
@@ -63,6 +62,7 @@ fnBody (H.ListRange x Nothing)  = P.ArrayRange (fnBody x)
   (P.FnVar' $ P.Var' $ P.QVar Nothing $ P.Var "maxBound")
 fnBody (H.Tuple x)          = P.Tuple $ fnBody <$> x
 fnBody (H.List x)           = P.Array $ fnBody <$> x
+fnBody (H.FnOp' x)          = P.FnOp' $ fnOp x
 fnBody (H.FnVar' x)         = P.FnVar' $ fnVar x
 fnBody (H.Literal' x)       = P.Literal' $ literal x
 

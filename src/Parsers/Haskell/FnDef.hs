@@ -49,7 +49,7 @@ fnDefOrSig = Def <$> fnDef <|>
              Sig <$> fnSig
 
 fnBody :: Parser FnBody
-fnBody = openForm <|> topLevelFnApply
+fnBody = topLevelFnApply <|> openForm
 
   where
     topLevelFnApply = FnApply <$> delimitedForm
@@ -66,10 +66,6 @@ fnBody = openForm <|> topLevelFnApply
 
     rightOpSection = uncurry RightOpSection
       <$> withinParens ((,) <$> openForm <*> fnOp)
-
-    postfixOpSection = uncurry PostFixOpSection
-      <$> withinParens ((,) <$> openForm <*> fnOp)
-
 
     opSection = leftOpSection <|> rightOpSection
 
@@ -111,6 +107,8 @@ fnBody = openForm <|> topLevelFnApply
     fnOp = CtorOp' <$> qCtorOp
        <|> VarOp' <$> qVarOp
 
+    fnOp' = FnOp' <$> withinParens fnOp
+
     fnVar = FnVar' . Selector <$> withinParens (dot *> var)
         <|> FnVar' <$>
             (Selection <$> nonTokenQVar <* dot <*> someSepBy dot var)
@@ -125,7 +123,7 @@ fnBody = openForm <|> topLevelFnApply
 
     recordFields = withinCurlyBrackets (someSepBy comma recordField)
 
-    recordField   = (,) <$> var <*> (is "=" *> openForm)
+    recordField  = (,) <$> var <*> (is "=" *> openForm)
 
     infixArgForm = complexInfixForm <|> withinParens complexInfixForm
                <|> singleForm
@@ -136,8 +134,8 @@ fnBody = openForm <|> topLevelFnApply
     delimitedForm = singleForm <|> withinParens complexForm
                     <|> withinParens singleForm
 
-    singleForm = fnVar <|> literal' <|> tuple <|> listRange <|> list
-                       <|> postfixOpSection <|> opSection
+    singleForm = fnOp' <|> fnVar <|> literal' <|> tuple <|>
+                 listRange <|> list <|> opSection
 
     complexForm = infixFnApply <|> complexInfixForm <|> typeAnnotation
 

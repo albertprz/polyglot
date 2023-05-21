@@ -63,7 +63,6 @@ data FnBody
       { fnOps :: [FnOp]
       , args  :: [FnBody]
       }
-  | BodySelection FnBody [Var]
   | LambdaExpr
       { patterns :: [Pattern]
       , body     :: FnBody
@@ -92,7 +91,9 @@ data FnBody
   | TopLevelMatchExpr
       { cases :: [CaseBinding]
       }
+  | BodySelection FnBody [Var]
   | Tuple [FnBody]
+  | FnOp' FnOp
   | FnVar' FnVar
   | Literal' Literal
 
@@ -179,6 +180,7 @@ instance Show FnBody where
   show (LetExpr x y)      = wrapLetContext x y
   show (Tuple [x])        = show x
   show (Tuple x)          = wrapParensCsv x
+  show (FnOp' x)          = wrapParens $ show x
   show (FnVar' x)         = show x
   show (Literal' x)       = show x
   show (IfExpr x y z)     = joinWords ["if", show x,

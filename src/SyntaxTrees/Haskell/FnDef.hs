@@ -52,10 +52,6 @@ data FnBody
       { arg  :: FnBody
       , fnOp :: FnOp
       }
-  | PostFixOpSection
-      { arg  :: FnBody
-      , fnOp :: FnOp
-      }
   | LambdaExpr
       { patterns :: [Pattern]
       , body     :: FnBody
@@ -99,6 +95,7 @@ data FnBody
   | Tuple [FnBody]
   | List [FnBody]
   | FnVar' FnVar
+  | FnOp' FnOp
   | Literal' Literal
   deriving (Show)
 
