@@ -58,7 +58,8 @@ extractDerivingDefs :: H.TypeCtor -> [H.TypeParam] -> [H.DerivingClause]
 extractDerivingDefs x y z =
   buildDeriving <$> foldMap derivingClasses z
   where
-    buildDeriving cls = P.DerivingDef [] Nothing (class' cls) [classType]
+    buildDeriving (strat , cls) =
+      P.DerivingDef (derivingStrategy strat) [] Nothing (class' cls) [classType]
     classType = case y of
       [] -> P.TypeValue $ P.TypeVar' $ P.QTypeVar
              (Nothing) (typeCtorToVar $ typeCtor x)
@@ -68,3 +69,8 @@ extractDerivingDefs x y z =
 
     typeCtorToVar (P.TypeCtor name) = P.TypeVar name
     typeCtorToVar _                 = P.TypeVar mempty
+
+
+derivingStrategy :: H.DerivingStrategy -> P.DerivingStrategy
+derivingStrategy H.NewTypeDeriving = P.NewTypeDeriving
+derivingStrategy _                 = P.StandardDeriving

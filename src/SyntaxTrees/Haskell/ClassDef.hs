@@ -1,8 +1,9 @@
 module SyntaxTrees.Haskell.ClassDef where
 
-import SyntaxTrees.Haskell.Common (Class)
-import SyntaxTrees.Haskell.FnDef  (FnDefOrSig)
-import SyntaxTrees.Haskell.Type   (AnyKindedType, ClassConstraint, TypeParam)
+import SyntaxTrees.Haskell.Common  (Class)
+import SyntaxTrees.Haskell.DataDef (DerivingStrategy)
+import SyntaxTrees.Haskell.FnDef   (FnDefOrSig)
+import SyntaxTrees.Haskell.Type    (AnyKindedType, ClassConstraint, TypeParam)
 
 
 data ClassDef
@@ -32,9 +33,3 @@ data DerivingDef
       , derivingVia :: Maybe Class
       }
   deriving (Show)
-
-data DerivingStrategy =
-  StandardDeriving
-  | NewTypeDeriving
-  | AnyClassDeriving
-  deriving Show

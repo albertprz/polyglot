@@ -3,9 +3,10 @@ module Parsers.Haskell.DataDef where
 import Parsers.Haskell.Common      (class', ctor, var)
 import Parsers.Haskell.Type        (anyKindedType, type', typeCtor, typeParam)
 import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
-                                    DerivingClause (..), FieldDef (..),
-                                    NamedFieldDef (..), NewTypeDef (..),
-                                    TypeDef (..), UnNamedFieldDef (..))
+                                    DerivingClause (..), DerivingStrategy (..),
+                                    FieldDef (..), NamedFieldDef (..),
+                                    NewTypeDef (..), TypeDef (..),
+                                    UnNamedFieldDef (..))
 
 import Bookhound.Parser              (Parser)
 import Bookhound.ParserCombinators   (IsMatch (..), anySepBy, someSepBy, (<#>),
@@ -59,11 +60,11 @@ dataCtorDef = NamedFieldsCtor   <$> ctor
 derivingClause :: Parser DerivingClause
 derivingClause = (is "deriving" *>
                   ((is "stock" |?) *>
-                      (StandardDeriving <$> derivingList))
+                      (Deriving StandardDeriving <$> derivingList))
                   <|> (is "newtype" *>
-                       (NewTypeDeriving <$> derivingList))
+                       (Deriving NewTypeDeriving <$> derivingList))
                   <|> (is "anyclass" *>
-                       (AnyClassDeriving <$> derivingList))
+                       (Deriving AnyClassDeriving <$> derivingList))
                   <|> (DerivingVia <$> derivingList
                                    <*> (is "via" *> anyKindedType)))
   where

@@ -31,13 +31,6 @@ data DataDef
       }
   deriving (Show)
 
-data DerivingClause
-  = StandardDeriving [Class]
-  | NewTypeDeriving [Class]
-  | AnyClassDeriving [Class]
-  | DerivingVia [Class] AnyKindedType
-  deriving (Show)
-
 data DataCtorDef
   = UnNamedFieldsCtor
       { ctor          :: Ctor
@@ -67,10 +60,18 @@ data NamedFieldDef
       }
   deriving (Show)
 
+data DerivingClause
+  = Deriving DerivingStrategy [Class]
+  | DerivingVia [Class] AnyKindedType
+  deriving (Show)
+
+data DerivingStrategy
+  = StandardDeriving
+  | NewTypeDeriving
+  | AnyClassDeriving
+  deriving (Eq, Show)
 
 
-derivingClasses :: DerivingClause -> [Class]
-derivingClasses (StandardDeriving xs) = xs
-derivingClasses (NewTypeDeriving xs)  = xs
-derivingClasses (AnyClassDeriving xs) = xs
-derivingClasses (DerivingVia xs _)    = xs
+derivingClasses :: DerivingClause -> [(DerivingStrategy, Class)]
+derivingClasses (Deriving x y)    = (x,) <$> y
+derivingClasses (DerivingVia x _) = (StandardDeriving,) <$> x

@@ -6,13 +6,13 @@ import Parsers.Haskell.Common (anyComment)
 import Utils.Foldable (hasNone, hasSome)
 import Utils.List     (safeHead, safeTail)
 import Utils.String   (joinWords, wrapCurly', wrapDoubleQuotes', wrapParens',
-                       wrapQuotes, wrapQuotes')
+                       wrapQuotes')
 
 
 import Bookhound.Parser            (ParseError, Parser, check, runParser)
 import Bookhound.ParserCombinators (IsMatch (is, isNot, noneOf, oneOf), (->>-),
                                     (<|>), (|*), (|+), (|?))
-import Bookhound.Parsers.Char      (alpha, char, space)
+import Bookhound.Parsers.Char      (char, space)
 import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
                                     withinQuotes, word)
 

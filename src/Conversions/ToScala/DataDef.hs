@@ -19,13 +19,13 @@ newtypeDef :: H.NewTypeDef -> S.OpaqueTypeDef
 newtypeDef (H.NewTypeDef x y _  z t) =
   S.OpaqueTypeDef (typeCtor x) (typeParam <$> y)
                   ((.type') $ fieldDef z)
-                  (class' <$> foldMap derivingClasses t)
+                  (class' <$> foldMap ((snd <$>) . derivingClasses) t)
 
 
 dataDef :: H.DataDef -> S.EnumDef
 dataDef (H.DataDef x y z t) =
   S.EnumDef [] (typeCtor x) (typeParam <$> y) [] []
-               (class' <$> foldMap derivingClasses t)
+               (class' <$> foldMap ((snd <$>) . derivingClasses) t)
                (dataCtorDef <$> z)
 
 

@@ -2,12 +2,12 @@ module SyntaxTrees.Purescript.ModuleDef where
 
 import Data.Monoid.HT                  (when)
 import SyntaxTrees.Purescript.ClassDef (ClassDef, DerivingDef, InstanceDef)
-import SyntaxTrees.Purescript.Common   (Module, Var)
+import SyntaxTrees.Purescript.Common   (Class, Module, Var, VarOp)
 import SyntaxTrees.Purescript.DataDef  (DataDef, NewTypeDef, TypeDef)
 import SyntaxTrees.Purescript.FnDef    (FnDefOrSig (Sig), InfixFnDef)
 import SyntaxTrees.Purescript.Type     (TypeVar)
 import Utils.String                    (joinMaybe, joinWords, wrapParens,
-                                        wrapParensCsv)
+                                        wrapParensCsv, (+++))
 
 
 data ModuleDef
@@ -22,19 +22,30 @@ newtype ModuleExport
   = ModuleExport [ModuleExportDef]
 
 data ModuleExportDef
-  = FnExport Var
-  | DataExport TypeVar
-  | FullDataExport TypeVar
-  | FilteredDataExport TypeVar [ModuleMember]
+  = ModuleExportDef ImportExportDef
+  | FullModuleExport Module
 
 data ModuleImport
-  = ModuleImport Module (Maybe Module) Bool [ModuleImportDef]
+  = ModuleImport
+      { module'   :: Module
+      , hiding    :: Bool
+      , imporDefs :: [ModuleImportDef]
+      , alias     :: Maybe Module
+      }
 
 data ModuleImportDef
-  = FnImport Var
-  | DataImport TypeVar
-  | FullDataImport TypeVar
-  | FilteredDataImport TypeVar [ModuleMember]
+  = ModuleImportDef ImportExportDef
+
+data ImportExportDef
+  = Member ModuleMember
+  | FullData TypeVar
+  | FilteredData TypeVar [ModuleMember]
+  | FullClass Class
+
+data ModuleMember
+  = VarMember Var
+  | VarOpMember VarOp
+  | DataMember TypeVar
 
 data InternalDef
   = TypeDef' TypeDef
@@ -46,9 +57,6 @@ data InternalDef
   | DerivingDef' DerivingDef
   | InfixFnDef' InfixFnDef
 
-data ModuleMember
-  = VarMember Var
-  | DataMember TypeVar
 
 
 
@@ -65,24 +73,30 @@ instance Show ModuleExport where
   show (ModuleExport x) = wrapParensCsv x
 
 instance Show ModuleExportDef where
-  show (FnExport x)             = show x
-  show (DataExport x)           = show x
-  show (FullDataExport x)       = show x ++ wrapParens ".."
-  show (FilteredDataExport x y) = show x ++ wrapParensCsv y
+  show (ModuleExportDef x)  = show x
+  show (FullModuleExport x) = "module" +++ show x
 
 instance Show ModuleImport where
   show (ModuleImport x y z t) =
     joinWords ["import",
                show x,
-               "as" `joinMaybe` y,
-               when z "hiding",
-               wrapParensCsv t]
+               when y "hiding",
+               wrapParensCsv z,
+               "as" `joinMaybe` t]
 
 instance Show ModuleImportDef where
-  show (FnImport x)             = show x
-  show (DataImport x)           = show x
-  show (FullDataImport x)       = show x ++ wrapParens ".."
-  show (FilteredDataImport x y) = show x ++ wrapParensCsv y
+  show (ModuleImportDef x) = show x
+
+instance Show ImportExportDef where
+  show (Member x)         = show x
+  show (FullData x)       = show x ++ wrapParens ".."
+  show (FilteredData x y) = show x ++ wrapParensCsv y
+  show (FullClass x)      = "class" +++ show x
+
+instance Show ModuleMember where
+  show (VarMember x)   = show x
+  show (VarOpMember x) = wrapParens $ show x
+  show (DataMember x)  = show x
 
 instance Show InternalDef where
   show (TypeDef' x)     = show x
@@ -94,11 +108,7 @@ instance Show InternalDef where
   show (DerivingDef' x) = show x
   show (InfixFnDef' x)  = show x
 
-instance Show ModuleMember where
-  show (VarMember x)  = show x
-  show (DataMember x) = show x
-
 
 internalDefSeparator :: InternalDef -> String
 internalDefSeparator (FnDefOrSig' (Sig _)) = "\n"
-internalDefSeparator _                     =  "\n\n"
+internalDefSeparator _                     = "\n\n"

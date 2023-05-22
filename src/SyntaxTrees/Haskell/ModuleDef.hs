@@ -1,7 +1,7 @@
 module SyntaxTrees.Haskell.ModuleDef where
 
 import SyntaxTrees.Haskell.ClassDef (ClassDef, DerivingDef, InstanceDef)
-import SyntaxTrees.Haskell.Common   (Module, Var)
+import SyntaxTrees.Haskell.Common   (Module, Var, VarOp)
 import SyntaxTrees.Haskell.DataDef  (DataDef, NewTypeDef, TypeDef)
 import SyntaxTrees.Haskell.FnDef    (FnDefOrSig, InfixFnAnnotation)
 import SyntaxTrees.Haskell.Type     (TypeVar)
@@ -21,21 +21,34 @@ newtype ModuleExport
   deriving (Show)
 
 data ModuleExportDef
-  = FnExport Var
-  | DataExport TypeVar
-  | FullDataExport TypeVar
-  | FilteredDataExport TypeVar [ModuleMember]
+  = ModuleExportDef ImportExportDef
+  | FullModuleExport Module
   deriving (Show)
 
 data ModuleImport
-  = ModuleImport Bool Module (Maybe Module) Bool [ModuleImportDef]
+  = ModuleImport
+      { qualified  :: Bool
+      , module'    :: Module
+      , alias      :: Maybe Module
+      , hiding     :: Bool
+      , importDefs :: [ModuleImportDef]
+      }
   deriving (Show)
 
 data ModuleImportDef
-  = FnImport Var
-  | DataImport TypeVar
-  | FullDataImport TypeVar
-  | FilteredDataImport TypeVar [ModuleMember]
+  = ModuleImportDef ImportExportDef
+  deriving (Show)
+
+data ImportExportDef
+  = Member ModuleMember
+  | FullData TypeVar
+  | FilteredData TypeVar [ModuleMember]
+  deriving (Show)
+
+data ModuleMember
+  = VarMember Var
+  | VarOpMember VarOp
+  | DataMember TypeVar
   deriving (Show)
 
 data InternalDef
@@ -49,7 +62,3 @@ data InternalDef
   | InfixFnAnnotation' InfixFnAnnotation
   deriving (Show)
 
-data ModuleMember
-  = VarMember Var
-  | DataMember TypeVar
-  deriving (Show)

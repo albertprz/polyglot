@@ -1,7 +1,7 @@
 module SyntaxTrees.Scala.PackageDef where
 
 import Data.List                 (intercalate)
-import SyntaxTrees.Scala.Common  (Package, Var)
+import SyntaxTrees.Scala.Common  (Package, Var, VarOp)
 import SyntaxTrees.Scala.DataDef (InternalDef)
 import SyntaxTrees.Scala.Type    (TypeVar)
 import Utils.String
@@ -15,7 +15,11 @@ data PackageDef
       }
 
 data PackageImport
-  = PackageImport Package (Maybe Package) (Maybe PackageImportDef)
+  = PackageImport
+      { package   :: Package
+      , alias     :: Maybe Package
+      , importDef :: Maybe PackageImportDef
+      }
 
 data PackageImportDef
   = FullImport
@@ -25,6 +29,7 @@ data PackageImportDef
 
 data PackageMember
   = VarMember Var
+  | VarOpMember VarOp
   | DataMember TypeVar
 
 
@@ -50,5 +55,6 @@ instance Show PackageImportDef where
   show (FilteredObjectImport x y)   = show x ++ "." ++ wrapCurlyCsv y
 
 instance Show PackageMember where
-  show (VarMember x)  = show x
-  show (DataMember x) = show x
+  show (VarMember x)   = show x
+  show (VarOpMember x) = show x
+  show (DataMember x)  = show x

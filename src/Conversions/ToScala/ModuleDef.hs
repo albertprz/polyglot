@@ -6,7 +6,7 @@ import qualified SyntaxTrees.Scala.FnDef       as S
 import qualified SyntaxTrees.Scala.PackageDef  as S
 
 import Conversions.ToScala.ClassDef (classDef, derivingDef, instanceDef)
-import Conversions.ToScala.Common   (module', qualifier', var)
+import Conversions.ToScala.Common   (module', qualifier', var, varOp)
 import Conversions.ToScala.DataDef  (dataDef, newtypeDef, typeDef)
 import Conversions.ToScala.FnDef    (fnDefOrSigs, fnDefs)
 import Conversions.ToScala.Type     (typeVar)
@@ -40,17 +40,16 @@ moduleImportDefs importDefs = maybeToList combined ++ singles
 
 
 complexImportDef :: H.ModuleImportDef -> Maybe S.PackageImportDef
-complexImportDef (H.FullDataImport x)       =
+complexImportDef (H.ModuleImportDef (H.FullData x)) =
   Just $ S.FullObjectImport $ typeVar x
-complexImportDef (H.FilteredDataImport x y) =
+complexImportDef (H.ModuleImportDef (H.FilteredData x y)) =
   S.FilteredObjectImport (typeVar x) <$> wrapMaybe (moduleMember <$> y)
 complexImportDef _ = Nothing
 
 
 singleImportDef :: H.ModuleImportDef -> Maybe S.PackageMember
-singleImportDef (H.FnImport x)   = Just $ S.VarMember $ var x
-singleImportDef (H.DataImport x) = Just $ S.DataMember $ typeVar x
-singleImportDef _                = Nothing
+singleImportDef (H.ModuleImportDef (H.Member x)) = Just $ moduleMember x
+singleImportDef _                                = Nothing
 
 
 internalDefs :: [H.InternalDef] -> [S.InternalDef]
@@ -76,5 +75,6 @@ internalDef (H.FnDefOrSig' _)        = Nothing
 internalDef (H.InfixFnAnnotation' _) = Nothing
 
 moduleMember :: H.ModuleMember -> S.PackageMember
-moduleMember (H.VarMember x)  = S.VarMember $ var x
-moduleMember (H.DataMember x) = S.DataMember $ typeVar x
+moduleMember (H.VarMember x)   = S.VarMember $ var x
+moduleMember (H.VarOpMember x) = S.VarOpMember $ varOp x
+moduleMember (H.DataMember x)  = S.DataMember $ typeVar x

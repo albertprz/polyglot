@@ -1,6 +1,7 @@
 module SyntaxTrees.Purescript.ClassDef where
 
 import Data.List                     (intercalate)
+import Data.Monoid.HT                (when)
 import SyntaxTrees.Purescript.Common (Class, Var)
 import SyntaxTrees.Purescript.FnDef  (FnDefOrSig)
 import SyntaxTrees.Purescript.Type   (AnyKindedType, ClassConstraint, TypeParam,
@@ -29,11 +30,17 @@ data InstanceDef
 
 data DerivingDef
   = DerivingDef
-      { constraints :: [ClassConstraint]
+      { strategy    :: DerivingStrategy
+      , constraints :: [ClassConstraint]
       , name        :: Maybe Var
       , class'      :: Class
       , types       :: [AnyKindedType]
       }
+
+data DerivingStrategy
+  = StandardDeriving
+  | NewTypeDeriving
+  deriving (Eq)
 
 
 instance Show ClassDef where
@@ -56,9 +63,11 @@ instance Show InstanceDef where
                wrapBlock u]
 
 instance Show DerivingDef where
-  show (DerivingDef x y z t) =
-    joinWords ["deriving",
-               (Wrapper <$> wrapMaybe (wrapParensCsv x)) `joinMaybePost` "<=",
-               y `joinMaybePost` "::",
-               show z,
-               intercalate " " $ showAnyKindedTypeNested <$> t]
+  show (DerivingDef x y z t u) =
+    joinWords ["derive",
+               when (x == NewTypeDeriving) "newtype",
+               "instance",
+               (Wrapper <$> wrapMaybe (wrapParensCsv y)) `joinMaybePost` "<=",
+               z `joinMaybePost` "::",
+               show t,
+               intercalate " " $ showAnyKindedTypeNested <$> u]

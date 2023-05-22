@@ -1,7 +1,7 @@
 module Parsers.Haskell.ClassDef where
 
 import SyntaxTrees.Haskell.ClassDef (ClassDef (..), DerivingDef (..),
-                                     DerivingStrategy (..), InstanceDef (..))
+                                     InstanceDef (..))
 import SyntaxTrees.Haskell.Type     (ClassConstraint)
 
 import Parsers.Haskell.Common (class')
@@ -12,7 +12,8 @@ import Parsers.Haskell.Type   (anyKindedType, classConstraints, type',
 import Bookhound.Parser            (Parser)
 import Bookhound.ParserCombinators (IsMatch (is), (<|>), (|*), (|+), (|?))
 
-import Data.Foldable (Foldable (fold))
+import Data.Foldable               (Foldable (fold))
+import SyntaxTrees.Haskell.DataDef (DerivingStrategy (..))
 
 
 classDef :: Parser ClassDef
