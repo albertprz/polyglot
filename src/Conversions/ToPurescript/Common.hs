@@ -19,6 +19,9 @@ varOp (H.VarOp x) = P.VarOp $ replaceNaming x
 ctorOp :: H.CtorOp -> P.CtorOp
 ctorOp (H.CtorOp x) = P.CtorOp $ replaceNaming x
 
+varOpFn :: H.Var -> P.Var
+varOpFn (H.Var x) = P.Var $ find varOpFnMap $ replaceNaming x
+
 class' :: H.Class -> P.Class
 class' (H.Class x) = P.Class x
 
@@ -72,8 +75,8 @@ charMap = Map.empty
 varOpMap :: Map String String
 varOpMap = Map.fromList [(".", "<<<"), ("++", "<>"),
                          ("<&>", "<#>"),
-                         (",", "Tuple2"), (",,", "Tuple3"),
-                         (",,,", "Tuple4")]
+                         (",", "/\\"), (",,", "Tuple3"),
+                         (",,,", "Tuple4"), (",,,,", "Tuple5")]
 
 ctorOpMap :: Map String String
 ctorOpMap = Map.empty
@@ -87,7 +90,4 @@ ctorMap = Map.fromList [("True", "true"), ("False", "false")]
 varOpFnMap :: Map String String
 varOpFnMap = Map.fromList [("==", "eq"), ("/=", "notEq"),
                          ("<>", "append"), ("<$>", "map"),
-                         ("<&>", "mapFlipped"), ("<*>", "apply"),
-                         ("<*", "applyFirst"), ("*>", "applySecond"),
-                         ("<$", "voidRight"), ("$>", "voidLeft"),
-                         (">>=", "bind"), ("<<=", "bindFlipped")]
+                         ("<*>", "apply"), (">>=", "bind") ]

@@ -5,7 +5,7 @@
 CLI tool to transpile Haskell modules to several target languages.
 
 The CLI can convert individual Haskell files as well as recursively
-convert directory trees (or projects, for that matter).
+convert directory trees (or entire projects).
 
 There are a few options available to, for example, 
 watch a file / directory and reactively convert it whenever modified,
@@ -49,6 +49,42 @@ In any case, it can be helpful to check the output files and manually adapt them
 
 ## Examples
 
+
+Sample Haskell snippet:
+
+```haskell
+
+data Language
+  = Purescript
+  | Scala
+  deriving (Bounded, Enum, Eq, Ord, Show)
+
+parserOption :: Bookhound.Parser a -> Options.Applicative.Mod Options.Applicative.OptionFields a -> Parser a
+parserOption parser = option $ eitherReader $ reader
+  where
+    reader = mapLeft show . Bookhound.runParser parser . pack
+
+```
+
+Converted Purescript output (after formatting):
+
+```purescript
+
+data Language
+  = Purescript
+  | Scala
+derive instance Bounded Language
+derive instance Enum Language
+derive instance Eq Language
+derive instance Ord Language
+derive instance Show Language
+
+parserOption :: forall a. Bookhound.Parser a -> Options.Applicative.Mod Options.Applicative.OptionFields a -> Parser a
+parserOption parser = option $ eitherReader $ reader
+  where
+    reader = mapLeft show <<< Bookhound.runParser parser <<< pack
+
+```
 
 Sample Haskell snippet:
 
@@ -106,6 +142,7 @@ def action(x: ParseError => IO[Unit])(y: Opts): IO[Unit] =
       >>= either(errorAction)(createDirAndWriteFile)
 
 ```
+
 
 ## Supported GHC Syntax Extensions
 

@@ -75,7 +75,7 @@ varOpMap :: Map String String
 varOpMap = Map.fromList [("$", "|<|"), (".", "^"),
                          ("++", "<+>"), ("<>", "<+>"),
                          (",", "Tuple2"), (",,", "Tuple3"),
-                         (",,,", "Tuple4")]
+                         (",,,", "Tuple4"), (",,,,", "Tuple5")]
 
 ctorOpMap :: Map String String
 ctorOpMap = Map.fromList [(":", "::"), ("::", ":")]

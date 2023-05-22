@@ -7,14 +7,14 @@ import qualified SyntaxTrees.Purescript.FnDef  as P
 
 import Bookhound.Utils.Foldable         (hasNone)
 import Conversions.ToPurescript.Common  (literal, qCtor, qCtorOp, qVar, qVarOp,
-                                         var, varOp)
+                                         var, varOp, varOpFn)
 import Conversions.ToPurescript.Pattern (pattern')
 import Conversions.ToPurescript.Type    (findTypeParams, type')
 import Data.Foldable                    (Foldable (toList))
 
 
 fnSig :: H.FnSig -> P.FnSig
-fnSig (H.FnSig x y) = P.FnSig (var x) (type' typeScoped)
+fnSig (H.FnSig x y) = P.FnSig (varOpFn x) (type' typeScoped)
   where
     typeScoped
       | (H.TypeScope _ _) <- y = y
@@ -23,7 +23,7 @@ fnSig (H.FnSig x y) = P.FnSig (var x) (type' typeScoped)
 
 fnDef :: H.FnDef -> P.FnDef
 fnDef (H.FnDef x y z) =
-  P.FnDef (var <$> x) (pattern' <$> y) (maybeGuardedFnBody z)
+  P.FnDef (varOpFn <$> x) (pattern' <$> y) (maybeGuardedFnBody z)
 
 
 infixFnAnnotation :: H.InfixFnAnnotation -> P.InfixFnDef

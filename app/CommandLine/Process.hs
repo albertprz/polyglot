@@ -9,7 +9,7 @@ import CommandLine.Options (Opts (..))
 
 
 import Control.Concurrent  (threadDelay)
-import Control.Monad       (forever, join, when)
+import Control.Monad       (forever, when)
 import Control.Monad.Extra (andM, whenM)
 import Data.Foldable       (traverse_)
 import Data.Text           (pack)
@@ -105,12 +105,12 @@ watchPath opts@Opts {sourcePath} =
 watchAction :: Opts -> Action
 watchAction opts (Added fp _ _)    = transformAction fp opts
 watchAction opts (Modified fp _ _) = transformAction fp opts
-watchAction opts (Removed fp _ _)  = join $ removeFile <$> getWatchPath fp opts
+watchAction opts (Removed fp _ _)  = removeFile =<< getWatchPath fp opts
 watchAction _ _                    = pure ()
 
 
 transformAction :: FilePath -> Opts -> IO ()
-transformAction fp opts = join $ action (const $ pure ()) <$> newOpts
+transformAction fp opts = action (const $ pure ()) =<< newOpts
   where
     newOpts = (\x -> opts{sourcePath = fp, targetPath = x})
               <$> getWatchPath fp opts

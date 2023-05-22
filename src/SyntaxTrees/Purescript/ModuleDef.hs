@@ -67,7 +67,10 @@ instance Show ModuleDef where
                foldMap show y,
                "where",
                "\n\n" ++ unlines (show <$> z),
-               "\n\n" ++ foldMap (\l -> show l ++ internalDefSeparator l) t]
+               "\n\n" ++ foldMap (\def ->
+                  internalDefPrefixSeparator def ++
+                  show def ++
+                  internalDefPostfixSeparator def) t]
 
 instance Show ModuleExport where
   show (ModuleExport x) = wrapParensCsv x
@@ -109,6 +112,10 @@ instance Show InternalDef where
   show (InfixFnDef' x)  = show x
 
 
-internalDefSeparator :: InternalDef -> String
-internalDefSeparator (FnDefOrSig' (Sig _)) = "\n"
-internalDefSeparator _                     = "\n\n"
+internalDefPrefixSeparator :: InternalDef -> String
+internalDefPrefixSeparator (DerivingDef' _) = mempty
+internalDefPrefixSeparator _                = "\n"
+
+internalDefPostfixSeparator :: InternalDef -> String
+internalDefPostfixSeparator (FnDefOrSig' (Sig _)) = mempty
+internalDefPostfixSeparator _                     =  "\n"
