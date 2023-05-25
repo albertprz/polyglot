@@ -8,7 +8,7 @@ import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
                                     NewTypeDef (..), TypeDef (..),
                                     UnNamedFieldDef (..))
 
-import Bookhound.Parser              (Parser)
+import Bookhound.Parser              (Parser, withError)
 import Bookhound.ParserCombinators   (IsMatch (..), anySepBy, someSepBy, (<#>),
                                       (<|>), (|*), (|?))
 import Bookhound.Parsers.Char        (colon, comma, equal)
@@ -20,24 +20,28 @@ import Data.Foldable (Foldable (fold))
 
 
 typeDef :: Parser TypeDef
-typeDef = TypeDef <$> ((is "type") *> typeCtor)
-                  <*> (typeParam |*) <* equal
-                  <*> anyKindedType
+typeDef = withError "Type declaration" $
+  TypeDef <$> ((is "type") *> typeCtor)
+          <*> (typeParam |*) <* equal
+          <*> anyKindedType
 
 newtypeDef :: Parser NewTypeDef
-newtypeDef = NewTypeDef <$> (is "newtype" *> typeCtor)
-                        <*> (typeParam |*) <* equal
-                        <*> ctor
-                        <*> fieldDef
-                        <*> (derivingClause |*)
+newtypeDef = withError "Newtype declaration" $
+  NewTypeDef <$> (is "newtype" *> typeCtor)
+             <*> (typeParam |*) <* equal
+             <*> ctor
+             <*> fieldDef
+             <*> (derivingClause |*)
 
 dataDef :: Parser DataDef
-dataDef = DataDef <$> (is "data" *> typeCtor)
-                  <*> (typeParam |*)
-                  <*> (fold <$> alternatives)
-                  <*> (derivingClause |*)
+dataDef = withError "Data declaration" $
+  DataDef <$> (is "data" *> typeCtor)
+          <*> (typeParam |*)
+          <*> (fold <$> alternatives)
+          <*> (derivingClause |*)
   where
     alternatives = ((equal *> someSepBy (is "|") dataCtorDef) |?)
+
 
 namedFieldDef :: Parser NamedFieldDef
 namedFieldDef = NamedFieldDef <$> var <* (colon <#> 2)

@@ -9,7 +9,8 @@ import Utils.String   (joinWords, wrapCurly', wrapDoubleQuotes', wrapParens',
                        wrapQuotes')
 
 
-import Bookhound.Parser            (ParseError, Parser, check, runParser)
+import Bookhound.Parser            (ParseError, Parser, check, runParser,
+                                    withError)
 import Bookhound.ParserCombinators (IsMatch (is, isNot, noneOf, oneOf), (->>-),
                                     (<|>), (|*), (|+), (|?))
 import Bookhound.Parsers.Char      (char, space)
@@ -24,7 +25,7 @@ import Data.Monoid.HT (when)
 import Data.Text      (Text, pack)
 
 
-adaptLayout :: Text -> Either ParseError Text
+adaptLayout :: Text -> Either [ParseError] Text
 adaptLayout str = pack . (++ " }") . unlines . fst4 <$> layoutLines
   where
     layoutLines = foldM layout args . (++ pure "") . filter hasSome =<< input
@@ -33,10 +34,10 @@ adaptLayout str = pack . (++ " }") . unlines . fst4 <$> layoutLines
     fst4 (x, _, _, _) = x
 
 
-layout :: ([String], [Int], Bool, Bool) -> String -> Either ParseError ([String], [Int], Bool, Bool)
+layout :: ([String], [Int], Bool, Bool) -> String -> Either [ParseError] ([String], [Int], Bool, Bool)
 layout (x, y, z, t) str = runParser layoutParser $ pack str
   where
-    layoutParser =
+    layoutParser = withError "Layout lexer" $
       do spaces' <- (space |*)
          beginning <- otherText
          layoutText <- (layoutBegin |?)

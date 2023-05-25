@@ -4,13 +4,14 @@ import CommandLine.Options (Language (..), Opts (..))
 
 import Lexers.Haskell.Layout (adaptLayout)
 
-import Control.Monad               ((>=>))
+import Control.Monad               ((<=<))
 import Control.Parallel.Strategies (parMap, rseq)
 import Data.List                   (isPrefixOf)
 import Data.Text                   (Text, pack)
 import Data.Text.Encoding          (decodeUtf8, encodeUtf8)
 import Utils.Foldable              (andPred, orPred, wrapMaybe)
 import Utils.Functor               ((<<$>>))
+import Utils.String                (wrapBlock, wrapContext)
 
 
 import System.Directory      (canonicalizePath)
@@ -31,8 +32,8 @@ import Bookhound.Parser (ParseError, runParser)
 import Utils.String     (wrapNewLines)
 
 
-toTargetLanguage :: Language -> Text -> Either ParseError String
-toTargetLanguage language = adaptLayout >=> convert
+toTargetLanguage :: Language -> Text -> Either [ParseError] String
+toTargetLanguage language = convert <=< adaptLayout
   where
     convert = syntaxConverter <<$>> runParser Parser.moduleDef
     syntaxConverter = case language of
@@ -45,7 +46,8 @@ convertDirTree language (File x y)
   | isHaskellFile x = applyTransform y
     where
       applyTransform = either (Failed x . userError . wrapNewLines
-                               . ("  Parse Error: " ++) . show)
+                              . wrapContext . ("Parse Errors: " ++)
+                              . wrapBlock)
                               (File $ pathToLanguage language x)
                        . (pack <$>) . toTargetLanguage language
 
@@ -68,7 +70,7 @@ moveTree _ x                      = x
 
 reportFailure :: DirTree a -> IO ()
 reportFailure (Failed x y) = putStrLn $
-  "Failure when converting file " ++ x ++ ": " ++ show y
+  "\nFailure when converting file " ++ x ++ ": " ++ show y
 reportFailure _ = pure ()
 
 
@@ -121,8 +123,8 @@ formatterExec :: Language -> FilePath
 formatterExec Purescript = "purs-tidy"
 formatterExec Scala      = "scalafmt"
 
-emitError :: ParseError -> IO ()
-emitError = fail . ("\n\n" ++) . take 50 . show
+emitError :: [ParseError] -> IO ()
+emitError = fail . ("\n\nParse Errors: " ++) . wrapBlock
 
 
 dirNamePred :: String -> Bool

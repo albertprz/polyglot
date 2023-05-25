@@ -44,7 +44,7 @@ process opts@Opts{watchMode, sourcePath, targetPath} homeDir
 
 
 
-action :: (ParseError -> IO ()) -> Opts -> IO ()
+action :: ([ParseError] -> IO ()) -> Opts -> IO ()
 action errorAction Opts{language, sourcePath, targetPath, autoFormat} =
   readFileUtf8 sourcePath
   >>= (pack <<$>>) . traverse format . toTargetLanguage language

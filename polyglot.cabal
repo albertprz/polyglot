@@ -5,8 +5,10 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           polyglot
-version:        0.1.0.0
+version:        0.1.1.0
+synopsis:       Haskell to Purescript & Scala 3 transpiler
 description:    Please see the README on GitHub at <https://github.com/albertprz/polyglot#readme>
+category:       Compiler
 homepage:       https://github.com/albertprz/polyglot#readme
 bug-reports:    https://github.com/albertprz/polyglot/issues
 author:         Alberto Perez Lopez
@@ -112,7 +114,7 @@ library
   ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , bookhound >=0.1.11 && <0.2
+    , bookhound >=0.1.24 && <0.2
     , bytestring
     , casing >=0.1.4.1 && <0.2
     , containers
@@ -173,7 +175,7 @@ executable polyglot
   ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bookhound >=0.1.11 && <0.2
+    , bookhound >=0.1.24 && <0.2
     , bytestring
     , casing >=0.1.4.1 && <0.2
     , containers

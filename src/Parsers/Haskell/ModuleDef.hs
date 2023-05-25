@@ -40,7 +40,7 @@ moduleExport = ModuleExport <$> withinParens (anySepBy comma moduleExportDef)
 
 
 moduleExportDef :: Parser ModuleExportDef
-moduleExportDef = ModuleExportDef  <$> importExportDef          <|>
+moduleExportDef = ModuleExportDef  <$> importExportDef <|>
                   FullModuleExport <$> (is "module" *> module')
 
 moduleImport :: Parser ModuleImport

@@ -9,7 +9,7 @@ import Parsers.Haskell.FnDef  (fnDefOrSig, withinContext)
 import Parsers.Haskell.Type   (anyKindedType, classConstraints, type',
                                typeParam)
 
-import Bookhound.Parser            (Parser)
+import Bookhound.Parser            (Parser, withError)
 import Bookhound.ParserCombinators (IsMatch (is), (<|>), (|*), (|+), (|?))
 
 import Data.Foldable               (Foldable (fold))
@@ -17,27 +17,30 @@ import SyntaxTrees.Haskell.DataDef (DerivingStrategy (..))
 
 
 classDef :: Parser ClassDef
-classDef = ClassDef <$> (is "class" *> classConstraints')
-                    <*> class'
-                    <*> (typeParam |*)
-                    <* is "where"
-                    <*> withinContext fnDefOrSig
+classDef = withError "Class declaration" $
+  ClassDef <$> (is "class" *> classConstraints')
+           <*> class'
+           <*> (typeParam |*)
+           <* is "where"
+           <*> withinContext fnDefOrSig
 
 
 instanceDef :: Parser InstanceDef
-instanceDef = InstanceDef <$> (is "instance" *> classConstraints')
-                          <*> class'
-                          <*> (anyKindedType |+)
-                          <* is "where"
-                          <*> withinContext fnDefOrSig
+instanceDef = withError "Instance declaration" $
+  InstanceDef <$> (is "instance" *> classConstraints')
+              <*> class'
+              <*> (anyKindedType |+)
+              <* is "where"
+              <*> withinContext fnDefOrSig
 
 derivingDef :: Parser DerivingDef
-derivingDef = DerivingDef <$> (is "deriving" *>
-                               derivingStrategy <* is "instance")
-                          <*> classConstraints'
-                          <*> class'
-                          <*> (anyKindedType |+)
-                          <*> ((is "via" *> class') |?)
+derivingDef = withError "Standalone deriving declaration" $
+  DerivingDef <$> (is "deriving" *>
+                   derivingStrategy <* is "instance")
+              <*> classConstraints'
+              <*> class'
+              <*> (anyKindedType |+)
+              <*> ((is "via" *> class') |?)
 
 derivingStrategy :: Parser DerivingStrategy
 derivingStrategy = (StandardDeriving <$ is "stock")

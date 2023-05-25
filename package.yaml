@@ -1,5 +1,5 @@
 name:                polyglot
-version:             0.1.0.0
+version:             0.1.1.0
 github:              "albertprz/polyglot"
 license:             BSD3
 author:              "Alberto Perez Lopez"
@@ -10,8 +10,8 @@ extra-source-files:
 - README.md
 
 # Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
+synopsis:            Haskell to Purescript & Scala 3 transpiler
+category:            Compiler
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
@@ -19,7 +19,7 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/albertprz/polyglot#readme>
 
 dependencies:
-- bookhound >= 0.1.11 && < 0.2
+- bookhound >= 0.1.24 && < 0.2
 - optparse-applicative >= 0.17.0 && < 0.18
 - directory-tree >= 0.12.1 && < 0.13
 - fsnotify >= 0.3.0.1 && < 0.4

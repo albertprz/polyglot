@@ -13,7 +13,7 @@ import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   InfixFnAnnotation (InfixFnAnnotation),
                                   MaybeGuardedFnBody (..), PatternGuard (..))
 
-import Bookhound.Parser              (Parser, andThen, check)
+import Bookhound.Parser              (Parser, andThen, check, withError)
 import Bookhound.ParserCombinators   (IsMatch (is), someSepBy, (->>-), (<|>),
                                       (|*), (|+), (|?))
 import Bookhound.Parsers.Char        (comma, dot)
@@ -28,25 +28,29 @@ import Utils.String  (wrapCurly)
 
 
 fnSig :: Parser FnSig
-fnSig = FnSig <$> (var <* is "::")
-              <*> type'
+fnSig = withError "Function signature" $
+  FnSig <$> (var <* is "::")
+        <*> type'
+
 
 fnDef :: Parser FnDef
-fnDef = FnDef <$> (tupleOf var <|> pure <$> var)
-              <*> (pattern' |*)
-              <*> maybeGuardedFnBody (is "=")
+fnDef = withError "Function definition" $
+  FnDef <$> (tupleOf var <|> pure <$> var)
+        <*> (pattern' |*)
+        <*> maybeGuardedFnBody (is "=")
 
 
 infixAnnotation :: Parser InfixFnAnnotation
-infixAnnotation = InfixFnAnnotation
-  <$> token (LAssoc <$ is "infixl" <|> RAssoc <$ is "infixr")
-  <*> token int
-  <*> varOp
+infixAnnotation = withError "Infix annotation" $
+  InfixFnAnnotation <$> token (LAssoc <$ is "infixl" <|>
+                               RAssoc <$ is "infixr")
+                    <*> token int
+                    <*> varOp
 
 
 fnDefOrSig :: Parser FnDefOrSig
-fnDefOrSig = Def <$> fnDef <|>
-             Sig <$> fnSig
+fnDefOrSig =  Def <$> fnDef <|>
+              Sig <$> fnSig
 
 fnBody :: Parser FnBody
 fnBody = topLevelFnApply <|> openForm
