@@ -7,9 +7,9 @@ import Bookhound.Parser            (Parser, check, withTransform)
 import Bookhound.ParserCombinators (IsMatch (inverse, is, isNot, noneOf, oneOf),
                                     maybeWithin, someSepBy, within, withinBoth,
                                     (->>-), (<|>), (|*), (|+), (|?))
-import Bookhound.Parsers.Char      (alpha, alphaNum, char, colon, dot, lower,
-                                    newLine, quote, underscore, upper)
-import Bookhound.Parsers.Number    (double, int)
+import Bookhound.Parsers.Char      (alpha, alphaNum, char, colon, dash, dot,
+                                    lower, newLine, quote, underscore, upper)
+import Bookhound.Parsers.Number    (double, int, negInt)
 import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
                                     withinQuotes)
 import SyntaxTrees.Haskell.Common  (Class (..), Ctor (..), CtorOp (..),
@@ -26,7 +26,9 @@ literal = token $
       UnitLit <$ is "()"
   <|> BoolLit <$> (True <$ is "True" <|> False <$ is "False")
   <|> IntLit   . show <$> int
+  <|> IntLit   . show <$> withinParens negInt
   <|> FloatLit . show <$> double
+  <|> FloatLit . show <$> withinParens (dash ->>- double)
   <|> CharLit   <$> withinQuotes        (charLit   <|> charLitEscaped)
   <|> StringLit <$> withinDoubleQuotes ((stringLit <|> charLitEscaped) |*)
 

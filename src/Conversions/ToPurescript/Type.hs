@@ -87,4 +87,5 @@ typeCtorMap :: Map String String
 typeCtorMap = Map.empty
 
 typeVarMap :: Map String String
-typeVarMap = Map.empty
+typeVarMap = Map.fromList [("Bool", "Boolean"), ("Integer", "Int"),
+                           ("Float", "Number"), ("Double", "Number")]

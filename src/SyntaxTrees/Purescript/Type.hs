@@ -69,7 +69,7 @@ instance Show Type where
   show (TypeVar' x) = show x
   show (TypeParam' x) = show x
   show (TypeScope x y) = "forall" +++ str " " x ++ "." +++ showTypeScopeNested y
-  show (ClassScope x y) = str (wrapSpaces ",") x +++ "=>" +++ showClassScopeNested y
+  show (ClassScope x y) = str (wrapSpaces "=>") x +++ "=>" +++ showClassScopeNested y
 
 instance Show ClassConstraint where
   show (ClassConstraint x [y]) = show x +++ show y

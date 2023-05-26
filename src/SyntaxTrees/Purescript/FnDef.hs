@@ -8,8 +8,8 @@ import SyntaxTrees.Purescript.Type    (Type)
 import Utils.List                     (mix)
 import Utils.String                   (Wrapper (Wrapper), joinWords, str,
                                        wrapBlock, wrapContext, wrapCsv,
-                                       wrapCurlyCsv, wrapParens, wrapParensCsv,
-                                       wrapSpaces, wrapSquareCsv, (+++))
+                                       wrapCurlyCsv, wrapParens, wrapSpaces,
+                                       wrapSquareCsv, (+++))
 
 
 
@@ -216,7 +216,10 @@ instance Show FnBody where
               wrapBlock y]
 
   show (LambdaCaseExpr x) =
-    "\\case" ++ wrapBlock x
+    joinWords ["case",
+               "_",
+               "of",
+               wrapBlock x]
 
   show (RecordCreate x y) =
     joinWords [show x,
@@ -232,7 +235,7 @@ instance Show FnBody where
 
   show (TypeAnnotation x y) = joinWords [show x, "::", show y]
   show (ArrayRange x y) = joinWords [show x, "..", show y]
-  show (Tuple x) = wrapParensCsv x
+  show (Tuple x) = wrapParens $ str (wrapSpaces "/\\") x
   show (Array x) = wrapSquareCsv x
   show (FnOp' x) = wrapParens $ show x
   show (FnVar' x) = show x

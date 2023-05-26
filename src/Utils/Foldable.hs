@@ -10,8 +10,8 @@ hasSome = not . hasNone
 wrapMaybe :: Foldable t => t a -> Maybe (t a)
 wrapMaybe x = if hasSome x then Just x else Nothing
 
+andPred :: (Foldable t, Functor t) => t (p -> Bool) -> p -> Bool
+andPred ps a = and $ ($ a) <$> ps
+
 orPred :: (Foldable t, Functor t) => t (p -> Bool) -> p -> Bool
 orPred ps a = or $ ($ a) <$> ps
-
-andPred :: (Foldable t, Functor t) => t (p -> Bool) -> p -> Bool
-andPred ps a = and $  ($ a) <$> ps

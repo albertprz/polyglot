@@ -50,16 +50,18 @@ instance Show ClassDef where
                 `joinMaybePost` "<=",
                show y,
                str " " z,
+               "where",
                wrapBlock t]
 
 instance Show InstanceDef where
   show (InstanceDef x y z t u) =
     joinWords ["instance",
                (Wrapper <$> wrapMaybe (wrapParensCsv x))
-                `joinMaybePost` "<=",
+                `joinMaybePost` "=>",
                y `joinMaybePost` "::",
                show z,
                intercalate " " $ showAnyKindedTypeNested <$> t,
+               "where",
                wrapBlock u]
 
 instance Show DerivingDef where
@@ -67,7 +69,7 @@ instance Show DerivingDef where
     joinWords ["derive",
                when (x == NewTypeDeriving) "newtype",
                "instance",
-               (Wrapper <$> wrapMaybe (wrapParensCsv y)) `joinMaybePost` "<=",
+               (Wrapper <$> wrapMaybe (wrapParensCsv y)) `joinMaybePost` "=>",
                z `joinMaybePost` "::",
                show t,
                intercalate " " $ showAnyKindedTypeNested <$> u]

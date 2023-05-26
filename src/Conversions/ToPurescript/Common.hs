@@ -82,7 +82,10 @@ ctorOpMap :: Map String String
 ctorOpMap = Map.empty
 
 varMap :: Map String String
-varMap = Map.fromList [("fmap", "map")]
+varMap = Map.fromList [("fmap", "map"), ("id", "identity"),
+                       ("toList", "toUnfoldable"),
+                       ("maybeToList",  "maybeToArr"),
+                       ("first", "lmap"), ("second", "rmap") ]
 
 ctorMap :: Map String String
 ctorMap = Map.fromList [("True", "true"), ("False", "false")]

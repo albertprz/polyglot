@@ -2,9 +2,9 @@ module SyntaxTrees.Purescript.Pattern where
 
 import Data.List                     (intercalate)
 import SyntaxTrees.Purescript.Common (Literal, QCtor, QCtorOp, Var)
-import Utils.String                  (Wrapper (Wrapper), joinMaybe,
-                                      wrapCurlyCsv, wrapParens, wrapParensCsv,
-                                      wrapSpaces, wrapSquareCsv, (+++))
+import Utils.String                  (Wrapper (Wrapper), joinMaybe, str,
+                                      wrapCurlyCsv, wrapParens, wrapSpaces,
+                                      wrapSquareCsv, (+++))
 
 
 data Pattern
@@ -37,7 +37,7 @@ instance Show Pattern where
   show (AliasedPattern x y)   = show x +++ "@" +++ showPatternNested y
   show (ArrayPattern x)       = wrapSquareCsv x
   show (TuplePattern [x])     = show x
-  show (TuplePattern x)       = wrapParensCsv x
+  show (TuplePattern x)       = wrapParens $ str (wrapSpaces "/\\") x
   show (VarPattern x)         = show x
   show (LitPattern x)         = show x
   show Wildcard               = "_"
