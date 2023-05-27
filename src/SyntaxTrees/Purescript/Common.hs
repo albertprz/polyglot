@@ -1,6 +1,7 @@
 module SyntaxTrees.Purescript.Common where
 
-import Data.List (intercalate)
+import Data.List    (intercalate)
+import Utils.String (wrapParens)
 
 
 newtype Var
@@ -66,13 +67,15 @@ instance Show Module where
   show (Module x) = intercalate "." x
 
 instance Show Literal where
-  show UnitLit         = "unit"
-  show (BoolLit True)  = "true"
-  show (BoolLit False) = "false"
-  show (IntLit x)      = x
-  show (NumberLit x)   = x
-  show (CharLit x)     = show x
-  show (StringLit x)   = show x
+  show UnitLit                 = "unit"
+  show (BoolLit True)          = "true"
+  show (BoolLit False)         = "false"
+  show (IntLit x@('-' : _))    = wrapParens x
+  show (IntLit x)              = x
+  show (NumberLit x@('-' : _)) = wrapParens x
+  show (NumberLit x)           = x
+  show (CharLit x)             = show x
+  show (StringLit x)           = show x
 
 
 instance Show QVar where
