@@ -10,7 +10,6 @@ data TypeDef
       , typeParams :: [TypeParam]
       , type'      :: AnyKindedType
       }
-  deriving (Show)
 
 data NewTypeDef
   = NewTypeDef
@@ -20,7 +19,6 @@ data NewTypeDef
       , field      :: FieldDef
       , deriving'  :: [DerivingClause]
       }
-  deriving (Show)
 
 data DataDef
   = DataDef
@@ -29,7 +27,6 @@ data DataDef
       , ctorDefs   :: [DataCtorDef]
       , deriving'  :: [DerivingClause]
       }
-  deriving (Show)
 
 data DataCtorDef
   = UnNamedFieldsCtor
@@ -40,36 +37,31 @@ data DataCtorDef
       { ctor        :: Ctor
       , namedFields :: [NamedFieldDef]
       }
-  deriving (Show)
 
 data FieldDef
   = UnNamedField UnNamedFieldDef
   | NamedField NamedFieldDef
-  deriving (Show)
 
 data UnNamedFieldDef
   = UnNamedFieldDef
       { type' :: Type
       }
-  deriving (Show)
 
 data NamedFieldDef
   = NamedFieldDef
       { name  :: Var
       , type' :: Type
       }
-  deriving (Show)
 
 data DerivingClause
   = Deriving DerivingStrategy [Class]
   | DerivingVia [Class] AnyKindedType
-  deriving (Show)
 
 data DerivingStrategy
   = StandardDeriving
   | NewTypeDeriving
   | AnyClassDeriving
-  deriving (Eq, Show)
+  deriving (Eq)
 
 
 derivingClasses :: DerivingClause -> [(DerivingStrategy, Class)]

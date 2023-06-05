@@ -12,7 +12,6 @@ data FnSig
       { name  :: Var
       , type' :: Type
       }
-  deriving (Show)
 
 data FnDef
   = FnDef
@@ -20,7 +19,6 @@ data FnDef
       , args  :: [Pattern]
       , body  :: MaybeGuardedFnBody
       }
-  deriving (Show)
 
 data InfixFnAnnotation
   = InfixFnAnnotation
@@ -28,12 +26,10 @@ data InfixFnAnnotation
       , precedence    :: Integer
       , name          :: VarOp
       }
-  deriving (Show)
 
 data FnDefOrSig
   = Def FnDef
   | Sig FnSig
-  deriving (Show)
 
 data FnBody
   = FnApply
@@ -97,53 +93,43 @@ data FnBody
   | FnVar' FnVar
   | FnOp' FnOp
   | Literal' Literal
-  deriving (Show)
 
 data FnVar
   = Selector Var
   | Selection QVar [Var]
   | Var' QVar
   | Ctor' QCtor
-  deriving (Show)
 
 data FnOp
   = VarOp' QVarOp
   | CtorOp' QCtorOp
-  deriving (Show)
 
 data DoStep
   = DoBinding [Var] FnBody
   | LetBinding [FnDefOrSig]
   | Body FnBody
-  deriving (Show)
 
 data CaseBinding
   = CaseBinding Pattern MaybeGuardedFnBody
-  deriving (Show)
 
 data MaybeGuardedFnBody
   = Guarded [GuardedFnBody]
   | Standard FnBody
-  deriving (Show)
 
 data GuardedFnBody
   = GuardedFnBody
       { guard :: Guard
       , body  :: FnBody
       }
-  deriving (Show)
 
 data Guard
   = Guard [PatternGuard]
   | Otherwise
-  deriving (Show)
 
 data PatternGuard
   = PatternGuard Pattern FnBody
   | SimpleGuard FnBody
-  deriving (Show)
 
 data Associativity
   = LAssoc
   | RAssoc
-  deriving (Show)

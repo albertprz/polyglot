@@ -5,28 +5,24 @@ import SyntaxTrees.Haskell.Common (Module, QClass)
 
 newtype TypeParam
   = TypeParam String
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord)
 
 data TypeVar
   = TypeVar String
   | UnitType
-  deriving (Show)
 
 data TypeCtor
   = TypeCtor String
   | Arrow
   | TupleType
   | ListType
-  deriving (Show)
 
 data AnyKindedType
   = TypeValue Type
   | TypeFn QTypeCtor
-  deriving (Show)
 
 data ClassConstraint
   = ClassConstraint QClass [Type]
-  deriving (Show)
 
 data Type
   = CtorTypeApply QTypeCtor [Type]
@@ -36,13 +32,10 @@ data Type
   | TypeParam' TypeParam
   | TypeScope [TypeParam] Type
   | ClassScope [ClassConstraint] Type
-  deriving (Show)
 
 
 data QTypeVar
   = QTypeVar (Maybe Module) TypeVar
-  deriving (Show)
 
 data QTypeCtor
   = QTypeCtor (Maybe Module) TypeCtor
-  deriving (Show)

@@ -14,16 +14,13 @@ data ModuleDef
       , imports :: [ModuleImport]
       , defs    :: [InternalDef]
       }
-  deriving (Show)
 
 newtype ModuleExport
   = ModuleExport [ModuleExportDef]
-  deriving (Show)
 
 data ModuleExportDef
   = ModuleExportDef ImportExportDef
   | FullModuleExport Module
-  deriving (Show)
 
 data ModuleImport
   = ModuleImport
@@ -33,23 +30,19 @@ data ModuleImport
       , hiding     :: Bool
       , importDefs :: [ModuleImportDef]
       }
-  deriving (Show)
 
 data ModuleImportDef
   = ModuleImportDef ImportExportDef
-  deriving (Show)
 
 data ImportExportDef
   = Member ModuleMember
   | FullData TypeVar
   | FilteredData TypeVar [ModuleMember]
-  deriving (Show)
 
 data ModuleMember
   = VarMember Var
   | VarOpMember VarOp
   | DataMember TypeVar
-  deriving (Show)
 
 data InternalDef
   = TypeDef' TypeDef
@@ -60,5 +53,3 @@ data InternalDef
   | InstanceDef' InstanceDef
   | DerivingDef' DerivingDef
   | InfixFnAnnotation' InfixFnAnnotation
-  deriving (Show)
-

@@ -5,7 +5,7 @@ import SyntaxTrees.Purescript.Common (Literal, QCtor, QCtorOp, Var)
 import SyntaxTrees.Purescript.Type   (Type)
 import Utils.String                  (Wrapper (Wrapper), joinMaybe, str,
                                       wrapCurlyCsv, wrapParens, wrapSpaces,
-                                      wrapSquare', (+++))
+                                      (+++))
 
 
 data Pattern

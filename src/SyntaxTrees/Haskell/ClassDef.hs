@@ -13,7 +13,6 @@ data ClassDef
       , typeParams  :: [TypeParam]
       , defs        :: [FnDefOrSig]
       }
-  deriving (Show)
 
 data InstanceDef
   = InstanceDef
@@ -22,7 +21,6 @@ data InstanceDef
       , types       :: [AnyKindedType]
       , defs        :: [FnDefOrSig]
       }
-  deriving (Show)
 
 data DerivingDef
   = DerivingDef
@@ -32,4 +30,3 @@ data DerivingDef
       , types       :: [AnyKindedType]
       , derivingVia :: Maybe Class
       }
-  deriving (Show)
