@@ -41,6 +41,9 @@ wrap' beg end x = beg ++ x ++ end
 wrapBoth' :: String -> String -> String
 wrapBoth' x = wrap' x x
 
+wrapSquare' :: String -> String
+wrapSquare' = wrap' "[" "]"
+
 wrapParens' :: String -> String
 wrapParens' = wrap' "(" ")"
 

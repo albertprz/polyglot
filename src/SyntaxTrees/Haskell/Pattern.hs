@@ -1,6 +1,7 @@
 module SyntaxTrees.Haskell.Pattern where
 
 import SyntaxTrees.Haskell.Common (Literal, QCtor, QCtorOp, Var)
+import SyntaxTrees.Haskell.Type   (Type)
 
 
 data Pattern
@@ -21,6 +22,7 @@ data Pattern
       , namedFields :: [(Var, Maybe Pattern)]
       }
   | AliasedPattern Var Pattern
+  | TypeAnnotation Pattern Type
   | ListPattern [Pattern]
   | TuplePattern [Pattern]
   | VarPattern Var

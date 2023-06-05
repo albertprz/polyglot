@@ -265,7 +265,7 @@ instance Show DoStep where
 
 instance Show CaseBinding where
   show (CaseBinding x y) =
-    joinWords [show x,
+    joinWords [showPatternNested x,
                showMaybeGuardedFnBody "->" y]
 
 instance Show Guard where

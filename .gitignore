@@ -1,6 +1,6 @@
 .stack-work/
-.metals/
+stack.yaml.lock
 output/
 target/
-stack.yaml.lock
 *.scala
+*.purs

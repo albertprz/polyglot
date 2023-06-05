@@ -1,6 +1,7 @@
 module Parsers.Haskell.Pattern where
 
 import Parsers.Haskell.Common      (literal, qCtor, qCtorOp, token, var)
+import Parsers.Haskell.Type        (type')
 import SyntaxTrees.Haskell.Pattern (Pattern (..))
 
 import Bookhound.Parser              (Parser)
@@ -25,6 +26,9 @@ pattern' =  pattern'' <|> maybeWithinParens pattern''
                                            <*> wildcardRecordShape
 
     alias    = AliasedPattern <$> (var <* is "@") <*> aliasElem'
+
+    typeAnnotation = TypeAnnotation <$> ((ctor' <|> ctorElem') <* is "::")
+                                    <*> type'
     var'     = VarPattern <$> var
     literal' = LitPattern <$> literal
     wildcard = Wildcard <$ token underscore
@@ -32,18 +36,22 @@ pattern' =  pattern'' <|> maybeWithinParens pattern''
     list          = ListPattern <$> listOf pattern'
     tuple         = TuplePattern <$> (tupleOf pattern')
     recordField   = (,) <$> var <*> ((is "=" *> pattern'') |?)
-    recordShape = withinCurlyBrackets (anySepBy comma recordField)
+    recordShape   = withinCurlyBrackets (anySepBy comma recordField)
     wildcardRecordShape =
       withinCurlyBrackets (anySepBy comma recordField <* token comma <* is "..")
 
-    elem' =  literal' <|> var' <|> alias <|> wildcard <|> nullaryCtor <|>
+    elem' = literal' <|> var' <|> alias <|> wildcard <|> nullaryCtor <|>
             withinParens nullaryCtor <|>
             tuple <|> list
 
-    ctorElem' = record <|> recordWildcard <|> alias <|> elem' <|>
-                withinParens (ctor' <|> infixCtor)
+    ctorElem' = recordPattern <|> alias <|> elem' <|>
+                withinParens complexPattern
 
-    aliasElem' = elem' <|> record <|> recordWildcard <|>
-                 withinParens (ctor' <|> infixCtor)
+    aliasElem' = elem' <|> recordPattern <|>
+                 withinParens complexPattern
+
+    recordPattern = maybeWithinParens (record <|> recordWildcard)
+
+    complexPattern = ctor' <|> infixCtor <|> typeAnnotation
 
     pattern'' = alias <|> infixCtor <|> ctor' <|> ctorElem'
