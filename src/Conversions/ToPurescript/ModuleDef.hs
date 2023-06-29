@@ -20,28 +20,31 @@ moduleDef (H.ModuleDef x y z t) =
 
 moduleExport :: H.ModuleExport -> P.ModuleExport
 moduleExport (H.ModuleExport x) =
-  P.ModuleExport $ moduleExportDef <$> x
+  P.ModuleExport $ foldMap moduleExportDef x
 
-moduleExportDef :: H.ModuleExportDef -> P.ModuleExportDef
-moduleExportDef (H.ModuleExportDef x)  = P.ModuleExportDef $ importExportDef x
-moduleExportDef (H.FullModuleExport x) = P.FullModuleExport $ module' x
+moduleExportDef :: H.ModuleExportDef -> [P.ModuleExportDef]
+moduleExportDef (H.ModuleExportDef x) =
+  P.ModuleExportDef <$> importExportDefs x
+moduleExportDef (H.FullModuleExport x) = [P.FullModuleExport $ module' x]
 
 moduleImport :: H.ModuleImport -> P.ModuleImport
 moduleImport (H.ModuleImport _ x y z t) =
-  P.ModuleImport (module' x) z (moduleImportDef <$> t) (module' <$> y)
+  P.ModuleImport (module' x) z (foldMap moduleImportDef t) (module' <$> y)
 
 
-moduleImportDef :: H.ModuleImportDef -> P.ModuleImportDef
-moduleImportDef (H.ModuleImportDef x)  = P.ModuleImportDef $ importExportDef x
+moduleImportDef :: H.ModuleImportDef -> [P.ModuleImportDef]
+moduleImportDef (H.ModuleImportDef x) =
+  P.ModuleImportDef <$> importExportDefs x
 
 
-importExportDef :: H.ImportExportDef -> P.ImportExportDef
-importExportDef (H.Member x)       = P.Member $ moduleMember x
-importExportDef (H.FullData x)     = P.FullData $ typeVar x
-importExportDef (H.FilteredData (H.TypeVar name) y)
-  | all isVarMember y = P.FullClass (P.Class name)
-importExportDef (H.FilteredData x y) =
-  P.FilteredData (typeVar x) (moduleMember <$> y)
+importExportDefs :: H.ImportExportDef -> [P.ImportExportDef]
+importExportDefs (H.Member x)       = [P.Member $ moduleMember x]
+importExportDefs (H.FullData x)     = [P.FullData $ typeVar x]
+importExportDefs (H.FilteredData (H.TypeVar name) y)
+  | all isVarMember y =
+      P.FullClass (P.Class name) : (P.Member . moduleMember <$> y)
+importExportDefs (H.FilteredData x y) =
+  [P.FilteredData (typeVar x) (moduleMember <$> y)]
 
 
 isVarMember :: H.ModuleMember -> Bool

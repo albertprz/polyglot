@@ -9,11 +9,11 @@ import Utils.String   (joinWords, wrapCurly', wrapDoubleQuotes', wrapParens',
                        wrapQuotes')
 
 
-import Bookhound.Parser            (ParseError, Parser, check, runParser,
+import Bookhound.Parser            (ParseError, Parser, char, check, runParser,
                                     withError)
 import Bookhound.ParserCombinators (IsMatch (is, isNot, noneOf, oneOf), (->>-),
                                     (<|>), (|*), (|+), (|?))
-import Bookhound.Parsers.Char      (char, space)
+import Bookhound.Parsers.Char      (space)
 import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
                                     withinQuotes, word)
 

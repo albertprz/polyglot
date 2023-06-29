@@ -51,9 +51,11 @@ fnBody (H.MultiWayIfExpr x) = P.MultiWayIfExpr $ guardedFnBody <$> x
 fnBody (H.DoExpr x)         = P.DoExpr $ doStep <$> x
 fnBody (H.CaseOfExpr x y)   = P.CaseOfExpr (fnBody x) (caseBinding <$> y)
 fnBody (H.LambdaCaseExpr x) = P.LambdaCaseExpr $ caseBinding <$> x
-fnBody (H.RecordCreate x y) = P.RecordCreate (fnBody x)
+fnBody (H.RecordCreate x y) = P.RecordCreate
+                                (qCtor x)
                                 ((\(z, t) -> (var z, fnBody t)) <$> y)
-fnBody (H.RecordUpdate x y) = P.RecordUpdate (fnBody x)
+fnBody (H.RecordUpdate x y) = P.RecordUpdate
+                                (fnBody x)
                                 ((\(z, t) -> (var z, fnBody t)) <$> y)
 
 fnBody (H.TypeAnnotation x y) = P.TypeAnnotation (fnBody x) (type' y)

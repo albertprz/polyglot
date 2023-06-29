@@ -149,8 +149,9 @@ fnBody (H.LetExpr x y)   = S.LetExpr (fnDefs <$> fnDefOrSigs x)
                                      (fnBody y)
 fnBody (H.WhereExpr x y) = S.LetExpr (fnDefs <$> fnDefOrSigs y)
                                      (fnBody x)
-fnBody (H.RecordCreate x y) = S.NamedFnApply (fnBody x)
-                                             ((var *** fnBody) <$> y)
+fnBody (H.RecordCreate x y) = S.NamedFnApply
+                                 (S.FnVar' $ S.Ctor' $ qCtor x)
+                                 ((var *** fnBody) <$> y)
 fnBody (H.RecordUpdate x y) =
   S.NamedFnApply (S.BodySelection (fnBody x) [S.Var "copy"])
                  ((var *** fnBody) <$> y)
@@ -193,7 +194,7 @@ simpleCase _                              = Nothing
 
 maybeGuardedBody :: H.MaybeGuardedFnBody -> S.FnBody
 maybeGuardedBody (H.Guarded x)
-  | H.Otherwise <-  last guards
+  | H.Otherwise <- last guards
   , all onlySimpleGuards $ init guards
   = S.CondExpr whenBranches elseBranch
   where

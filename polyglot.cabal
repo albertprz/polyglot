@@ -114,7 +114,7 @@ library
   ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , bookhound >=0.1.24 && <0.2
+    , bookhound >=0.1.25 && <0.2
     , bytestring
     , casing >=0.1.4.1 && <0.2
     , containers
@@ -175,7 +175,7 @@ executable polyglot
   ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bookhound >=0.1.24 && <0.2
+    , bookhound >=0.1.25 && <0.2
     , bytestring
     , casing >=0.1.4.1 && <0.2
     , containers

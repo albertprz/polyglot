@@ -14,8 +14,8 @@ import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   MaybeGuardedFnBody (..), PatternGuard (..))
 
 import Bookhound.Parser              (Parser, andThen, check, withError)
-import Bookhound.ParserCombinators   (IsMatch (is), someSepBy, (->>-), (<|>),
-                                      (|*), (|+), (|?))
+import Bookhound.ParserCombinators   (IsMatch (is), sepByOps, someSepBy, (->>-),
+                                      (<|>), (|*), (|+), (|?))
 import Bookhound.Parsers.Char        (comma, dot)
 import Bookhound.Parsers.Collections (listOf, tupleOf)
 import Bookhound.Parsers.Number      (int)
@@ -121,7 +121,7 @@ fnBody = topLevelFnApply <|> openForm
 
     literal' = Literal' <$> literal
 
-    recordCreate = RecordCreate <$> delimitedForm <*> recordFields
+    recordCreate = RecordCreate <$> qCtor <*> recordFields
 
     recordUpdate = RecordUpdate <$> delimitedForm <*> recordFields
 
@@ -199,9 +199,3 @@ withinContext = withinCurlyBrackets . statements
 withinContextTupled :: Parser a1 -> Parser a2 -> Parser ([a1], [a2])
 withinContextTupled p1 p2 = withinCurlyBrackets $
                              (,) <$> statements p1 <*> statements p2
-
-
-sepByOps :: Parser a -> Parser b -> Parser ([a], [b])
-sepByOps sep p = do x <-  p
-                    y <- (((,) <$> sep <*> p) |+)
-                    pure $ (fst <$> y, x : (snd <$> y))

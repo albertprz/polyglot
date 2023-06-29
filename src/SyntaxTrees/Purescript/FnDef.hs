@@ -86,7 +86,7 @@ data FnBody
       { cases :: [CaseBinding]
       }
   | RecordCreate
-      { ctor        :: FnBody
+      { ctor        :: QCtor
       , namedFields :: [(Var, FnBody)]
       }
   | RecordUpdate
