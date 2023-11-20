@@ -10,13 +10,15 @@ import Data.Char (toUpper)
 import Data.Map  (Map)
 import Data.Set  (Set)
 
-import qualified Data.Map as Map
-import qualified Data.Set as Set
+import qualified Data.Map  as Map
+import qualified Data.Set  as Set
+import           Data.Text (Text)
+import qualified Data.Text as Text
 
 
 
 typeParam :: H.TypeParam -> S.TypeParam
-typeParam (H.TypeParam x) = S.TypeParam $ toUpper <$> x
+typeParam (H.TypeParam x) = S.TypeParam $ Text.map toUpper x
 
 typeVar :: H.TypeVar -> S.TypeVar
 typeVar (H.TypeVar x) = S.TypeVar $ convertTypeVar x
@@ -76,8 +78,8 @@ findAnyKindedTypeParams _               = Set.empty
 
 findTypeParams :: H.Type -> Set H.TypeParam
 findTypeParams (H.CtorTypeApply _ y)   = mconcat $ findTypeParams <$> y
-findTypeParams (H.ParamTypeApply x y)  = (Set.singleton x) <>
-                                         (mconcat $ findTypeParams <$> y)
+findTypeParams (H.ParamTypeApply x y)  = Set.singleton x <>
+                                         mconcat (findTypeParams <$> y)
 findTypeParams (H.NestedTypeApply x y) = mconcat $ findTypeParams <$> (x : y)
 findTypeParams (H.TypeVar' _)          = Set.empty
 findTypeParams (H.TypeParam' x)        = Set.singleton x
@@ -99,7 +101,7 @@ argLists args argTypes =
 
 usingArgList :: [S.ClassConstraint] -> S.UsingArgList
 usingArgList constraints =
-  S.UsingArgList $ (S.UsingArgField [] Nothing) <$> constraints
+  S.UsingArgList $ S.UsingArgField [] Nothing <$> constraints
 
 
 qTypeVar :: H.QTypeVar -> S.QTypeVar
@@ -111,14 +113,14 @@ qTypeCtor (H.QTypeCtor x y) = S.QTypeCtor (qualifier' <$> x) (typeCtor y)
 
 
 
-convertTypeCtor :: String -> String
-convertTypeCtor x =  find typeCtorMap x
+convertTypeCtor :: Text -> Text
+convertTypeCtor = find typeCtorMap
 
-convertTypeVar :: String -> String
-convertTypeVar x =  find typeVarMap x
+convertTypeVar :: Text -> Text
+convertTypeVar = find typeVarMap
 
-typeCtorMap :: Map String String
+typeCtorMap :: Map Text Text
 typeCtorMap = Map.fromList [("Maybe", "Option")]
 
-typeVarMap :: Map String String
+typeVarMap :: Map Text Text
 typeVarMap = Map.fromList [("Type", "Typex")]

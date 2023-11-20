@@ -3,10 +3,12 @@ module Conversions.ToScala.Common where
 import qualified SyntaxTrees.Haskell.Common as H
 import qualified SyntaxTrees.Scala.Common   as S
 
-import           Data.Map    (Map)
-import qualified Data.Map    as Map
-import           Text.Casing (quietSnake)
-
+import           Data.Map     (Map)
+import qualified Data.Map     as Map
+import           Data.Text    (Text)
+import qualified Data.Text    as Text
+import           Text.Casing  (quietSnake)
+import           Utils.String (overText)
 
 
 var :: H.Var -> S.Var
@@ -26,7 +28,7 @@ class' (H.Class x) = S.TypeClass x
 
 
 module' :: H.Module -> S.Package
-module' (H.Module x) = S.Package $ (replaceNaming . quietSnake) <$> x
+module' (H.Module x) = S.Package $ replaceNaming . overText quietSnake <$> x
 
 qualifier' :: H.Module -> S.Package
 qualifier' (H.Module x) = S.Package $ replaceNaming <$> x
@@ -58,35 +60,35 @@ qClass :: H.QClass -> S.QTypeClass
 qClass (H.QClass x y) = S.QTypeClass (qualifier' <$> x) (class' y)
 
 
-replaceNaming :: String -> String
-replaceNaming x = find charMap <$> find globalMap x
+replaceNaming :: Text -> Text
+replaceNaming = Text.map (find charMap) . find globalMap
 
 find :: Ord k => Map k k -> k -> k
 find x y = Map.findWithDefault y y x
 
-globalMap :: Map String String
+globalMap :: Map Text Text
 globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap
 
 
 charMap :: Map Char Char
 charMap = Map.fromList [('\'', '$'), ('$', '&'), ('.', '|')]
 
-varOpMap :: Map String String
+varOpMap :: Map Text Text
 varOpMap = Map.fromList [("$", "|<|"), (".", "^"),
                          ("++", "<+>"), ("<>", "<+>"),
                          (",", "Tuple2"), (",,", "Tuple3"),
                          (",,,", "Tuple4"), (",,,,", "Tuple5")]
 
-ctorOpMap :: Map String String
+ctorOpMap :: Map Text Text
 ctorOpMap = Map.fromList [(":", "::"), ("::", ":")]
 
-varMap :: Map String String
+varMap :: Map Text Text
 varMap = Map.fromList [("type", "typex"), ("var", "varx"),
                        ("def", "defx"), ("match", "matchx")]
 
-ctorMap :: Map String String
+ctorMap :: Map Text Text
 ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None"),
                        ("True", "true"), ("False", "false")]
 
-autoIds :: [String]
-autoIds = pure <$> ['x', 'y', 'z', 't', 'u', 'v', 'w', 'p', 'q', 'r', 's']
+autoIds :: [Text]
+autoIds = Text.singleton <$> ['x', 'y', 'z', 't', 'u', 'v', 'w', 'p', 'q', 'r', 's']

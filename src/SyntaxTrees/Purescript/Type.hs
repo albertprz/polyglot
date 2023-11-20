@@ -1,20 +1,21 @@
 module SyntaxTrees.Purescript.Type where
 
 import Data.List                     (intercalate)
+import Data.Text                     (Text, unpack)
 import SyntaxTrees.Purescript.Common (Module, QClass, showQualified)
 import Utils.String                  (str, wrapParens, wrapParensCsv,
                                       wrapSpaces, (+++))
 
 
 newtype TypeParam
-  = TypeParam String
+  = TypeParam Text
   deriving (Eq, Ord)
 
 newtype TypeVar
-  = TypeVar String
+  = TypeVar Text
 
 data TypeCtor
-  = TypeCtor String
+  = TypeCtor Text
   | Arrow
   | TupleType
 
@@ -44,13 +45,13 @@ data QTypeCtor
 
 
 instance Show TypeParam where
-  show (TypeParam x) = x
+  show (TypeParam x) = unpack x
 
 instance Show TypeVar where
-  show (TypeVar x) = x
+  show (TypeVar x) = unpack x
 
 instance Show TypeCtor where
-  show (TypeCtor x) = x
+  show (TypeCtor x) = unpack x
   show Arrow        = "->"
   show TupleType    = "()"
 
@@ -62,10 +63,10 @@ instance Show Type where
   show (CtorTypeApply (QTypeCtor _ Arrow) x)        = intercalate (wrapSpaces "->")
     (showArrowTypeNested <$> x)
   show (CtorTypeApply x@(QTypeCtor _ (TypeCtor _)) y) = show x +++
-    (intercalate " " $ showTypeNested <$> y)
+    unwords (showTypeNested <$> y)
   show (CtorTypeApply (QTypeCtor _ TupleType) x)    = str (wrapSpaces "/\\") x
-  show (ParamTypeApply x y) = show x  +++ (intercalate " " $ showTypeNested <$> y)
-  show (NestedTypeApply x y) = show x +++ (intercalate " " $ showTypeNested <$> y)
+  show (ParamTypeApply x y) = show x  +++ unwords (showTypeNested <$> y)
+  show (NestedTypeApply x y) = show x +++ unwords (showTypeNested <$> y)
   show (TypeVar' x) = show x
   show (TypeParam' x) = show x
   show (TypeScope x y) = "forall" +++ str " " x ++ "." +++ showTypeScopeNested y

@@ -3,12 +3,13 @@ module Utils.String where
 import Data.Foldable.Extra (Foldable (fold))
 import Data.List           (intercalate)
 import Data.Monoid.HT      (when)
+import Data.Text           (Text, pack, unpack)
 import Utils.Foldable      (hasSome, wrapMaybe)
 import Utils.List          (safeLast)
 
 
 wrap :: String -> String -> String -> String
-wrap beg end x = when (hasSome x) $ beg ++ x ++ end
+wrap beg end x = when (hasSome x) $ beg <> x <> end
 
 wrapBoth :: String -> String -> String
 wrapBoth x = wrap x x
@@ -36,7 +37,7 @@ wrapDoubleQuotes = wrapBoth "\""
 
 
 wrap' :: String -> String -> String -> String
-wrap' beg end x = beg ++ x ++ end
+wrap' beg end x = beg <> x <> end
 
 wrapBoth' :: String -> String -> String
 wrapBoth' x = wrap' x x
@@ -87,10 +88,10 @@ wrapSingleBlock x = wrapContext $ wrapBoth "\n" $ show x
 wrapContext :: String -> String
 wrapContext = intercalate "\n" . (indent 2 <$>) . lines
   where
-    indent n x = when (hasSome x) (replicate n ' ' ++ x)
+    indent n x = when (hasSome x) (replicate n ' ' <> x)
 
 wrapNewLines :: String -> String
-wrapNewLines = ("\n" ++) . (++ "\n")
+wrapNewLines = ("\n" <>) . (<> "\n")
 
 
 
@@ -110,7 +111,7 @@ joinLines :: [String] -> String
 joinLines x = intercalate "\n\n\n" $ filter hasSome x
 
 joinMaybe :: Show a => String -> Maybe a -> String
-joinMaybe start x = foldMap ((start +++) . show) x
+joinMaybe start = foldMap ((start +++) . show)
 
 joinMaybePost :: Show a => Maybe a -> String ->  String
 joinMaybePost x end = foldMap ((+++ end) . show) x
@@ -121,11 +122,17 @@ joinList start sep x = foldMap ((start +++) . str sep) (wrapMaybe x)
 joinListPost :: Show a => String -> [a] -> String -> String
 joinListPost sep x end = foldMap ((+++ end) . str sep) (wrapMaybe x)
 
+overText :: (String -> String) -> Text -> Text
+overText f = pack . f . unpack
+
+tshow :: Show a => a -> Text
+tshow = pack . show
+
 
 (+++) :: String -> String -> String
-(+++) x y = x ++ " " ++ y
+(+++) x y = x <> " " <> y
 
-data Wrapper
+newtype Wrapper
   = Wrapper String
 
 instance Show Wrapper where

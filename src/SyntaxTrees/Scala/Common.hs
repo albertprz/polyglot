@@ -1,35 +1,36 @@
 module SyntaxTrees.Scala.Common where
 
 import Data.List (intercalate)
+import Data.Text (Text, unpack)
 
 
 newtype Var
-  = Var String
+  = Var Text
 
 newtype Ctor
-  = Ctor String
+  = Ctor Text
 
 
 newtype VarOp
-  = VarOp String
+  = VarOp Text
 
 newtype CtorOp
-  = CtorOp String
+  = CtorOp Text
 
 newtype TypeClass
-  = TypeClass String
+  = TypeClass Text
 
 newtype Package
-  = Package [String]
+  = Package [Text]
 
 
 data Literal
   = UnitLit
   | BoolLit Bool
-  | IntLit String
-  | FloatLit String
+  | IntLit Text
+  | FloatLit Text
   | CharLit Char
-  | StringLit String
+  | StringLit Text
 
 data Modifier
   = Implicit
@@ -60,30 +61,30 @@ data QTypeClass
 
 
 instance Show Var where
-  show (Var x) = x
+  show (Var x) = unpack x
 
 instance Show Ctor where
-  show (Ctor x) = x
+  show (Ctor x) = unpack x
 
 instance Show VarOp where
-  show (VarOp x) = x
+  show (VarOp x) = unpack x
 
 instance Show CtorOp where
-  show (CtorOp x) = x
+  show (CtorOp x) = unpack x
 
 instance Show TypeClass where
-  show (TypeClass x) = x
+  show (TypeClass x) = unpack x
 
 
 instance Show Package where
-  show (Package x) = intercalate "." x
+  show (Package x) = intercalate "." $ fmap unpack x
 
 instance Show Literal where
   show UnitLit         = "()"
   show (BoolLit True)  = "true"
   show (BoolLit False) = "false"
-  show (IntLit x)      = x
-  show (FloatLit x)    = x
+  show (IntLit x)      = unpack x
+  show (FloatLit x)    = unpack x
   show (CharLit x)     = show x
   show (StringLit x)   = show x
 

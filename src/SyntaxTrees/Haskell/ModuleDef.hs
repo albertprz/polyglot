@@ -31,7 +31,7 @@ data ModuleImport
       , importDefs :: [ModuleImportDef]
       }
 
-data ModuleImportDef
+newtype ModuleImportDef
   = ModuleImportDef ImportExportDef
 
 data ImportExportDef

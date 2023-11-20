@@ -7,6 +7,7 @@ import qualified SyntaxTrees.Scala.Type      as S
 
 import Conversions.ToScala.Common  (autoIds, class', ctor, var)
 import Conversions.ToScala.Type    (anyKindedType, type', typeCtor, typeParam)
+import Data.Text                   (Text)
 import SyntaxTrees.Haskell.DataDef (derivingClasses)
 
 
@@ -44,5 +45,5 @@ fieldDef (H.UnNamedField x) = unNamedFieldDef "value" x
 namedFieldDef :: H.NamedFieldDef -> S.ArgField
 namedFieldDef (H.NamedFieldDef x y) = S.ArgField [] (var x) (type' y)
 
-unNamedFieldDef :: String -> H.UnNamedFieldDef -> S.ArgField
+unNamedFieldDef :: Text -> H.UnNamedFieldDef -> S.ArgField
 unNamedFieldDef x (H.UnNamedFieldDef y) = S.ArgField [] (S.Var x) (type' y)

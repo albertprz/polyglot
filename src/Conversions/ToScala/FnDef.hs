@@ -25,7 +25,7 @@ emptyFnSig :: S.FnSig
 emptyFnSig = S.FnSig [] [] [] Nothing
 
 namedFnSig :: H.Type -> [H.Var] -> S.FnSig
-namedFnSig tpe args = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
+namedFnSig tpe args = S.FnSig (typeParam <$> toList (findTypeParams tpe))
                       (argLists (var <$> args) argTypes)
                       [usingArgList constraints]
                       (Just retType)
@@ -35,7 +35,7 @@ namedFnSig tpe args = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
 
 
 unNamedFnSig :: H.Type -> Int -> S.FnSig
-unNamedFnSig tpe n = S.FnSig (typeParam <$> (toList $ findTypeParams tpe))
+unNamedFnSig tpe n = S.FnSig (typeParam <$> toList (findTypeParams tpe))
                      (argLists (S.Var <$> autoIds) argTypes)
                      [usingArgList constraints]
                      (Just retType)
@@ -92,18 +92,18 @@ valDef def = S.FnVal $ S.ValDef [S.Lazy] names Nothing
 
 
 simpleFnDefToFnBody :: H.FnDef -> S.FnBody
-simpleFnDefToFnBody def = maybeGuardedBody . (.body) $ def
+simpleFnDefToFnBody = maybeGuardedBody . (.body)
 
 fnDefToFnBody :: [H.FnDef] -> S.FnBody
 fnDefToFnBody defs = match
   where
     match = simplifyMatch $
       S.MatchExpr (tuple $ take n autoIds) cases
-    casePatterns = (S.TuplePattern  . (pattern' <$>) . (.args)) <$> defs
-    caseBodies =  (maybeGuardedBody . (.body)) <$> defs
+    casePatterns = S.TuplePattern  . (pattern' <$>) . (.args) <$> defs
+    caseBodies =  maybeGuardedBody . (.body) <$> defs
     cases = uncurry3 S.CaseBinding <$> zip3 casePatterns (repeat Nothing)
                                               caseBodies
-    tuple x = S.Tuple $ (S.FnVar' . S.Var' . S.QVar Nothing . S.Var) <$> x
+    tuple x = S.Tuple $ S.FnVar' . S.Var' . S.QVar Nothing . S.Var <$> x
     n = (length . (.args)) (head defs)
 
 
@@ -200,7 +200,7 @@ maybeGuardedBody (H.Guarded x)
   where
     guards = (.guard) <$> x
     bodies = fnBody . (.body)  <$> x
-    conds = aggregateConds . (fnBody <$>) . extractSimpleGuards <$> (init guards)
+    conds = aggregateConds . (fnBody <$>) . extractSimpleGuards <$> init guards
     whenBranches = uncurry WhenExpr <$> zip conds (init bodies)
     elseBranch = last bodies
 

@@ -1,6 +1,5 @@
 module SyntaxTrees.Scala.FnDef where
 
-import Data.Foldable             (Foldable (fold))
 import Data.Monoid.HT            (when)
 import SyntaxTrees.Scala.Common  (Literal, Modifier, QCtor, QCtorOp, QVar,
                                   QVarOp, Var)
@@ -241,7 +240,7 @@ showVal x y z = showTuple x ++  ":" `joinMaybe` y
                             +++ "=" `joinMaybe` z
 
 showDef :: Var -> Maybe FnSig -> Maybe FnBody -> String
-showDef x y z = show x ++ (fold $ show <$> y)
+showDef x y z = show x ++ foldMap show y
                        +++ "=" `joinMaybe` (Wrapper . wrapSingleBlock <$> z)
 
 

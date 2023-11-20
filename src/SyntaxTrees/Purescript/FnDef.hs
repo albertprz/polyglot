@@ -29,7 +29,7 @@ data FnDef
 data InfixFnDef
   = InfixFnDef
       { associativity :: Associativity
-      , precedence    :: Integer
+      , precedence    :: Int
       , fnName        :: Var
       , opName        :: VarOp
       }
@@ -151,7 +151,7 @@ instance Show FnSig where
 instance Show FnDef where
   show (FnDef x y z) =
     joinWords [wrapCsv x,
-               intercalate " " (showPatternNested <$> y),
+               unwords (showPatternNested <$> y),
                showMaybeGuardedFnBody "=" z]
 
 instance Show InfixFnDef where
@@ -170,7 +170,7 @@ instance Show FnBody where
 
   show (FnApply fn args) =
     joinWords [showNestedFnBody fn,
-               intercalate " " $ showNestedFnBody <$> args]
+               unwords $ showNestedFnBody <$> args]
 
   show (InfixFnApply fnOps args) =
     intercalate "" $ mix (showNestedInfixFnBody <$> args)
@@ -187,7 +187,7 @@ instance Show FnBody where
                "_"]
 
   show (LambdaExpr x y) =
-    joinWords ["\\" ++ intercalate " " (showPatternNested <$> x),
+    joinWords ["\\" ++ unwords (showPatternNested <$> x),
                "->",
                show y]
 
@@ -269,8 +269,8 @@ instance Show CaseBinding where
                showMaybeGuardedFnBody "->" y]
 
 instance Show Guard where
-  show (Guard x)   = str ("\n" ++ ",") x
-  show (Otherwise) = "otherwise"
+  show (Guard x) = str ("\n" ++ ",") x
+  show Otherwise = "otherwise"
 
 instance Show PatternGuard where
   show (PatternGuard x y) =

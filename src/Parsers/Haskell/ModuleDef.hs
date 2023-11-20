@@ -4,8 +4,8 @@ module Parsers.Haskell.ModuleDef where
 import Parsers.Haskell.ClassDef (classDef, derivingDef, instanceDef)
 import Parsers.Haskell.Common   (module', token, var, varOp)
 import Parsers.Haskell.DataDef  (dataDef, newtypeDef, typeDef)
-import Parsers.Haskell.FnDef    (fnDef, fnSig, infixAnnotation,
-                                 withinContextTupled)
+import Parsers.Haskell.FnDef    (betweenContextTupled, fnDef, fnSig,
+                                 infixAnnotation)
 import Parsers.Haskell.Type     (typeVar)
 
 import SyntaxTrees.Haskell.FnDef     (FnDefOrSig (..))
@@ -15,43 +15,43 @@ import SyntaxTrees.Haskell.ModuleDef (ImportExportDef (..), InternalDef (..),
                                       ModuleImportDef (..), ModuleMember (..))
 
 import Bookhound.Parser            (Parser)
-import Bookhound.ParserCombinators (IsMatch (is), anySepBy, maybeWithin, (<|>),
-                                    (|?))
+import Bookhound.ParserCombinators (manySepBy, string, (|?))
 import Bookhound.Parsers.Char      (comma)
-import Bookhound.Parsers.String    (spacing, withinParens)
+import Bookhound.Parsers.Text      (betweenParens, maybeBetweenSpacing)
 
 
-import Data.Foldable (Foldable (fold))
-import Data.Maybe    (isJust)
+import Control.Applicative ((<|>))
+import Data.Foldable       (Foldable (fold))
+import Data.Maybe          (isJust)
 
 
 
 moduleDef :: Parser ModuleDef
 moduleDef = uncurry <$>
-              (ModuleDef <$> (is "module" *> module')
+              (ModuleDef <$> (string "module" *> module')
                          <*> (moduleExport |?)
-                         <*  is "where")
-                         <*> withinContextTupled moduleImport internalDef
+                         <*  string "where")
+                         <*> betweenContextTupled moduleImport internalDef
 
 
 
 moduleExport :: Parser ModuleExport
-moduleExport = ModuleExport <$> withinParens (anySepBy comma moduleExportDef)
+moduleExport = ModuleExport <$> betweenParens (manySepBy comma moduleExportDef)
 
 
 moduleExportDef :: Parser ModuleExportDef
 moduleExportDef = ModuleExportDef  <$> importExportDef <|>
-                  FullModuleExport <$> (is "module" *> module')
+                  FullModuleExport <$> (string "module" *> module')
 
 moduleImport :: Parser ModuleImport
-moduleImport = ModuleImport <$> (token (is "import") *>
-                                 (isJust <$> (is "qualified" |?)))
+moduleImport = ModuleImport <$> (token (string "import") *>
+                                 (isJust <$> (string "qualified" |?)))
                             <*> module'
-                            <*> ((is "as" *> module') |?)
-                            <*> (isJust <$> (is "hiding" |?))
+                            <*> ((string "as" *> module') |?)
+                            <*> (isJust <$> (string "hiding" |?))
                             <*> (fold <$> (defs |?))
   where
-    defs = withinParens $ anySepBy comma $ maybeWithin spacing moduleImportDef
+    defs = betweenParens $ manySepBy comma $ maybeBetweenSpacing moduleImportDef
 
 
 moduleImportDef :: Parser ModuleImportDef
@@ -60,15 +60,15 @@ moduleImportDef = ModuleImportDef <$> importExportDef
 
 importExportDef :: Parser ImportExportDef
 importExportDef = FullData     <$> typeVar
-                               <*  withinParens (is "..")      <|>
+                               <*  betweenParens (string "..")      <|>
                   FilteredData <$> typeVar
-                               <*> withinParens
-                                 (anySepBy comma moduleMember) <|>
+                               <*> betweenParens
+                                 (manySepBy comma moduleMember) <|>
                   Member       <$> moduleMember
 
 
 moduleMember :: Parser ModuleMember
-moduleMember = VarOpMember <$> withinParens varOp <|>
+moduleMember = VarOpMember <$> betweenParens varOp <|>
                VarMember   <$> var                <|>
                DataMember  <$> typeVar
 

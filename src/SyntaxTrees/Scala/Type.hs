@@ -1,6 +1,7 @@
 module SyntaxTrees.Scala.Type where
 
 import Data.List                (intercalate)
+import Data.Text                (Text, unpack)
 import SyntaxTrees.Scala.Common (Modifier, Package, QTypeClass, Var,
                                  showQualified)
 import Utils.Foldable           (wrapMaybe)
@@ -10,14 +11,14 @@ import Utils.String             (Wrapper (..), joinMaybe, joinWords, str,
 
 
 newtype TypeParam
-  = TypeParam String
+  = TypeParam Text
 
 newtype TypeVar
-  = TypeVar String
+  = TypeVar Text
 
 
 data TypeCtor
-  = TypeCtor String
+  = TypeCtor Text
   | Arrow
   | TupleType
 
@@ -65,13 +66,13 @@ data QTypeCtor
 
 
 instance Show TypeParam where
-  show (TypeParam x) = x
+  show (TypeParam x) = unpack x
 
 instance Show TypeVar where
-  show (TypeVar x) = x
+  show (TypeVar x) = unpack x
 
 instance Show TypeCtor where
-  show (TypeCtor x) = x
+  show (TypeCtor x) = unpack x
   show Arrow        = "->"
   show TupleType    = "()"
 

@@ -3,8 +3,10 @@ module Conversions.ToPurescript.Common where
 import qualified SyntaxTrees.Haskell.Common    as H
 import qualified SyntaxTrees.Purescript.Common as P
 
-import           Data.Map (Map)
-import qualified Data.Map as Map
+import           Data.Map  (Map)
+import qualified Data.Map  as Map
+import           Data.Text (Text)
+import qualified Data.Text as Text
 
 
 var :: H.Var -> P.Var
@@ -59,38 +61,38 @@ qClass :: H.QClass -> P.QClass
 qClass (H.QClass x y) = P.QClass (qualifier' <$> x) (class' y)
 
 
-replaceNaming :: String -> String
-replaceNaming x = find charMap <$> find globalMap x
+replaceNaming :: Text -> Text
+replaceNaming = Text.map (find charMap) . find globalMap
 
 find :: Ord k => Map k k -> k -> k
 find x y = Map.findWithDefault y y x
 
-globalMap :: Map String String
+globalMap :: Map Text Text
 globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap
 
 
 charMap :: Map Char Char
 charMap = Map.empty
 
-varOpMap :: Map String String
+varOpMap :: Map Text Text
 varOpMap = Map.fromList [(".", "<<<"), ("++", "<>"),
                          ("<&>", "<#>"),
                          (",", "/\\"), (",,", "Tuple3"),
                          (",,,", "Tuple4"), (",,,,", "Tuple5")]
 
-ctorOpMap :: Map String String
+ctorOpMap :: Map Text Text
 ctorOpMap = Map.empty
 
-varMap :: Map String String
+varMap :: Map Text Text
 varMap = Map.fromList [("fmap", "map"), ("id", "identity"),
                        ("toList", "toUnfoldable"),
                        ("maybeToList",  "maybeToArr"),
                        ("first", "lmap"), ("second", "rmap") ]
 
-ctorMap :: Map String String
+ctorMap :: Map Text Text
 ctorMap = Map.fromList [("True", "true"), ("False", "false")]
 
-varOpFnMap :: Map String String
+varOpFnMap :: Map Text Text
 varOpFnMap = Map.fromList [("==", "eq"), ("/=", "notEq"),
                          ("<>", "append"), ("<$>", "map"),
                          ("<*>", "apply"), (">>=", "bind") ]

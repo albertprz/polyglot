@@ -23,7 +23,7 @@ data FnDef
 data InfixFnAnnotation
   = InfixFnAnnotation
       { associativity :: Associativity
-      , precedence    :: Integer
+      , precedence    :: Int
       , name          :: VarOp
       }
 

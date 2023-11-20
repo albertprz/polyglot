@@ -9,25 +9,26 @@ import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
                                     UnNamedFieldDef (..))
 
 import Bookhound.Parser              (Parser, withError)
-import Bookhound.ParserCombinators   (IsMatch (..), anySepBy, someSepBy, (<#>),
-                                      (<|>), (|*), (|?))
+import Bookhound.ParserCombinators   (char, manySepBy, someSepBy, string, (<#>),
+                                      (|*), (|?))
 import Bookhound.Parsers.Char        (colon, comma, equal)
 import Bookhound.Parsers.Collections (tupleOf)
-import Bookhound.Parsers.String      (maybeWithinParens, withinCurlyBrackets,
-                                      withinParens)
+import Bookhound.Parsers.Text        (betweenCurlyBrackets, betweenParens,
+                                      maybeBetweenParens)
 
-import Data.Foldable (Foldable (fold))
+import Control.Applicative ((<|>))
+import Data.Foldable       (Foldable (fold))
 
 
 typeDef :: Parser TypeDef
 typeDef = withError "Type declaration" $
-  TypeDef <$> ((is "type") *> typeCtor)
+  TypeDef <$> (string "type" *> typeCtor)
           <*> (typeParam |*) <* equal
           <*> anyKindedType
 
 newtypeDef :: Parser NewTypeDef
 newtypeDef = withError "Newtype declaration" $
-  NewTypeDef <$> (is "newtype" *> typeCtor)
+  NewTypeDef <$> (string "newtype" *> typeCtor)
              <*> (typeParam |*) <* equal
              <*> ctor
              <*> fieldDef
@@ -35,12 +36,12 @@ newtypeDef = withError "Newtype declaration" $
 
 dataDef :: Parser DataDef
 dataDef = withError "Data declaration" $
-  DataDef <$> (is "data" *> typeCtor)
+  DataDef <$> (string "data" *> typeCtor)
           <*> (typeParam |*)
           <*> (fold <$> alternatives)
           <*> (derivingClause |*)
   where
-    alternatives = ((equal *> someSepBy (is "|") dataCtorDef) |?)
+    alternatives = ((equal *> someSepBy (char '|') dataCtorDef) |?)
 
 
 namedFieldDef :: Parser NamedFieldDef
@@ -48,28 +49,29 @@ namedFieldDef = NamedFieldDef <$> var <* (colon <#> 2)
                               <*> type'
 
 unNamedFieldDef :: Parser UnNamedFieldDef
-unNamedFieldDef = UnNamedFieldDef <$> (withinParens type' <|> type')
+unNamedFieldDef = UnNamedFieldDef <$> (betweenParens type' <|> type')
 
 fieldDef :: Parser FieldDef
 fieldDef = UnNamedField <$> unNamedFieldDef <|>
-           NamedField   <$> withinCurlyBrackets namedFieldDef
+           NamedField   <$> betweenCurlyBrackets namedFieldDef
 
 dataCtorDef :: Parser DataCtorDef
 dataCtorDef = NamedFieldsCtor   <$> ctor
-                                <*> (withinCurlyBrackets $
-                                    anySepBy comma namedFieldDef) <|>
+                                <*> betweenCurlyBrackets
+                                   (manySepBy comma namedFieldDef)
+              <|>
               UnNamedFieldsCtor <$> ctor
                                 <*> (unNamedFieldDef |*)
 
 derivingClause :: Parser DerivingClause
-derivingClause = (is "deriving" *>
-                  ((is "stock" |?) *>
+derivingClause = string "deriving" *>
+                  ((string "stock" |?) *>
                       (Deriving StandardDeriving <$> derivingList))
-                  <|> (is "newtype" *>
+                  <|> (string "newtype" *>
                        (Deriving NewTypeDeriving <$> derivingList))
-                  <|> (is "anyclass" *>
+                  <|> (string "anyclass" *>
                        (Deriving AnyClassDeriving <$> derivingList))
                   <|> (DerivingVia <$> derivingList
-                                   <*> (is "via" *> anyKindedType)))
+                                   <*> (string "via" *> anyKindedType))
   where
-    derivingList = (tupleOf class' <|> pure <$> maybeWithinParens class')
+    derivingList = tupleOf class' <|> pure <$> maybeBetweenParens class'

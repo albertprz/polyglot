@@ -13,23 +13,25 @@ import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
                                   InfixFnAnnotation (InfixFnAnnotation),
                                   MaybeGuardedFnBody (..), PatternGuard (..))
 
-import Bookhound.Parser              (Parser, andThen, check, withError)
-import Bookhound.ParserCombinators   (IsMatch (is), sepByOps, someSepBy, (->>-),
-                                      (<|>), (|*), (|+), (|?))
-import Bookhound.Parsers.Char        (comma, dot)
+import Bookhound.Parser              (Parser, andThen, satisfy, withError)
+import Bookhound.ParserCombinators   (char, sepByOps, someSepBy, string, (->>-),
+                                      (|*), (|+), (|?), (||*))
+import Bookhound.Parsers.Char        (anyChar, comma, dot)
 import Bookhound.Parsers.Collections (listOf, tupleOf)
 import Bookhound.Parsers.Number      (int)
-import Bookhound.Parsers.String      (spacing, string, withinCurlyBrackets,
-                                      withinParens, withinSquareBrackets)
+import Bookhound.Parsers.Text        (betweenCurlyBrackets, betweenParens,
+                                      betweenSquare, spacing)
 
-import Data.Foldable (Foldable (fold))
-import Data.Maybe    (maybeToList)
-import Utils.String  (wrapCurly)
+import Control.Applicative ((<|>))
+import Data.Foldable       (Foldable (fold))
+import Data.Maybe          (maybeToList)
+import Data.Text           (Text)
+import Utils.String        (overText, wrapCurly)
 
 
 fnSig :: Parser FnSig
 fnSig = withError "Function signature" $
-  FnSig <$> (var <* is "::")
+  FnSig <$> (var <* string "::")
         <*> type'
 
 
@@ -37,13 +39,13 @@ fnDef :: Parser FnDef
 fnDef = withError "Function definition" $
   FnDef <$> (tupleOf var <|> pure <$> var)
         <*> (pattern' |*)
-        <*> maybeGuardedFnBody (is "=")
+        <*> maybeGuardedFnBody (char '=')
 
 
 infixAnnotation :: Parser InfixFnAnnotation
 infixAnnotation = withError "Infix annotation" $
-  InfixFnAnnotation <$> token (LAssoc <$ is "infixl" <|>
-                               RAssoc <$ is "infixr")
+  InfixFnAnnotation <$> token (LAssoc <$ string "infixl" <|>
+                               RAssoc <$ string "infixr")
                     <*> token int
                     <*> varOp
 
@@ -63,45 +65,45 @@ fnBody = topLevelFnApply <|> openForm
                       <*> (delimitedForm |+)
 
     infixFnApply = uncurry InfixFnApply <$>
-      sepByOps fnOp (infixArgForm <|> withinParens typeAnnotation)
+      sepByOps fnOp (infixArgForm <|> betweenParens typeAnnotation)
 
     leftOpSection = uncurry LeftOpSection
-      <$> withinParens ((,) <$> fnOp <*> openForm)
+      <$> betweenParens ((,) <$> fnOp <*> openForm)
 
     rightOpSection = uncurry RightOpSection
-      <$> withinParens ((,) <$> openForm <*> fnOp)
+      <$> betweenParens ((,) <$> openForm <*> fnOp)
 
     opSection = leftOpSection <|> rightOpSection
 
 
-    lambdaExpr = LambdaExpr <$> (is '\\' *> (pattern' |*))
-                            <*> (is "->" *> openForm)
+    lambdaExpr = LambdaExpr <$> (char '\\' *> (pattern' |*))
+                            <*> (string "->" *> openForm)
 
-    letExpr = LetExpr <$> (is "let" *> withinContext fnDefOrSig)
-                      <*> (is "in"  *> openForm)
+    letExpr = LetExpr <$> (string "let" *> betweenContext fnDefOrSig)
+                      <*> (string "in"  *> openForm)
 
-    whereExpr = WhereExpr <$> withinCurlyBrackets openForm <* is "where"
-                          <*> withinContext fnDefOrSig
+    whereExpr = WhereExpr <$> betweenCurlyBrackets openForm <* string "where"
+                          <*> betweenContext fnDefOrSig
 
-    ifExpr = IfExpr <$> (is "if"   *> openForm)
-                    <*> (is "then" *> openForm)
-                    <*> (is "else" *> openForm)
+    ifExpr = IfExpr <$> (string "if"   *> openForm)
+                    <*> (string "then" *> openForm)
+                    <*> (string "else" *> openForm)
 
     multiWayIfExpr = MultiWayIfExpr <$>
-      (is "if" *> (withinContext $ guardedFnBody $ is "->"))
+      (string "if" *> betweenContext (guardedFnBody $ string "->"))
 
-    doExpr = DoExpr <$> (is "do" *> withinContext doStep)
+    doExpr = DoExpr <$> (string "do" *> betweenContext doStep)
 
-    caseOfExpr = CaseOfExpr <$> (is "case" *> openForm <* is "of")
-                            <*> withinContext caseBinding
+    caseOfExpr = CaseOfExpr <$> (string "case" *> openForm <* string "of")
+                            <*> betweenContext caseBinding
 
-    lambdaCaseExpr = LambdaCaseExpr <$> (is "\\case" *> withinContext caseBinding)
+    lambdaCaseExpr = LambdaCaseExpr <$> (string "\\case" *> betweenContext caseBinding)
 
-    listRange = withinSquareBrackets $
-      ListRange <$> (openForm <* is "..")
+    listRange = betweenSquare $
+      ListRange <$> (openForm <* string "..")
                 <*> (openForm |?)
 
-    typeAnnotation = TypeAnnotation <$> (infixArgForm <* is "::")
+    typeAnnotation = TypeAnnotation <$> (infixArgForm <* string "::")
                                     <*> type'
 
     tuple = Tuple <$> tupleOf openForm
@@ -111,9 +113,9 @@ fnBody = topLevelFnApply <|> openForm
     fnOp = CtorOp' <$> qCtorOp
        <|> VarOp' <$> qVarOp
 
-    fnOp' = FnOp' <$> withinParens fnOp
+    fnOp' = FnOp' <$> betweenParens fnOp
 
-    fnVar = FnVar' . Selector <$> withinParens (dot *> var)
+    fnVar = FnVar' . Selector <$> betweenParens (dot *> var)
         <|> FnVar' <$>
             (Selection <$> nonTokenQVar <* dot <*> someSepBy dot var)
         <|> FnVar' . Var' <$> qVar
@@ -125,18 +127,18 @@ fnBody = topLevelFnApply <|> openForm
 
     recordUpdate = RecordUpdate <$> delimitedForm <*> recordFields
 
-    recordFields = withinCurlyBrackets (someSepBy comma recordField)
+    recordFields = betweenCurlyBrackets (someSepBy comma recordField)
 
-    recordField  = (,) <$> var <*> (is "=" *> openForm)
+    recordField  = (,) <$> var <*> (char '=' *> openForm)
 
-    infixArgForm = complexInfixForm <|> withinParens complexInfixForm
+    infixArgForm = complexInfixForm <|> betweenParens complexInfixForm
                <|> singleForm
 
     openForm = complexForm <|> singleForm
-               <|> withinParens (complexForm <|> singleForm)
+               <|> betweenParens (complexForm <|> singleForm)
 
-    delimitedForm = singleForm <|> withinParens complexForm
-                    <|> withinParens singleForm
+    delimitedForm = singleForm <|> betweenParens complexForm
+                    <|> betweenParens singleForm
 
     singleForm = fnOp' <|> fnVar <|> literal' <|> tuple <|>
                  listRange <|> list <|> opSection
@@ -147,19 +149,19 @@ fnBody = topLevelFnApply <|> openForm
     complexInfixForm = fnApply <|> lambdaCaseExpr <|>
                        lambdaExpr <|> letExpr <|> whereExpr <|>
                        ifExpr <|> multiWayIfExpr <|> doExpr <|>
-                       caseOfExpr <|> withinParens infixFnApply <|>
+                       caseOfExpr <|> betweenParens infixFnApply <|>
                        recordCreate <|> recordUpdate
 
 
 doStep :: Parser DoStep
-doStep = DoBinding  <$> (tupleOf var <|> pure <$> var) <* is "<-"
+doStep = DoBinding  <$> (tupleOf var <|> pure <$> var) <* string "<-"
                     <*> (adaptFnBody `andThen` fnBody) <|>
-         LetBinding <$> (is "let" *> withinContext fnDefOrSig) <|>
+         LetBinding <$> (string "let" *> betweenContext fnDefOrSig) <|>
          Body       <$> (adaptFnBody `andThen` fnBody)
 
 
 caseBinding :: Parser CaseBinding
-caseBinding = CaseBinding <$> pattern' <*> maybeGuardedFnBody (is "->")
+caseBinding = CaseBinding <$> pattern' <*> maybeGuardedFnBody (string "->")
 
 
 maybeGuardedFnBody :: Parser a -> Parser MaybeGuardedFnBody
@@ -170,32 +172,33 @@ guardedFnBody :: Parser a -> Parser GuardedFnBody
 guardedFnBody sep = GuardedFnBody <$> guard <* sep <*> (adaptFnBody `andThen` fnBody)
 
 guard :: Parser Guard
-guard = Otherwise <$  (is "|" *> token (is "otherwise")) <|>
-        Guard     <$> (is "|" *> someSepBy comma patternGuard)
+guard = char '|' *>
+    (Otherwise <$ token (string "otherwise") <|>
+     Guard     <$> someSepBy comma patternGuard)
 
 
 patternGuard :: Parser PatternGuard
-patternGuard = PatternGuard <$> (pattern' <* is "<-") <*> fnBody <|>
+patternGuard = PatternGuard <$> (pattern' <* string "<-") <*> fnBody <|>
                SimpleGuard  <$> fnBody
 
 
-adaptFnBody :: Parser String
+adaptFnBody :: Parser Text
 adaptFnBody = do start <- otherText
-                 next <- ((is "where" ->>- string) |?)
-                 other <- ((is ";" ->>- string) |?)
-                 let x = maybe start ((wrapCurly start) ++) next ++ fold other
+                 next <- ((string "where" <> (anyChar ||*)) |?)
+                 other <- ((char ';' ->>- (anyChar ||*)) |?)
+                 let x = maybe start (overText wrapCurly start <>) next <> fold other
                  pure x
  where
-   otherText = (spacing |?) ->>- (textElem |*)
-   textElem = check "" (`notElem` ["where", ";"]) lexeme ->>- (spacing |?)
+   otherText = (fold <$> (spacing |?)) <> (fold <$> (textElem |*))
+   textElem = satisfy (`notElem` ["where", ";"]) lexeme ->>- (spacing |?)
 
 
 statements :: Parser a -> Parser [a]
-statements parser = fold <$> someSepBy (is ";") (maybeToList <$> (parser |?))
+statements parser = fold <$> someSepBy (char ';') (maybeToList <$> (parser |?))
 
-withinContext :: Parser a -> Parser [a]
-withinContext = withinCurlyBrackets . statements
+betweenContext :: Parser a -> Parser [a]
+betweenContext = betweenCurlyBrackets . statements
 
-withinContextTupled :: Parser a1 -> Parser a2 -> Parser ([a1], [a2])
-withinContextTupled p1 p2 = withinCurlyBrackets $
+betweenContextTupled :: Parser a1 -> Parser a2 -> Parser ([a1], [a2])
+betweenContextTupled p1 p2 = betweenCurlyBrackets $
                              (,) <$> statements p1 <*> statements p2

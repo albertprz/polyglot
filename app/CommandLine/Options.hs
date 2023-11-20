@@ -2,8 +2,8 @@ module CommandLine.Options where
 
 import Data.Either.Extra   (mapLeft)
 import Data.List           (intercalate)
-import Data.Text           (pack)
-import Options.Applicative hiding ((<|>))
+import Data.Text           (Text, pack)
+import Options.Applicative
 
 import qualified Bookhound.Parser            as Bookhound
 import           Bookhound.ParserCombinators
@@ -62,8 +62,8 @@ data Language
 
 
 language :: Bookhound.Parser Language
-language = Purescript <$ oneOf ["Purescript", "purescript", "purs"] <|>
-           Scala      <$ oneOf ["Scala", "scala"]
+language = Purescript <$ oneOf @Text ["Purescript", "purescript", "purs"] <|>
+           Scala      <$ oneOf @Text ["Scala", "scala"]
 
 
 

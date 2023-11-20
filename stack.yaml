@@ -1,38 +1,7 @@
 packages:
 - .
 resolver:
-  compiler: ghc-9.2.1
+  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/20.yaml
 
 extra-deps:
-
-# Own
-- bookhound-0.1.25.0
-
-# General
-- optparse-applicative-0.17.0.0
-- directory-tree-0.12.1
-- fsnotify-0.3.0.1
-- filepath-1.4.2.2
-- directory-1.3.7.0
-- parallel-3.2.2.0
-- casing-0.1.4.1
-- text-2.0
-
-# Utils
-- extra-1.7.10
-- utility-ht-0.0.16
-
-
-# Transitive deps
-- process-1.6.14.0
-- transformers-compat-0.7.1
-- clock-0.8.3
-- ansi-wl-pprint-0.6.9
-- ansi-terminal-0.11.3
-- colour-2.3.6
-- async-2.2.4
-- hfsevents-0.1.6
-- unix-compat-0.6
-- cereal-0.5.8.2
-- hashable-1.4.0.2
-- split-0.2.3.4
+- bookhound-0.2.0

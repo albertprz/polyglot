@@ -5,17 +5,18 @@ import Parsers.Haskell.Type        (type')
 import SyntaxTrees.Haskell.Pattern (Pattern (..))
 
 import Bookhound.Parser              (Parser)
-import Bookhound.ParserCombinators   (IsMatch (is), anySepBy, sepByOp, (<|>),
-                                      (|+), (|?))
+import Bookhound.ParserCombinators   (char, manySepBy, sepByOp, string, (|+),
+                                      (|?))
 import Bookhound.Parsers.Char        (comma, underscore)
 import Bookhound.Parsers.Collections (listOf, tupleOf)
-import Bookhound.Parsers.String      (maybeWithinParens, withinCurlyBrackets,
-                                      withinParens)
+import Bookhound.Parsers.Text        (betweenCurlyBrackets, betweenParens,
+                                      maybeBetweenParens)
+import Control.Applicative           ((<|>))
 
 
 
 pattern' :: Parser Pattern
-pattern' =  pattern'' <|> maybeWithinParens pattern''
+pattern' =  pattern'' <|> maybeBetweenParens pattern''
   where
     ctor'       = CtorPattern <$> qCtor <*> (ctorElem' |+)
     nullaryCtor = CtorPattern <$> qCtor <*> pure []
@@ -25,32 +26,32 @@ pattern' =  pattern'' <|> maybeWithinParens pattern''
     recordWildcard = WildcardRecordPattern <$> qCtor
                                            <*> wildcardRecordShape
 
-    alias    = AliasedPattern <$> (var <* is "@") <*> aliasElem'
+    alias    = AliasedPattern <$> (var <* char '@') <*> aliasElem'
 
-    typeAnnotation = TypeAnnotation <$> ((ctor' <|> ctorElem') <* is "::")
+    typeAnnotation = TypeAnnotation <$> ((ctor' <|> ctorElem') <* string "::")
                                     <*> type'
     var'     = VarPattern <$> var
     literal' = LitPattern <$> literal
     wildcard = Wildcard <$ token underscore
 
     list          = ListPattern <$> listOf pattern'
-    tuple         = TuplePattern <$> (tupleOf pattern')
-    recordField   = (,) <$> var <*> ((is "=" *> pattern'') |?)
-    recordShape   = withinCurlyBrackets (anySepBy comma recordField)
+    tuple         = TuplePattern <$> tupleOf pattern'
+    recordField   = (,) <$> var <*> ((char '=' *> pattern'') |?)
+    recordShape   = betweenCurlyBrackets (manySepBy comma recordField)
     wildcardRecordShape =
-      withinCurlyBrackets (anySepBy comma recordField <* token comma <* is "..")
+      betweenCurlyBrackets (manySepBy comma recordField <* token comma <* string "..")
 
     elem' = literal' <|> var' <|> alias <|> wildcard <|> nullaryCtor <|>
-            withinParens nullaryCtor <|>
+            betweenParens nullaryCtor <|>
             tuple <|> list
 
     ctorElem' = recordPattern <|> alias <|> elem' <|>
-                withinParens complexPattern
+                betweenParens complexPattern
 
     aliasElem' = elem' <|> recordPattern <|>
-                 withinParens complexPattern
+                 betweenParens complexPattern
 
-    recordPattern = maybeWithinParens (record <|> recordWildcard)
+    recordPattern = maybeBetweenParens (record <|> recordWildcard)
 
     complexPattern = ctor' <|> infixCtor <|> typeAnnotation
 

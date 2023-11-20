@@ -5,12 +5,14 @@ import qualified SyntaxTrees.Haskell.Type      as H
 import qualified SyntaxTrees.Purescript.Common as P
 import qualified SyntaxTrees.Purescript.FnDef  as P
 
-import Bookhound.Utils.Foldable         (hasNone)
-import Conversions.ToPurescript.Common  (literal, qCtor, qCtorOp, qVar, qVarOp,
-                                         var, varOp, varOpFn)
-import Conversions.ToPurescript.Pattern (pattern')
-import Conversions.ToPurescript.Type    (findTypeParams, type')
-import Data.Foldable                    (Foldable (toList))
+import           Conversions.ToPurescript.Common  (literal, qCtor, qCtorOp,
+                                                   qVar, qVarOp, var, varOp,
+                                                   varOpFn)
+import           Conversions.ToPurescript.Pattern (pattern')
+import           Conversions.ToPurescript.Type    (findTypeParams, type')
+import           Data.Bifunctor                   (Bifunctor (bimap))
+import           Data.Foldable                    (Foldable (toList))
+import qualified Data.Set                         as Set
 
 
 fnSig :: H.FnSig -> P.FnSig
@@ -18,7 +20,7 @@ fnSig (H.FnSig x y) = P.FnSig (varOpFn x) (type' typeScoped)
   where
     typeScoped
       | (H.TypeScope _ _) <- y = y
-      | hasNone $ findTypeParams y = y
+      | not $ Set.null $ findTypeParams y = y
       | otherwise             = H.TypeScope (toList $ findTypeParams y) y
 
 fnDef :: H.FnDef -> P.FnDef
@@ -53,10 +55,10 @@ fnBody (H.CaseOfExpr x y)   = P.CaseOfExpr (fnBody x) (caseBinding <$> y)
 fnBody (H.LambdaCaseExpr x) = P.LambdaCaseExpr $ caseBinding <$> x
 fnBody (H.RecordCreate x y) = P.RecordCreate
                                 (qCtor x)
-                                ((\(z, t) -> (var z, fnBody t)) <$> y)
+                                (bimap var fnBody <$> y)
 fnBody (H.RecordUpdate x y) = P.RecordUpdate
                                 (fnBody x)
-                                ((\(z, t) -> (var z, fnBody t)) <$> y)
+                                (bimap var fnBody <$> y)
 
 fnBody (H.TypeAnnotation x y) = P.TypeAnnotation (fnBody x) (type' y)
 fnBody (H.ListRange x (Just y)) = P.ArrayRange (fnBody x) (fnBody y)

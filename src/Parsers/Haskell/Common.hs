@@ -3,60 +3,71 @@ module Parsers.Haskell.Common where
 import Data.Foldable (Foldable (fold))
 
 
-import Bookhound.Parser            (Parser, char, check, withTransform)
-import Bookhound.ParserCombinators (IsMatch (inverse, is, isNot, noneOf, oneOf),
-                                    maybeWithin, someSepBy, within, withinBoth,
-                                    (->>-), (<|>), (|*), (|+), (|?))
-import Bookhound.Parsers.Char      (alpha, alphaNum, colon, dash, dot, lower,
-                                    newLine, quote, underscore, upper)
-import Bookhound.Parsers.Number    (double, int, negInt)
-import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
-                                    withinQuotes)
-import SyntaxTrees.Haskell.Common  (Class (..), Ctor (..), CtorOp (..),
-                                    Literal (..), Module (..), QClass (QClass),
-                                    QCtor (..), QCtorOp (..), QVar (..),
-                                    QVarOp (..), Var (..), VarOp (..))
-import Utils.Foldable              (wrapMaybe)
-import Utils.String                (wrap, wrapBackQuotes, wrapQuotes)
+import           Bookhound.Parser            (Parser, anyChar, satisfy,
+                                              withTransform)
+import           Bookhound.ParserCombinators (IsMatch (inverse, is, isNot, noneOf, oneOf),
+                                              between, maybeSurroundedBy,
+                                              someSepBy, string, surroundedBy,
+                                              (->>-), (<:>), (|*), (|+), (|?),
+                                              (||*))
+import           Bookhound.Parsers.Char      (alpha, alphaNum, colon, dash, dot,
+                                              lower, newLine, quote, underscore,
+                                              upper)
+import           Bookhound.Parsers.Number    (double, int, negInt)
+import           Bookhound.Parsers.Text      (betweenDoubleQuotes,
+                                              betweenParens, betweenQuotes,
+                                              maybeBetweenSpacing)
+import           Control.Applicative         ((<|>))
+import           Data.Text                   (Text, pack, unpack)
+import qualified Data.Text                   as Text
+import           SyntaxTrees.Haskell.Common  (Class (..), Ctor (..),
+                                              CtorOp (..), Literal (..),
+                                              Module (..), QClass (QClass),
+                                              QCtor (..), QCtorOp (..),
+                                              QVar (..), QVarOp (..), Var (..),
+                                              VarOp (..))
+import           Utils.Foldable              (wrapMaybe)
+import           Utils.String                (overText, tshow, wrap,
+                                              wrapBackQuotes, wrapQuotes)
 
 
 
 literal :: Parser Literal
 literal = token $
-      UnitLit <$ is "()"
-  <|> BoolLit <$> (True <$ is "True" <|> False <$ is "False")
-  <|> IntLit   . show <$> int
-  <|> IntLit   . show <$> withinParens negInt
-  <|> FloatLit . show <$> double
-  <|> FloatLit . show <$> withinParens (dash ->>- double)
-  <|> CharLit   <$> withinQuotes        (charLit   <|> charLitEscaped)
-  <|> StringLit <$> withinDoubleQuotes ((stringLit <|> charLitEscaped) |*)
+      UnitLit <$ string "()"
+  <|> BoolLit <$> (True <$ string "True" <|> False <$ string "False")
+  <|> IntLit   . tshow <$> int
+  <|> IntLit   . tshow <$> betweenParens negInt
+  <|> FloatLit . tshow <$> double
+  <|> FloatLit . tshow <$> betweenParens (dash ->>- double)
+  <|> CharLit   <$> betweenQuotes        (charLit   <|> charLitEscaped)
+  <|> StringLit <$> betweenDoubleQuotes ((stringLit <|> charLitEscaped) ||*)
 
   where
     charLit = noneOf ['\'', '\\']
-    charLitEscaped = read . wrapQuotes <$> (is '\\' ->>- alpha)
-                     <|> (is '\\' *> char)
+    charLitEscaped = read . wrapQuotes . unpack <$> (is '\\' ->>- alpha)
+                     <|> (is '\\' *> anyChar)
     stringLit = noneOf ['"', '\\']
 
 
 
 var :: Parser Var
 var = Var <$> notReserved
-              (withinParens (operator opSymbol <|> simpleOperator <|> simpleOperatorFn)
+              (betweenParens (operator opSymbol <|> simpleOperator <|> simpleOperatorFn)
                <|> ident lower)
 
 ctor :: Parser Ctor
 ctor = Ctor <$> notReserved
-                (withinParens (operator colon) <|> ident upper)
+                (betweenParens (operator colon) <|> ident upper)
 
 varOp :: Parser VarOp
 varOp = VarOp <$> notReserved
-                 (wrapBackQuotes <$> withinBackQuotes (ident lower)
+                 (overText wrapBackQuotes <$> betweenBackQuotes (ident lower)
                   <|> (operator opSymbol <|> simpleOperator))
 
 ctorOp :: Parser CtorOp
 ctorOp = CtorOp <$> notReserved
-                    (wrapBackQuotes <$> withinBackQuotes (ident upper)
+                    (overText wrapBackQuotes <$> betweenBackQuotes (ident upper)
                      <|> operator colon)
 
 class' :: Parser Class
@@ -85,26 +96,26 @@ qClass = uncurry QClass <$> qTerm' Class
 
 
 
-ident :: Parser Char -> Parser String
-ident start = token $ (:) <$> start <*> (idChar |*)
+ident :: Parser Char -> Parser Text
+ident start = token $ pack <$> start <:> (idChar |*)
 
-operator :: Parser Char -> Parser String
-operator start = token $ (:) <$> start
-                             <*> ((opSymbol <|> colon) |*)
+operator :: Parser Char -> Parser Text
+operator start = token $ pack <$> start
+                              <:> ((opSymbol <|> colon) |*)
 
-simpleOperator :: Parser String
+simpleOperator :: Parser Text
 simpleOperator = token $ oneOf [":"]
 
-simpleOperatorFn :: Parser String
+simpleOperatorFn :: Parser Text
 simpleOperatorFn = token $ oneOf [",", ",,", ",,,"]
 
 nonTokenQVar :: Parser QVar
 nonTokenQVar = uncurry QVar <$> qTerm x
-  where  x = Var <$> check "" (`notElem` reservedKeyWords)
+  where  x = Var <$> satisfy (`notElem` reservedKeyWords)
                     (nonTokenIdent lower)
 
-nonTokenIdent :: Parser Char -> Parser String
-nonTokenIdent start = (:) <$> start <*> (idChar |*)
+nonTokenIdent :: Parser Char -> Parser Text
+nonTokenIdent start = pack <$> start <:> (idChar |*)
 
 
 idChar :: Parser Char
@@ -114,7 +125,8 @@ opSymbol :: Parser Char
 opSymbol = oneOf symbolChars
 
 token :: Parser a -> Parser a
-token = withTransform $ maybeWithin (anyComment |+) . maybeWithin spacing
+token = withTransform
+  $ maybeSurroundedBy (anyComment |+) . maybeBetweenSpacing
 
 
 
@@ -122,30 +134,34 @@ qTerm :: Parser a -> Parser (Maybe Module, a)
 qTerm x =  (,) <$> ((module'' <* dot) |?) <*> x
 
 
-qTerm' :: (String -> b) -> Parser (Maybe Module, b)
+qTerm' :: (Text -> b) -> Parser (Maybe Module, b)
 qTerm' fn = token parser
   where
     parser = do xs <- getComponents <$> module''
-                pure $ (Module <$> wrapMaybe (init xs), fn $ last xs)
+                pure (Module <$> wrapMaybe (init xs), fn $ last xs)
     getComponents (Module xs) = xs
 
 
-anyComment :: Parser String
+anyComment :: Parser Text
 anyComment = pragma <|> blockComment <|> lineComment
 
-lineComment :: Parser String
-lineComment = is "--" ->>- (pure <$> newLine <|>
-                          noneOf symbolChars ->>- (inverse newLine |*))
+lineComment :: Parser Text
+lineComment = string "--" ->>- (Text.singleton <$> newLine <|>
+                          noneOf symbolChars ->>- (inverse newLine ||*))
 
 
-blockComment :: Parser String
-blockComment = wrap "{-"  "-}" . fold <$> withinBoth (is "{-") (is "-}")
-                         ((:) <$> (isNot "#") <*> ((isNot "-" ->>- isNot "}") |*))
+blockComment :: Parser Text
+blockComment = overText (wrap "{-"  "-}")
+  <$> between (string "{-") (string "-}")
+      (isNot "#" <> commentText)
+  where
+    commentText = fold <$> ((isNot "-" <> isNot "}") |*)
 
 
-pragma :: Parser String
-pragma = wrap "{-#"  "#-}" . fold <$> withinBoth (is "{-#") (is "#-}")
-                             ((isNot "#" |*))
+pragma :: Parser Text
+pragma = overText (wrap "{-#"  "#-}")
+   <$> between (string "{-#") (string "#-}")
+  (isNot '#' ||*)
 
 symbolChars :: [Char]
 symbolChars =
@@ -154,12 +170,12 @@ symbolChars =
       '-', '~']
 
 
-notReserved :: Parser String -> Parser String
-notReserved = check "reserved"
+notReserved :: Parser Text -> Parser Text
+notReserved = satisfy
                (`notElem` (reservedSymbols ++ reservedKeyWords))
 
 
-reservedKeyWords :: [String]
+reservedKeyWords :: [Text]
 reservedKeyWords = ["case","class","data","default","deriving",
                     "do","else","forall" ,"if","import","in",
                     "infix","infixl","infixr","instance",
@@ -167,9 +183,9 @@ reservedKeyWords = ["case","class","data","default","deriving",
                     "then","type","where","_" ,"foreign",
                     "ccall","as","safe","unsafe"]
 
-reservedSymbols :: [String]
+reservedSymbols :: [Text]
 reservedSymbols = ["..","::","=","\\","|","<-","->","@","~","=>","[","]"]
 
 
-withinBackQuotes :: Parser b -> Parser b
-withinBackQuotes = within (is '`')
+betweenBackQuotes :: Parser b -> Parser b
+betweenBackQuotes = surroundedBy (is '`')

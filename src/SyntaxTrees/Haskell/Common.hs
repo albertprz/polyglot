@@ -1,37 +1,38 @@
 module SyntaxTrees.Haskell.Common where
+import Data.Text (Text)
 
 
 newtype Var
-  = Var String
+  = Var Text
   deriving (Eq)
 
 newtype Ctor
-  = Ctor String
+  = Ctor Text
   deriving (Eq)
 
 newtype VarOp
-  = VarOp String
+  = VarOp Text
   deriving (Eq)
 
 newtype CtorOp
-  = CtorOp String
+  = CtorOp Text
   deriving (Eq)
 
 newtype Class
-  = Class String
+  = Class Text
   deriving (Eq)
 
 newtype Module
-  = Module [String]
+  = Module [Text]
   deriving (Eq)
 
 data Literal
   = UnitLit
   | BoolLit Bool
-  | IntLit String
-  | FloatLit String
+  | IntLit Text
+  | FloatLit Text
   | CharLit Char
-  | StringLit String
+  | StringLit Text
   deriving (Eq)
 
 

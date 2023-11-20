@@ -8,13 +8,14 @@ import Conversions.ToPurescript.Common (find, module', qClass)
 import Data.Map (Map)
 import Data.Set (Set)
 
-import qualified Data.Map as Map
-import qualified Data.Set as Set
+import qualified Data.Map  as Map
+import qualified Data.Set  as Set
+import           Data.Text (Text)
 
 
 
 typeParam :: H.TypeParam -> P.TypeParam
-typeParam (H.TypeParam x) = P.TypeParam  x
+typeParam (H.TypeParam x) = P.TypeParam x
 
 typeVar :: H.TypeVar -> P.TypeVar
 typeVar (H.TypeVar x) = P.TypeVar $ convertTypeVar x
@@ -51,8 +52,8 @@ type' (H.ClassScope x y)      = P.ClassScope (classConstraint <$> x)
 
 findTypeParams :: H.Type -> Set H.TypeParam
 findTypeParams (H.CtorTypeApply _ y)   = mconcat $ findTypeParams <$> y
-findTypeParams (H.ParamTypeApply x y)  = (Set.singleton x) <>
-                                         (mconcat $ findTypeParams <$> y)
+findTypeParams (H.ParamTypeApply x y)  = Set.singleton x <>
+                                         mconcat (findTypeParams <$> y)
 findTypeParams (H.NestedTypeApply x y) = mconcat $ findTypeParams <$>
                                          (x : y)
 findTypeParams (H.TypeVar' _)          = Set.empty
@@ -77,15 +78,15 @@ qTypeCtor (H.QTypeCtor x y) = P.QTypeCtor (module' <$> x) (typeCtor y)
 
 
 
-convertTypeCtor :: String -> String
-convertTypeCtor x = find typeCtorMap x
+convertTypeCtor :: Text -> Text
+convertTypeCtor = find typeCtorMap
 
-convertTypeVar :: String -> String
-convertTypeVar x = find typeVarMap x
+convertTypeVar :: Text -> Text
+convertTypeVar = find typeVarMap
 
-typeCtorMap :: Map String String
+typeCtorMap :: Map Text Text
 typeCtorMap = Map.empty
 
-typeVarMap :: Map String String
+typeVarMap :: Map Text Text
 typeVarMap = Map.fromList [("Bool", "Boolean"), ("Integer", "Int"),
                            ("Float", "Number"), ("Double", "Number")]

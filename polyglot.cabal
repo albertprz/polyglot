@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -86,6 +86,7 @@ library
       RankNTypes
       ExplicitForAll
       ScopedTypeVariables
+      TypeApplications
       LiberalTypeSynonyms
       InstanceSigs
       FunctionalDependencies
@@ -99,8 +100,8 @@ library
       FlexibleContexts
       FlexibleInstances
       ApplicativeDo
-      ParallelListComp
-      MonadComprehensions
+      OverloadedStrings
+      ViewPatterns
       GADTs
       TypeFamilies
       TypeFamilyDependencies
@@ -111,22 +112,22 @@ library
       DeriveTraversable
       DeriveGeneric
       GeneralizedNewtypeDeriving
-  ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
-    , bookhound >=0.1.25 && <0.2
+      base ==4.*
+    , bookhound
     , bytestring
-    , casing >=0.1.4.1 && <0.2
+    , casing
     , containers
-    , directory >=1.3.7.0 && <1.4
-    , directory-tree >=0.12.1 && <0.13
-    , extra >=1.7.10 && <1.8
-    , filepath >=1.4.2.2 && <1.5
-    , fsnotify >=0.3.0.1 && <0.4
-    , optparse-applicative >=0.17.0 && <0.18
-    , parallel >=3.2.2.0 && <3.3
-    , text >=2 && <2.1
-    , utility-ht >=0.0.16 && <0.1
+    , directory
+    , directory-tree
+    , extra
+    , filepath
+    , fsnotify
+    , optparse-applicative
+    , parallel
+    , text
+    , utility-ht
   default-language: Haskell2010
 
 executable polyglot
@@ -147,6 +148,7 @@ executable polyglot
       RankNTypes
       ExplicitForAll
       ScopedTypeVariables
+      TypeApplications
       LiberalTypeSynonyms
       InstanceSigs
       FunctionalDependencies
@@ -160,8 +162,8 @@ executable polyglot
       FlexibleContexts
       FlexibleInstances
       ApplicativeDo
-      ParallelListComp
-      MonadComprehensions
+      OverloadedStrings
+      ViewPatterns
       GADTs
       TypeFamilies
       TypeFamilyDependencies
@@ -172,21 +174,21 @@ executable polyglot
       DeriveTraversable
       DeriveGeneric
       GeneralizedNewtypeDeriving
-  ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
-    , bookhound >=0.1.25 && <0.2
+      base ==4.*
+    , bookhound
     , bytestring
-    , casing >=0.1.4.1 && <0.2
+    , casing
     , containers
-    , directory >=1.3.7.0 && <1.4
-    , directory-tree >=0.12.1 && <0.13
-    , extra >=1.7.10 && <1.8
-    , filepath >=1.4.2.2 && <1.5
-    , fsnotify >=0.3.0.1 && <0.4
-    , optparse-applicative >=0.17.0 && <0.18
-    , parallel >=3.2.2.0 && <3.3
+    , directory
+    , directory-tree
+    , extra
+    , filepath
+    , fsnotify
+    , optparse-applicative
+    , parallel
     , polyglot
-    , text >=2 && <2.1
-    , utility-ht >=0.0.16 && <0.1
+    , text
+    , utility-ht
   default-language: Haskell2010

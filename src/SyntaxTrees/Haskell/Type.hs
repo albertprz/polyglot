@@ -1,18 +1,19 @@
 module SyntaxTrees.Haskell.Type where
 
+import Data.Text                  (Text)
 import SyntaxTrees.Haskell.Common (Module, QClass)
 
 
 newtype TypeParam
-  = TypeParam String
+  = TypeParam Text
   deriving (Eq, Ord)
 
 data TypeVar
-  = TypeVar String
+  = TypeVar Text
   | UnitType
 
 data TypeCtor
-  = TypeCtor String
+  = TypeCtor Text
   | Arrow
   | TupleType
   | ListType

@@ -5,50 +5,51 @@ import SyntaxTrees.Haskell.ClassDef (ClassDef (..), DerivingDef (..),
 import SyntaxTrees.Haskell.Type     (ClassConstraint)
 
 import Parsers.Haskell.Common (class')
-import Parsers.Haskell.FnDef  (fnDefOrSig, withinContext)
+import Parsers.Haskell.FnDef  (betweenContext, fnDefOrSig)
 import Parsers.Haskell.Type   (anyKindedType, classConstraints, type',
                                typeParam)
 
 import Bookhound.Parser            (Parser, withError)
-import Bookhound.ParserCombinators (IsMatch (is), (<|>), (|*), (|+), (|?))
+import Bookhound.ParserCombinators (string, (|*), (|+), (|?))
 
+import Control.Applicative         ((<|>))
 import Data.Foldable               (Foldable (fold))
 import SyntaxTrees.Haskell.DataDef (DerivingStrategy (..))
 
 
 classDef :: Parser ClassDef
 classDef = withError "Class declaration" $
-  ClassDef <$> (is "class" *> classConstraints')
+  ClassDef <$> (string "class" *> classConstraints')
            <*> class'
            <*> (typeParam |*)
-           <* is "where"
-           <*> withinContext fnDefOrSig
+           <* string "where"
+           <*> betweenContext fnDefOrSig
 
 
 instanceDef :: Parser InstanceDef
 instanceDef = withError "Instance declaration" $
-  InstanceDef <$> (is "instance" *> classConstraints')
+  InstanceDef <$> (string "instance" *> classConstraints')
               <*> class'
               <*> (anyKindedType |+)
-              <* is "where"
-              <*> withinContext fnDefOrSig
+              <* string "where"
+              <*> betweenContext fnDefOrSig
 
 derivingDef :: Parser DerivingDef
 derivingDef = withError "Standalone deriving declaration" $
-  DerivingDef <$> (is "deriving" *>
-                   derivingStrategy <* is "instance")
+  DerivingDef <$> (string "deriving" *>
+                   derivingStrategy <* string "instance")
               <*> classConstraints'
               <*> class'
               <*> (anyKindedType |+)
-              <*> ((is "via" *> class') |?)
+              <*> ((string "via" *> class') |?)
 
 derivingStrategy :: Parser DerivingStrategy
-derivingStrategy = (StandardDeriving <$ is "stock")
-                   <|> (NewTypeDeriving <$ is "newtype")
-                   <|> (AnyClassDeriving <$ is "anyclass")
+derivingStrategy = (StandardDeriving <$ string "stock")
+                   <|> (NewTypeDeriving <$ string "newtype")
+                   <|> (AnyClassDeriving <$ string "anyclass")
                    <|> pure StandardDeriving
 
 
 classConstraints' :: Parser [ClassConstraint]
 classConstraints' = fold <$>
-                    ((classConstraints type' <* is "=>") |?)
+                    ((classConstraints type' <* string "=>") |?)

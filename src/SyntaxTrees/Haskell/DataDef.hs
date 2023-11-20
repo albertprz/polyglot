@@ -42,10 +42,8 @@ data FieldDef
   = UnNamedField UnNamedFieldDef
   | NamedField NamedFieldDef
 
-data UnNamedFieldDef
-  = UnNamedFieldDef
-      { type' :: Type
-      }
+newtype UnNamedFieldDef
+  = UnNamedFieldDef { type' :: Type }
 
 data NamedFieldDef
   = NamedFieldDef

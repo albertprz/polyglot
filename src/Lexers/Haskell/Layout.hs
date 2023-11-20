@@ -5,115 +5,121 @@ import Parsers.Haskell.Common (anyComment)
 
 import Utils.Foldable (hasNone, hasSome)
 import Utils.List     (safeHead, safeTail)
-import Utils.String   (joinWords, wrapCurly', wrapDoubleQuotes', wrapParens',
+import Utils.String   (overText, wrapCurly', wrapDoubleQuotes', wrapParens',
                        wrapQuotes')
 
 
-import Bookhound.Parser            (ParseError, Parser, char, check, runParser,
-                                    withError)
+import Bookhound.Parser            (ParseError, Parser, anyChar, runParser,
+                                    satisfy, withError)
 import Bookhound.ParserCombinators (IsMatch (is, isNot, noneOf, oneOf), (->>-),
-                                    (<|>), (|*), (|+), (|?))
+                                    (|*), (|+), (|?), (||*), (||+))
 import Bookhound.Parsers.Char      (space)
-import Bookhound.Parsers.String    (spacing, withinDoubleQuotes, withinParens,
-                                    withinQuotes, word)
+import Bookhound.Parsers.Text      (betweenDoubleQuotes, betweenParens,
+                                    betweenQuotes, spacing, word)
 
 
-import Control.Monad  (foldM)
-import Data.Foldable  (Foldable (fold))
-import Data.List      (isPrefixOf)
-import Data.Monoid.HT (when)
-import Data.Text      (Text, pack)
+import           Control.Applicative ((<|>))
+import           Control.Monad       (foldM)
+import           Data.Foldable       (Foldable (fold))
+import           Data.Monoid.HT      (when)
+import           Data.Text           (Text, pack)
+import qualified Data.Text           as Text
 
 
 adaptLayout :: Text -> Either [ParseError] Text
-adaptLayout str = pack . (++ " }") . unlines . fst4 <$> layoutLines
+adaptLayout str = (<> " }") . Text.unlines . fst4 <$> layoutLines
   where
-    layoutLines = foldM layout args . (++ pure "") . filter hasSome =<< input
-    input = lines . fold <$> runParser parensLayout str
+    layoutLines = foldM layout args . (<> pure "") . filter (not . Text.null) =<< input
+    input = Text.lines . fold <$> runParser parensLayout str
     args = ([], [], False, False)
     fst4 (x, _, _, _) = x
 
 
-layout :: ([String], [Int], Bool, Bool) -> String -> Either [ParseError] ([String], [Int], Bool, Bool)
-layout (x, y, z, t) str = runParser layoutParser $ pack str
+layout :: ([Text], [Int], Bool, Bool) -> Text -> Either [ParseError] ([Text], [Int], Bool, Bool)
+layout (x, y, z, t) = runParser layoutParser
   where
     layoutParser = withError "Layout lexer" $
-      do spaces' <- (space |*)
+      do spaces' <- (space ||*)
          beginning <- otherText
          layoutText <- (layoutBegin |?)
-         spaces'' <- (space |*)
+         spaces'' <- (space ||*)
          rest <- otherText
-         let hasIn = maybe False ("in" ==) (safeHead $ words beginning)
-             hasCurly = isPrefixOf "{" rest
-             indents = when z [length spaces'] ++
+         let hasIn = Just "in" == safeHead (Text.words beginning)
+             hasCurly = '{' == Text.head rest
+             indents = when z [Text.length spaces'] <>
                 if not hasIn then y
-                else (length spaces' + 1) : (fold $ safeTail y)
-             layoutNextLine = hasSome layoutText && hasNone rest
-             contextIndent = length $ spaces' ++ beginning ++ fold layoutText ++ spaces''
-             (newIndents, beginSep, stop) = calcIndent indents (length spaces')
+                else (Text.length spaces' + 1) : fold (safeTail y)
+             layoutNextLine = hasSome layoutText && Text.null rest
+             contextIndent =  sum $ Text.length <$>
+                [spaces', beginning, fold layoutText, spaces'']
+             (newIndents, beginSep, stop) =
+                 calcIndent indents (Text.length spaces')
                                             (t || hasCurly) beginning
              endSep = when (hasSome layoutText && not hasCurly) " {"
-             indents' = when (hasSome layoutText && hasSome rest)
-                        [contextIndent] ++ newIndents
-             text = x ++ [spaces' ++ beginSep ++ beginning ++ fold
-                          layoutText ++ endSep ++  spaces'' ++ rest]
-         pure $ (text, indents', layoutNextLine, stop || hasCurly)
+             indents' = when (hasSome layoutText && not (Text.null rest))
+                        [contextIndent] <> newIndents
+             text = x <> [spaces' <> beginSep <> beginning <> fold
+                          layoutText <> endSep <>  spaces'' <> rest]
+         pure (text, indents', layoutNextLine, stop || hasCurly)
 
 
-parensLayout :: Parser [String]
+parensLayout :: Parser [Text]
 parensLayout = (((spacing |?) ->>- elem'
                <|> parensParser
-               <|> (wrapParens' . fold <$> withinParens parensLayout) ->>-
+               <|> (overText wrapParens' . fold <$> betweenParens parensLayout) ->>-
                    (spacing |?)) |*)
   where
     elem' = lexeme' id
-    parensParser = wrapParens' <$> withinParens
-                ((spacing |?) ->>- layoutBegin ->>- spacing ->>-
-                 (wrapCurly' . fold <$> parensLayout))
+    parensParser = overText wrapParens' <$> betweenParens
+                ((spacing |?) ->>-
+                 (layoutBegin <> spacing <>
+                 (overText wrapCurly' . fold <$> parensLayout)))
 
 
 
-calcIndent :: [Int] -> Int -> Bool -> String -> ([Int], String, Bool)
+calcIndent :: [Int] -> Int -> Bool -> Text -> ([Int], Text, Bool)
 calcIndent indentLvls curr stop beginning =
   (newIndentLvls, joinWords [closeContexts, sep], shouldStop)
   where
     extraElems = if not stop then extra else fold $ safeTail extra
     closeContexts = fold ("} " <$ extraElems)
     shouldStop = stop && hasNone extra
-    sep = when (any (== curr) (safeHead newIndentLvls) &&
+    sep = when (elem curr (safeHead newIndentLvls) &&
                 notElem beginning nestTokens) "; "
     (extra, newIndentLvls) = span (curr <) indentLvls
+    joinWords = Text.unwords . filter (not . Text.null)
 
 
-nestTokens :: [String]
+nestTokens :: [Text]
 nestTokens = ["then", "else"]
 
-layoutTokens :: [String]
-layoutTokens = [("(" ++), id] <*> ["where", "let", "do", "of", "\\case"]
+layoutTokens :: [Text]
+layoutTokens = [("(" <>), id] <*> ["where", "let", "do", "of", "\\case"]
 
-layoutBegin :: Parser String
+layoutBegin :: Parser Text
 layoutBegin = oneOf layoutTokens
 
-lexeme :: Parser String
-lexeme = wrapDoubleQuotes' <$> withinDoubleQuotes (isNot '"'  |+)
-  <|> wrapQuotes' . pure <$> withinQuotes (char <|> (is '\\' |?) *> char)
+lexeme :: Parser Text
+lexeme = pack . wrapDoubleQuotes' <$> betweenDoubleQuotes (isNot '"' |+)
+  <|> pack . wrapQuotes' . pure
+      <$> betweenQuotes (anyChar <|> (is '\\' |?) *> anyChar)
   <|> anyComment
   <|> word
 
 
 
-otherText :: Parser String
+otherText :: Parser Text
 otherText = fold <$> elems
   where
-    elems = (((check "" (`notElem` layoutTokens) lexeme) ->>- (space |*)) |*)
+    elems = ((satisfy (`notElem` layoutTokens) lexeme <> (space ||*)) |*)
 
 
-lexeme' :: (Parser String -> Parser String) -> Parser String
+lexeme' :: (Parser Text -> Parser Text) -> Parser Text
 lexeme' f = (spacing |?) ->>- f lexeme ->>- (spacing |?)
 
-otherText' :: Parser String
-otherText' = lexeme' (check "" (`notElem` layoutTokens))
+otherText' :: Parser Text
+otherText' = lexeme' (satisfy (`notElem` layoutTokens))
 
 
-word' :: Parser String
-word' = ((noneOf [' ', '\n', '\t', '(', ')']) |+)
+word' :: Parser Text
+word' = (noneOf [' ', '\n', '\t', '(', ')'] ||+)

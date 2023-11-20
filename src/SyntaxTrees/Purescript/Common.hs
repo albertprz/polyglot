@@ -1,34 +1,35 @@
 module SyntaxTrees.Purescript.Common where
 
 import Data.List    (intercalate)
+import Data.Text    (Text, unpack)
 import Utils.String (wrapParens)
 
 
 newtype Var
-  = Var String
+  = Var Text
 
 newtype Ctor
-  = Ctor String
+  = Ctor Text
 
 newtype VarOp
-  = VarOp String
+  = VarOp Text
 
 newtype CtorOp
-  = CtorOp String
+  = CtorOp Text
 
 newtype Class
-  = Class String
+  = Class Text
 
 newtype Module
-  = Module [String]
+  = Module [Text]
 
 data Literal
   = UnitLit
   | BoolLit Bool
-  | IntLit String
-  | NumberLit String
+  | IntLit Text
+  | NumberLit Text
   | CharLit Char
-  | StringLit String
+  | StringLit Text
 
 
 data QVar
@@ -49,33 +50,33 @@ data QClass
 
 
 instance Show Var where
-  show (Var x) = x
+  show (Var x) = unpack x
 
 instance Show Ctor where
-  show (Ctor x) = x
+  show (Ctor x) = unpack x
 
 instance Show VarOp where
-  show (VarOp x) = x
+  show (VarOp x) = unpack x
 
 instance Show CtorOp where
-  show (CtorOp x) = x
+  show (CtorOp x) = unpack x
 
 instance Show Class where
-  show (Class x) = x
+  show (Class x) = unpack x
 
 instance Show Module where
-  show (Module x) = intercalate "." x
+  show (Module x) = intercalate "." $ fmap unpack x
 
 instance Show Literal where
-  show UnitLit                 = "unit"
-  show (BoolLit True)          = "true"
-  show (BoolLit False)         = "false"
-  show (IntLit x@('-' : _))    = wrapParens x
-  show (IntLit x)              = x
-  show (NumberLit x@('-' : _)) = wrapParens x
-  show (NumberLit x)           = x
-  show (CharLit x)             = show x
-  show (StringLit x)           = show x
+  show UnitLit                             = "unit"
+  show (BoolLit True)                      = "true"
+  show (BoolLit False)                     = "false"
+  show (IntLit (unpack -> x@('-' : _)))    = wrapParens x
+  show (IntLit x)                          = unpack x
+  show (NumberLit (unpack -> x@('-' : _))) = wrapParens x
+  show (NumberLit x)                       = unpack x
+  show (CharLit x)                         = show x
+  show (StringLit x)                       = show $ unpack x
 
 
 instance Show QVar where
@@ -95,4 +96,4 @@ instance Show QClass where
 
 
 showQualified :: (Show a, Show b) => Maybe a -> b -> String
-showQualified x y = foldMap ((++ ".") . show) x ++ show y
+showQualified x y = foldMap ((<> ".") . show) x <> show y
