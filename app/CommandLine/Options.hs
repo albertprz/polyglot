@@ -41,7 +41,7 @@ optsInfo = info (helper <*> opts)
            ( fullDesc
            <> progDesc "Compile Haskell file(s) into a target language. \n"
            <> footer ("Supported languages: "
-            <> (intercalate ", " $ show <$> ([minBound .. maxBound] :: [Language])))
+            <> intercalate ", " (show <$> ([minBound .. maxBound] :: [Language])))
            <> header "polyglot" )
 
 
@@ -68,6 +68,6 @@ language = Purescript <$ oneOf @Text ["Purescript", "purescript", "purs"] <|>
 
 
 parserOption :: Bookhound.Parser a -> Options.Applicative.Mod Options.Applicative.OptionFields a -> Parser a
-parserOption parser = option $ eitherReader $ reader
+parserOption parser = option $ eitherReader reader
   where
     reader = mapLeft show . Bookhound.runParser parser . pack

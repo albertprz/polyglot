@@ -252,13 +252,14 @@ showGiven x y z t u = joinWords [foldMap show x,
                                  str " " z,
                                  when displaySep ":",
                                  show t]
-   ++ case u of
+   ++ implementation
+
+  where
+    implementation = case u of
         Left body -> joinWords ["=",
                                show body]
         Right defs -> joinWords ["with",
                                 wrapSpacedBlock defs]
-
-  where
     displaySep = hasSome x || hasSome y || hasSome (foldMap fields z)
     fields (UsingArgList h) = h
 

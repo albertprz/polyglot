@@ -15,12 +15,12 @@ import SyntaxTrees.Haskell.FnDef (Associativity (LAssoc, RAssoc),
 
 import Bookhound.Parser              (Parser, andThen, satisfy, withError)
 import Bookhound.ParserCombinators   (char, sepByOps, someSepBy, string, (->>-),
-                                      (|*), (|+), (|?), (||*))
-import Bookhound.Parsers.Char        (anyChar, comma, dot)
+                                      (|*), (|+), (|?))
+import Bookhound.Parsers.Char        (comma, dot)
 import Bookhound.Parsers.Collections (listOf, tupleOf)
 import Bookhound.Parsers.Number      (int)
-import Bookhound.Parsers.Text        (betweenCurlyBrackets, betweenParens,
-                                      betweenSquare, spacing)
+import Bookhound.Parsers.Text        (anyString, betweenCurlyBrackets,
+                                      betweenParens, betweenSquare, spacing)
 
 import Control.Applicative ((<|>))
 import Data.Foldable       (Foldable (fold))
@@ -184,8 +184,8 @@ patternGuard = PatternGuard <$> (pattern' <* string "<-") <*> fnBody <|>
 
 adaptFnBody :: Parser Text
 adaptFnBody = do start <- otherText
-                 next <- ((string "where" <> (anyChar ||*)) |?)
-                 other <- ((char ';' ->>- (anyChar ||*)) |?)
+                 next <- ((string "where" <> anyString) |?)
+                 other <- ((char ';' ->>- anyString) |?)
                  let x = maybe start (overText wrapCurly start <>) next <> fold other
                  pure x
  where

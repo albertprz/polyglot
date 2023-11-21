@@ -21,6 +21,7 @@ import Bookhound.Parsers.Text      (betweenDoubleQuotes, betweenParens,
 import           Control.Applicative ((<|>))
 import           Control.Monad       (foldM)
 import           Data.Foldable       (Foldable (fold))
+import           Data.Foldable.Extra (sum')
 import           Data.Monoid.HT      (when)
 import           Data.Text           (Text, pack)
 import qualified Data.Text           as Text
@@ -45,12 +46,12 @@ layout (x, y, z, t) = runParser layoutParser
          spaces'' <- (space ||*)
          rest <- otherText
          let hasIn = Just "in" == safeHead (Text.words beginning)
-             hasCurly = '{' == Text.head rest
+             hasCurly = Just '{' == fmap fst (Text.uncons rest)
              indents = when z [Text.length spaces'] <>
                 if not hasIn then y
                 else (Text.length spaces' + 1) : fold (safeTail y)
              layoutNextLine = hasSome layoutText && Text.null rest
-             contextIndent =  sum $ Text.length <$>
+             contextIndent = sum' $ Text.length <$>
                 [spaces', beginning, fold layoutText, spaces'']
              (newIndents, beginSep, stop) =
                  calcIndent indents (Text.length spaces')
