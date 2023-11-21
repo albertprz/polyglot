@@ -28,10 +28,10 @@ class' (H.Class x) = S.TypeClass x
 
 
 module' :: H.Module -> S.Package
-module' (H.Module x) = S.Package $ replaceNaming . overText quietSnake <$> x
+module' (H.Module x) = S.Package $ Text.map (find moduleCharMap) . replaceNaming . overText quietSnake <$> x
 
 qualifier' :: H.Module -> S.Package
-qualifier' (H.Module x) = S.Package $ replaceNaming <$> x
+qualifier' (H.Module x) = S.Package $ Text.map (find moduleCharMap) . replaceNaming <$> x
 
 
 literal :: H.Literal -> S.Literal
@@ -69,12 +69,14 @@ find x y = Map.findWithDefault y y x
 globalMap :: Map Text Text
 globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap
 
+moduleCharMap :: Map Char Char
+moduleCharMap = Map.fromList [('$', '_')]
 
 charMap :: Map Char Char
-charMap = Map.fromList [('\'', '$'), ('$', '&'), ('.', '|')]
+charMap = Map.fromList [('\'', '$'), ('.', '|')]
 
 varOpMap :: Map Text Text
-varOpMap = Map.fromList [("$", "|<|"), (".", "^"),
+varOpMap = Map.fromList [("$", "|<|"), ("#", "|>|"), (".", "<<<"),
                          ("++", "<+>"), ("<>", "<+>"),
                          (",", "Tuple2"), (",,", "Tuple3"),
                          (",,,", "Tuple4"), (",,,,", "Tuple5")]
@@ -83,8 +85,7 @@ ctorOpMap :: Map Text Text
 ctorOpMap = Map.fromList [(":", "::"), ("::", ":")]
 
 varMap :: Map Text Text
-varMap = Map.fromList [("type", "typex"), ("var", "varx"),
-                       ("def", "defx"), ("match", "matchx")]
+varMap = Map.fromList $ fmap (\x -> (x, x <> "$")) reservedKeyWords
 
 ctorMap :: Map Text Text
 ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None"),
@@ -92,3 +93,8 @@ ctorMap = Map.fromList [("Just", "Some"), ("Nothing", "None"),
 
 autoIds :: [Text]
 autoIds = Text.singleton <$> ['x', 'y', 'z', 't', 'u', 'v', 'w', 'p', 'q', 'r', 's']
+
+reservedKeyWords :: [Text]
+reservedKeyWords = ["type","var","lazy","def","match",
+                    "for","else","then" ,"if","match","in",
+                    "case","yield","given","class"]

@@ -118,4 +118,4 @@ instance Show QTypeClass where
 
 
 showQualified :: (Show a, Show b) => Maybe a -> b -> String
-showQualified x y = foldMap ((++ ".") . show) x ++ show y
+showQualified x y = foldMap ((<> ".") . show) x <> show y

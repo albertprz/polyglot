@@ -194,7 +194,7 @@ instance Show FnBody where
   show (MatchExpr x y)    = joinWords [show x,
                                       "match",
                                       wrapBlock y]
-  show (TopLevelMatchExpr x) = wrapBlock x
+  show (TopLevelMatchExpr x) = wrapContext $ str "\n" x
 
 instance Show ForStep where
   show (ForBinding x y) = joinWords [showTuple x, "<-", show y]
@@ -252,7 +252,7 @@ showGiven x y z t u = joinWords [foldMap show x,
                                  str " " z,
                                  when displaySep ":",
                                  show t]
-   ++ implementation
+   +++ implementation
 
   where
     implementation = case u of

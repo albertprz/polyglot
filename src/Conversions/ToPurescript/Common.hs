@@ -86,7 +86,7 @@ ctorOpMap = Map.empty
 varMap :: Map Text Text
 varMap = Map.fromList [("fmap", "map"), ("id", "identity"),
                        ("toList", "toUnfoldable"),
-                       ("maybeToList",  "maybeToArr"),
+                       ("maybeToList",  "fromFoldable"),
                        ("first", "lmap"), ("second", "rmap") ]
 
 ctorMap :: Map Text Text
@@ -95,4 +95,5 @@ ctorMap = Map.fromList [("True", "true"), ("False", "false")]
 varOpFnMap :: Map Text Text
 varOpFnMap = Map.fromList [("==", "eq"), ("/=", "notEq"),
                          ("<>", "append"), ("<$>", "map"),
-                         ("<*>", "apply"), (">>=", "bind") ]
+                         ("<*>", "apply"), ("<|>", "alt"),
+                         (">>=", "bind") ]

@@ -29,7 +29,7 @@ moduleImport (H.ModuleImport x y z _ []) =
   [S.PackageImport (module' y) (qualifier' <$> z)
    (cond (not x) S.FullImport)]
 moduleImport (H.ModuleImport x y z _ t) =
-  S.PackageImport (module' y) (qualifier' <$> z) . (cond (not x))
+  S.PackageImport (module' y) (qualifier' <$> z) . cond (not x)
   <$> moduleImportDefs t
 
 moduleImportDefs :: [H.ModuleImportDef] -> [S.PackageImportDef]
@@ -54,7 +54,7 @@ singleImportDef _                                = Nothing
 
 internalDefs :: [H.InternalDef] -> [S.InternalDef]
 internalDefs defs =
-  (mapMaybe internalDef others) ++
+  mapMaybe internalDef others ++
   (S.Fn . fnDefs <$> fnDefOrSigs fns)
 
   where

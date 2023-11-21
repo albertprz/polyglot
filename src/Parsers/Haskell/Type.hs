@@ -43,6 +43,16 @@ classConstraint :: Parser Type -> Parser ClassConstraint
 classConstraint typeParser = ClassConstraint <$> qClass <*> (typeParser |+)
 
 
+standaloneType :: Parser Type
+standaloneType = typeParam' <|> typeVar' <|> tuple <|> list <|> betweenParens type'
+  where
+    typeParam' = TypeParam' <$> typeParam
+    typeVar' = TypeVar' <$> (qTypeVar <|> QTypeVar Nothing <$> typeVar)
+    tuple = CtorTypeApply (QTypeCtor Nothing TupleType)
+            <$> betweenParens (multipleSepBy comma type')
+    list  = CtorTypeApply (QTypeCtor Nothing ListType)
+            <$> (pure <$> betweenSquare type')
+
 
 type' :: Parser Type
 type' = typeScope <|> classScope <|> type'' <|> maybeBetweenParens type''

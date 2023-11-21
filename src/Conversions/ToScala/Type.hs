@@ -123,4 +123,4 @@ typeCtorMap :: Map Text Text
 typeCtorMap = Map.fromList [("Maybe", "Option")]
 
 typeVarMap :: Map Text Text
-typeVarMap = Map.fromList [("Type", "Typex")]
+typeVarMap = Map.fromList [("Type", "Type$")]

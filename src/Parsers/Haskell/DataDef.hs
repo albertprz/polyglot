@@ -1,7 +1,8 @@
 module Parsers.Haskell.DataDef where
 
 import Parsers.Haskell.Common      (class', ctor, var)
-import Parsers.Haskell.Type        (anyKindedType, type', typeCtor, typeParam)
+import Parsers.Haskell.Type        (anyKindedType, standaloneType, type',
+                                    typeCtor, typeParam)
 import SyntaxTrees.Haskell.DataDef (DataCtorDef (..), DataDef (..),
                                     DerivingClause (..), DerivingStrategy (..),
                                     FieldDef (..), NamedFieldDef (..),
@@ -13,8 +14,7 @@ import Bookhound.ParserCombinators   (char, manySepBy, someSepBy, string, (<#>),
                                       (|*), (|?))
 import Bookhound.Parsers.Char        (colon, comma, equal)
 import Bookhound.Parsers.Collections (tupleOf)
-import Bookhound.Parsers.Text        (betweenCurlyBrackets, betweenParens,
-                                      maybeBetweenParens)
+import Bookhound.Parsers.Text        (betweenCurlyBrackets, maybeBetweenParens)
 
 import Control.Applicative ((<|>))
 import Data.Foldable       (Foldable (fold))
@@ -49,7 +49,7 @@ namedFieldDef = NamedFieldDef <$> var <* (colon <#> 2)
                               <*> type'
 
 unNamedFieldDef :: Parser UnNamedFieldDef
-unNamedFieldDef = UnNamedFieldDef <$> (betweenParens type' <|> type')
+unNamedFieldDef = UnNamedFieldDef <$> standaloneType
 
 fieldDef :: Parser FieldDef
 fieldDef = UnNamedField <$> unNamedFieldDef <|>
