@@ -1,9 +1,12 @@
 module SyntaxTrees.Scala.Pattern where
 
+import ClassyPrelude
+
 import SyntaxTrees.Scala.Common (Literal, QCtor, QCtorOp, Var)
 import SyntaxTrees.Scala.Type   (Type)
 
 import Utils.String
+
 
 data Pattern
   = CtorPattern

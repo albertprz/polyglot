@@ -1,11 +1,11 @@
 module Conversions.ToScala.Common where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.Common as H
 import qualified SyntaxTrees.Scala.Common   as S
 
-import           Data.Map     (Map)
 import qualified Data.Map     as Map
-import           Data.Text    (Text)
 import qualified Data.Text    as Text
 import           Text.Casing  (quietSnake)
 import           Utils.String (overText)
@@ -28,10 +28,13 @@ class' (H.Class x) = S.TypeClass x
 
 
 module' :: H.Module -> S.Package
-module' (H.Module x) = S.Package $ Text.map (find moduleCharMap) . replaceNaming . overText quietSnake <$> x
+module' (H.Module x) = S.Package $ Text.map (findDefault moduleCharMap)
+  . replaceNaming
+  . overText quietSnake <$> x
 
 qualifier' :: H.Module -> S.Package
-qualifier' (H.Module x) = S.Package $ Text.map (find moduleCharMap) . replaceNaming <$> x
+qualifier' (H.Module x) = S.Package $ Text.map (findDefault moduleCharMap)
+  . replaceNaming <$> x
 
 
 literal :: H.Literal -> S.Literal
@@ -61,10 +64,10 @@ qClass (H.QClass x y) = S.QTypeClass (qualifier' <$> x) (class' y)
 
 
 replaceNaming :: Text -> Text
-replaceNaming = Text.map (find charMap) . find globalMap
+replaceNaming = Text.map (findDefault charMap) . findDefault globalMap
 
-find :: Ord k => Map k k -> k -> k
-find x y = Map.findWithDefault y y x
+findDefault :: Ord k => Map k k -> k -> k
+findDefault x y = Map.findWithDefault y y x
 
 globalMap :: Map Text Text
 globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap

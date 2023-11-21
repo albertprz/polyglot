@@ -1,18 +1,17 @@
 module CommandLine.Process where
 
+import ClassyPrelude
 
 import CommandLine.FileIO  (convertDirTree, dirPred, emitError, formatterExec,
                             getWatchPath, isDir, moveTree, pathToLanguage,
-                            readFileUtf8, reportFailure, toTargetLanguage,
-                            watchPred, writeFileUtf8)
+                            reportFailure, toTargetLanguage,
+                            watchPred)
 import CommandLine.Options (Opts (..))
 
 
 import Control.Concurrent  (threadDelay)
-import Control.Monad       (forever, when)
-import Control.Monad.Extra (andM, whenM)
-import Data.Foldable       (traverse_)
-import Data.Text           (pack)
+import Control.Monad       (fail)
+import Control.Monad.Extra (andM)
 import Utils.Foldable      (wrapMaybe)
 import Utils.Functor       ((<<$>>))
 
@@ -92,7 +91,7 @@ actions Opts{language, sourcePath, targetPath, autoFormat, clearContents} =
 watchPath :: Opts -> IO ()
 watchPath opts@Opts {sourcePath} =
   withManager (\mgr -> watchTree mgr dir pred' (watchAction opts)
-                     *> putStrLn ("Watching on: " ++ sourcePath)
+                     *> putStrLn ("Watching on: " <> pack sourcePath)
                      *> putStrLn ". . ."
                      *> loop)
   where

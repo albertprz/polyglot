@@ -1,5 +1,7 @@
 module Conversions.ToPurescript.DataDef where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.DataDef     as H
 import qualified SyntaxTrees.Haskell.Type        as H
 import qualified SyntaxTrees.Purescript.ClassDef as P
@@ -62,10 +64,10 @@ extractDerivingDefs x y z =
       P.DerivingDef (derivingStrategy strat) [] Nothing (class' cls) [classType]
     classType = case y of
       [] -> P.TypeValue $ P.TypeVar' $ P.QTypeVar
-             (Nothing) (typeCtorToVar $ typeCtor x)
+             Nothing (typeCtorToVar $ typeCtor x)
       _ -> P.TypeValue $ P.CtorTypeApply
                 (P.QTypeCtor Nothing $ typeCtor x)
-                ((P.TypeParam' . typeParam <$> y))
+                (P.TypeParam' . typeParam <$> y)
 
     typeCtorToVar (P.TypeCtor name) = P.TypeVar name
     typeCtorToVar _                 = P.TypeVar mempty

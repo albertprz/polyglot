@@ -1,5 +1,7 @@
 module Conversions.ToScala.Pattern where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.Common  as H
 import qualified SyntaxTrees.Haskell.Pattern as H
 import qualified SyntaxTrees.Scala.Common    as S
@@ -7,7 +9,6 @@ import qualified SyntaxTrees.Scala.Pattern   as S
 
 import Conversions.ToScala.Common (literal, qCtor, qCtorOp, var)
 import Conversions.ToScala.Type   (type')
-import Data.Maybe                 (mapMaybe)
 
 
 pattern' :: H.Pattern -> S.Pattern
@@ -34,7 +35,7 @@ extractVar (H.VarPattern x) = Just x
 extractVar _                = Nothing
 
 extractVars :: [H.Pattern] -> [H.Var]
-extractVars x = mapMaybe extractVar x
+extractVars = mapMaybe extractVar
 
 allVars :: [H.Pattern] -> Bool
 allVars x = length (mapMaybe extractVar x) == length x
@@ -44,7 +45,7 @@ extractVar' (S.VarPattern x) = Just x
 extractVar' _                = Nothing
 
 extractVars' :: [S.Pattern] -> [S.Var]
-extractVars' x = mapMaybe extractVar' x
+extractVars' = mapMaybe extractVar'
 
 allVars' :: [S.Pattern] -> Bool
 allVars' x = length (mapMaybe extractVar' x) == length x

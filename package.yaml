@@ -28,8 +28,11 @@ dependencies:
 - parallel
 - casing
 
-- containers
+
 - base >= 4 && < 5
+- classy-prelude
+- mtl
+- containers
 - extra
 - utility-ht
 - text
@@ -44,6 +47,9 @@ ghc-options:
 - -Wredundant-constraints
 
 default-extensions:
+#Prelude
+- NoImplicitPrelude
+
 # Syntax
 - LambdaCase
 - MultiWayIf
@@ -55,6 +61,7 @@ default-extensions:
 - RankNTypes
 - ExplicitForAll
 - ScopedTypeVariables
+- TypeOperators
 - TypeApplications
 - LiberalTypeSynonyms
 - InstanceSigs

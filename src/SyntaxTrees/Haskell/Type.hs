@@ -1,6 +1,6 @@
 module SyntaxTrees.Haskell.Type where
 
-import Data.Text                  (Text)
+import ClassyPrelude
 import SyntaxTrees.Haskell.Common (Module, QClass)
 
 

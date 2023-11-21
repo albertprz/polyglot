@@ -1,5 +1,7 @@
 module SyntaxTrees.Haskell.DataDef where
 
+import ClassyPrelude
+
 import SyntaxTrees.Haskell.Common (Class, Ctor, Var)
 import SyntaxTrees.Haskell.Type   (AnyKindedType, Type, TypeCtor, TypeParam)
 

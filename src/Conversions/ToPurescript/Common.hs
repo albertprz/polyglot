@@ -1,12 +1,12 @@
 module Conversions.ToPurescript.Common where
 
+import ClassyPrelude
+
+import qualified Data.Map                      as Map
+import qualified Data.Text                     as Text
 import qualified SyntaxTrees.Haskell.Common    as H
 import qualified SyntaxTrees.Purescript.Common as P
 
-import           Data.Map  (Map)
-import qualified Data.Map  as Map
-import           Data.Text (Text)
-import qualified Data.Text as Text
 
 
 var :: H.Var -> P.Var
@@ -22,7 +22,7 @@ ctorOp :: H.CtorOp -> P.CtorOp
 ctorOp (H.CtorOp x) = P.CtorOp $ replaceNaming x
 
 varOpFn :: H.Var -> P.Var
-varOpFn (H.Var x) = P.Var $ find varOpFnMap $ replaceNaming x
+varOpFn (H.Var x) = P.Var $ findDefault varOpFnMap $ replaceNaming x
 
 class' :: H.Class -> P.Class
 class' (H.Class x) = P.Class x
@@ -62,10 +62,10 @@ qClass (H.QClass x y) = P.QClass (qualifier' <$> x) (class' y)
 
 
 replaceNaming :: Text -> Text
-replaceNaming = Text.map (find charMap) . find globalMap
+replaceNaming = Text.map (findDefault charMap) . findDefault globalMap
 
-find :: Ord k => Map k k -> k -> k
-find x y = Map.findWithDefault y y x
+findDefault :: Ord k => Map k k -> k -> k
+findDefault x y = Map.findWithDefault y y x
 
 globalMap :: Map Text Text
 globalMap = varOpMap <> ctorOpMap <> varMap <> ctorMap

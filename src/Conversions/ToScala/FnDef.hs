@@ -1,5 +1,7 @@
 module Conversions.ToScala.FnDef where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.Common as H
 import qualified SyntaxTrees.Haskell.FnDef  as H
 import qualified SyntaxTrees.Haskell.Type   as H
@@ -13,12 +15,10 @@ import Conversions.ToScala.Pattern (allVars, extractVars, pattern')
 import Conversions.ToScala.Type    (argLists, classScopeSplit, findTypeParams,
                                     typeParam, typeSplit, usingArgList)
 
-import Data.Foldable           (Foldable (fold, toList))
 import Data.List               (nubBy)
-import Data.Maybe              (fromMaybe, isJust, listToMaybe, mapMaybe)
-import Data.Tuple.Extra        (uncurry3, (***))
+import Data.Tuple.Extra        (uncurry3)
 import SyntaxTrees.Scala.FnDef (WhenExpr (..))
-import Utils.List              (groupTuplesByKey, mergeUnion)
+import Utils.List              (groupTuplesByKey, initList, mergeUnion)
 
 
 emptyFnSig :: S.FnSig
@@ -50,7 +50,7 @@ fnDefOrSigs defsOrSigs = nubBy dedupFn $ mergeUnion sigs groupedDefs
   where
     dedupFn x y = any isJust [fst x, fst y] &&
                   ((.name) <$> fst x) == ((.name) <$> fst y)
-    defs = mapMaybe (\case (H.Def x) -> Just (head x.names, x)
+    defs = mapMaybe (\case (H.Def x) -> Just (headEx x.names, x)
                            (H.Sig _) -> Nothing)
            defsOrSigs
     sigs = mapMaybe (\case (H.Def _) -> Nothing
@@ -73,14 +73,15 @@ fnDef sig defs = S.FnMethod $ S.MethodDef [] name fnSig
   where
     n = maybe 0 (length . (.args)) $ (listToMaybe . fold) defs
     fnSig =  (`unNamedFnSig` n') . (.type') <$> sig
-    name = var $ maybe (head . (.names) . head $ fromMaybe [] defs) (.name) sig
+    name = var $ maybe (headEx . (.names) . headEx
+               $ fromMaybe [] defs) (.name) sig
     (n', matchFn) = if n == 1 then (0, topLevelMatch) else (n, id)
 
 simpleFnDef :: Maybe H.FnSig -> H.FnDef -> S.InternalFnDef
 simpleFnDef sig def = S.FnMethod $ S.MethodDef [] name fnSig
                                                (Just $ simpleFnDefToFnBody def)
   where
-    name = var $ head def.names
+    name = var $ headEx def.names
     args = extractVars $ (.args) def
     fnSig = (`namedFnSig` args) . (.type') <$> sig
 
@@ -104,7 +105,7 @@ fnDefToFnBody defs = match
     cases = uncurry3 S.CaseBinding <$> zip3 casePatterns (repeat Nothing)
                                               caseBodies
     tuple x = S.Tuple $ S.FnVar' . S.Var' . S.QVar Nothing . S.Var <$> x
-    n = (length . (.args)) (head defs)
+    n = (length . (.args)) (headEx defs)
 
 
 
@@ -121,7 +122,7 @@ fnBody (H.RightOpSection x y) = S.LambdaExpr [] (S.InfixFnApply [fnOp y]
 fnBody (H.LambdaExpr x y)   = S.LambdaExpr (pattern' <$> x)
                                           (fnBody y)
 fnBody (H.IfExpr x y z)     = S.IfExpr (fnBody x) (fnBody y) (fnBody z)
-fnBody (H.DoExpr x)         = S.ForExpr (doStep <$> init x) (extractDoStep $ last x)
+fnBody (H.DoExpr x)         = S.ForExpr (doStep <$> initList x) (extractDoStep $ lastEx x)
 fnBody (H.MultiWayIfExpr x) = maybeGuardedBody $ H.Guarded x
 fnBody (H.CaseOfExpr x y)   = simplifyMatch $
                               S.MatchExpr (fnBody x) (caseBinding <$> y)
@@ -194,15 +195,15 @@ simpleCase _                              = Nothing
 
 maybeGuardedBody :: H.MaybeGuardedFnBody -> S.FnBody
 maybeGuardedBody (H.Guarded x)
-  | H.Otherwise <- last guards
-  , all onlySimpleGuards $ init guards
+  | H.Otherwise <- lastEx guards
+  , all onlySimpleGuards $ initList guards
   = S.CondExpr whenBranches elseBranch
   where
     guards = (.guard) <$> x
     bodies = fnBody . (.body)  <$> x
-    conds = aggregateConds . (fnBody <$>) . extractSimpleGuards <$> init guards
-    whenBranches = uncurry WhenExpr <$> zip conds (init bodies)
-    elseBranch = last bodies
+    conds = aggregateConds . (fnBody <$>) . extractSimpleGuards <$> initList guards
+    whenBranches = uncurry WhenExpr <$> zip conds (initList bodies)
+    elseBranch = lastEx bodies
 
 maybeGuardedBody (H.Guarded x)  = simplifyMatch $
   S.MatchExpr (S.Literal' $ S.BoolLit True) (guardedBody <$> x)

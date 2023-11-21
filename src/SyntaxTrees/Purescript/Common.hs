@@ -1,7 +1,7 @@
 module SyntaxTrees.Purescript.Common where
 
-import Data.List    (intercalate)
-import Data.Text    (Text, unpack)
+import ClassyPrelude
+
 import Utils.String (wrapParens)
 
 

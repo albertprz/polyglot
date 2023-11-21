@@ -1,5 +1,6 @@
 module SyntaxTrees.Haskell.Common where
-import Data.Text (Text)
+
+import ClassyPrelude
 
 
 newtype Var

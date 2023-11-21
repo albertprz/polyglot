@@ -1,17 +1,20 @@
 module Utils.Foldable where
 
+import ClassyPrelude
 
-hasNone :: Foldable t => t a -> Bool
+import Data.Type.Equality
+
+hasNone :: MonoFoldable mono => mono -> Bool
 hasNone = null
 
-hasSome :: Foldable t => t a -> Bool
+hasSome :: MonoFoldable mono => mono -> Bool
 hasSome = not . hasNone
 
-wrapMaybe :: Foldable t => t a -> Maybe (t a)
+wrapMaybe :: MonoFoldable mono => mono -> Maybe mono
 wrapMaybe x = if hasSome x then Just x else Nothing
 
-andPred :: (Foldable t, Functor t) => t (p -> Bool) -> p -> Bool
-andPred ps a = and $ ($ a) <$> ps
+andPred :: (Element mono ~ (p -> Bool), MonoFoldable mono) => mono -> p -> Bool
+andPred ps a = all ($ a) ps
 
-orPred :: (Foldable t, Functor t) => t (p -> Bool) -> p -> Bool
-orPred ps a = or $ ($ a) <$> ps
+orPred :: (Element mono ~ (p -> Bool), MonoFoldable mono) => mono -> p -> Bool
+orPred ps a = any ($ a) ps

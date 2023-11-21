@@ -1,6 +1,7 @@
 module SyntaxTrees.Purescript.Pattern where
 
-import Data.List                     (intercalate)
+import ClassyPrelude
+
 import SyntaxTrees.Purescript.Common (Literal, QCtor, QCtorOp, Var)
 import SyntaxTrees.Purescript.Type   (Type)
 import Utils.String                  (Wrapper (Wrapper), joinMaybe, str,

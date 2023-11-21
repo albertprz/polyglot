@@ -1,8 +1,9 @@
 module Main where
 
+import ClassyPrelude
+
 import CommandLine.Options (optsInfo)
 import CommandLine.Process (process)
-import Control.Monad       (join)
 import Options.Applicative (execParser)
 import System.Directory    (getHomeDirectory)
 

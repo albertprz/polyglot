@@ -1,10 +1,10 @@
 module Lexers.Haskell.Layout where
 
+import ClassyPrelude
 
 import Parsers.Haskell.Common (anyComment)
 
 import Utils.Foldable (hasNone, hasSome)
-import Utils.List     (safeHead, safeTail)
 import Utils.String   (overText, wrapCurly', wrapDoubleQuotes', wrapParens',
                        wrapQuotes')
 
@@ -18,13 +18,10 @@ import Bookhound.Parsers.Text      (betweenDoubleQuotes, betweenParens,
                                     betweenQuotes, spacing, word)
 
 
-import           Control.Applicative ((<|>))
-import           Control.Monad       (foldM)
-import           Data.Foldable       (Foldable (fold))
 import           Data.Foldable.Extra (sum')
-import           Data.Monoid.HT      (when)
-import           Data.Text           (Text, pack)
+import           Data.Monoid.Extra   (mwhen)
 import qualified Data.Text           as Text
+import           Utils.List          (headMaybe, tailList)
 
 
 adaptLayout :: Text -> Either [ParseError] Text
@@ -45,19 +42,19 @@ layout (x, y, z, t) = runParser layoutParser
          layoutText <- (layoutBegin |?)
          spaces'' <- (space ||*)
          rest <- otherText
-         let hasIn = Just "in" == safeHead (Text.words beginning)
+         let hasIn = Just "in" == headMaybe (Text.words beginning)
              hasCurly = Just '{' == fmap fst (Text.uncons rest)
-             indents = when z [Text.length spaces'] <>
+             indents = mwhen z [Text.length spaces'] <>
                 if not hasIn then y
-                else (Text.length spaces' + 1) : fold (safeTail y)
+                else (Text.length spaces' + 1) : tailList y
              layoutNextLine = hasSome layoutText && Text.null rest
              contextIndent = sum' $ Text.length <$>
                 [spaces', beginning, fold layoutText, spaces'']
              (newIndents, beginSep, stop) =
                  calcIndent indents (Text.length spaces')
                                             (t || hasCurly) beginning
-             endSep = when (hasSome layoutText && not hasCurly) " {"
-             indents' = when (hasSome layoutText && not (Text.null rest))
+             endSep = mwhen (hasSome layoutText && not hasCurly) " {"
+             indents' = mwhen (hasSome layoutText && not (Text.null rest))
                         [contextIndent] <> newIndents
              text = x <> [spaces' <> beginSep <> beginning <> fold
                           layoutText <> endSep <>  spaces'' <> rest]
@@ -82,10 +79,10 @@ calcIndent :: [Int] -> Int -> Bool -> Text -> ([Int], Text, Bool)
 calcIndent indentLvls curr stop beginning =
   (newIndentLvls, joinWords [closeContexts, sep], shouldStop)
   where
-    extraElems = if not stop then extra else fold $ safeTail extra
+    extraElems = if not stop then extra else tailList extra
     closeContexts = fold ("} " <$ extraElems)
     shouldStop = stop && hasNone extra
-    sep = when (elem curr (safeHead newIndentLvls) &&
+    sep = mwhen (elem curr (headMaybe newIndentLvls) &&
                 notElem beginning nestTokens) "; "
     (extra, newIndentLvls) = span (curr <) indentLvls
     joinWords = Text.unwords . filter (not . Text.null)

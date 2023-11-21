@@ -1,5 +1,7 @@
 module Conversions.ToScala.ModuleDef where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.ModuleDef as H
 import qualified SyntaxTrees.Scala.DataDef     as S
 import qualified SyntaxTrees.Scala.FnDef       as S
@@ -11,7 +13,6 @@ import Conversions.ToScala.DataDef  (dataDef, newtypeDef, typeDef)
 import Conversions.ToScala.FnDef    (fnDefOrSigs, fnDefs)
 import Conversions.ToScala.Type     (typeVar)
 
-import Data.Maybe     (mapMaybe, maybeToList)
 import Utils.Foldable (wrapMaybe)
 import Utils.Maybe    (cond)
 

@@ -1,6 +1,7 @@
 module SyntaxTrees.Scala.PackageDef where
 
-import Data.List                 (intercalate)
+import ClassyPrelude
+
 import SyntaxTrees.Scala.Common  (Package, Var, VarOp)
 import SyntaxTrees.Scala.DataDef (InternalDef)
 import SyntaxTrees.Scala.Type    (TypeVar)

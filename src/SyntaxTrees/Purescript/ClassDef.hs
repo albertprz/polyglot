@@ -1,7 +1,8 @@
 module SyntaxTrees.Purescript.ClassDef where
 
-import Data.List                     (intercalate)
-import Data.Monoid.HT                (when)
+import ClassyPrelude
+
+import Data.Monoid.Extra             (mwhen)
 import SyntaxTrees.Purescript.Common (Class, Var)
 import SyntaxTrees.Purescript.FnDef  (FnDefOrSig)
 import SyntaxTrees.Purescript.Type   (AnyKindedType, ClassConstraint, TypeParam,
@@ -60,16 +61,16 @@ instance Show InstanceDef where
                 `joinMaybePost` "=>",
                y `joinMaybePost` "::",
                show z,
-               intercalate " " $ showAnyKindedTypeNested <$> t,
+               unwords $ showAnyKindedTypeNested <$> t,
                "where",
                wrapBlock u]
 
 instance Show DerivingDef where
   show (DerivingDef x y z t u) =
     joinWords ["derive",
-               when (x == NewTypeDeriving) "newtype",
+               mwhen (x == NewTypeDeriving) "newtype",
                "instance",
                (Wrapper <$> wrapMaybe (wrapParensCsv y)) `joinMaybePost` "=>",
                z `joinMaybePost` "::",
                show t,
-               intercalate " " $ showAnyKindedTypeNested <$> u]
+               unwords $ showAnyKindedTypeNested <$> u]

@@ -1,5 +1,7 @@
 module SyntaxTrees.Purescript.DataDef where
 
+import ClassyPrelude
+
 import SyntaxTrees.Purescript.Common (Ctor, Var)
 import SyntaxTrees.Purescript.Type   (AnyKindedType, Type, TypeCtor, TypeParam,
                                       showTypeNested)

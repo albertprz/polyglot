@@ -1,7 +1,6 @@
 module SyntaxTrees.Scala.Common where
 
-import Data.List (intercalate)
-import Data.Text (Text, unpack)
+import ClassyPrelude
 
 
 newtype Var

@@ -1,5 +1,7 @@
 module Conversions.ToPurescript.FnDef where
 
+import ClassyPrelude hiding (guard)
+
 import qualified SyntaxTrees.Haskell.FnDef     as H
 import qualified SyntaxTrees.Haskell.Type      as H
 import qualified SyntaxTrees.Purescript.Common as P
@@ -10,8 +12,6 @@ import           Conversions.ToPurescript.Common  (literal, qCtor, qCtorOp,
                                                    varOpFn)
 import           Conversions.ToPurescript.Pattern (pattern')
 import           Conversions.ToPurescript.Type    (findTypeParams, type')
-import           Data.Bifunctor                   (Bifunctor (bimap))
-import           Data.Foldable                    (Foldable (toList))
 import qualified Data.Set                         as Set
 
 

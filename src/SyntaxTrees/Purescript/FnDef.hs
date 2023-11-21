@@ -1,6 +1,7 @@
 module SyntaxTrees.Purescript.FnDef where
 
-import Data.List                      (intercalate)
+import ClassyPrelude
+
 import SyntaxTrees.Purescript.Common  (Literal, QCtor, QCtorOp, QVar, QVarOp,
                                        Var, VarOp)
 import SyntaxTrees.Purescript.Pattern (Pattern, showPatternNested)

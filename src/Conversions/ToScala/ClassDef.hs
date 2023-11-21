@@ -1,5 +1,7 @@
 module Conversions.ToScala.ClassDef where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.ClassDef as H
 import qualified SyntaxTrees.Haskell.Common   as H
 import qualified SyntaxTrees.Scala.Common     as S
@@ -12,7 +14,6 @@ import Conversions.ToScala.Type  (anyKindedType, classConstraint,
                                   findAnyKindedTypeParams, typeParam,
                                   usingArgList)
 
-import Data.Foldable (Foldable (toList))
 
 
 

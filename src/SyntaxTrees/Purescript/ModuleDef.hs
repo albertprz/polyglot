@@ -1,6 +1,5 @@
 module SyntaxTrees.Purescript.ModuleDef where
 
-import Data.Monoid.HT                  (when)
 import SyntaxTrees.Purescript.ClassDef (ClassDef, DerivingDef, InstanceDef)
 import SyntaxTrees.Purescript.Common   (Class, Module, Var, VarOp)
 import SyntaxTrees.Purescript.DataDef  (DataDef, NewTypeDef, TypeDef)
@@ -8,6 +7,9 @@ import SyntaxTrees.Purescript.FnDef    (FnDefOrSig (Sig), InfixFnDef)
 import SyntaxTrees.Purescript.Type     (TypeVar)
 import Utils.String                    (joinMaybe, joinWords, wrapParens,
                                         wrapParensCsv, (+++))
+
+import ClassyPrelude
+import Data.Monoid.Extra (mwhen)
 
 
 data ModuleDef
@@ -33,7 +35,7 @@ data ModuleImport
       , alias     :: Maybe Module
       }
 
-data ModuleImportDef
+newtype ModuleImportDef
   = ModuleImportDef ImportExportDef
 
 data ImportExportDef
@@ -83,7 +85,7 @@ instance Show ModuleImport where
   show (ModuleImport x y z t) =
     joinWords ["import",
                show x,
-               when y "hiding",
+               mwhen y "hiding",
                wrapParensCsv z,
                "as" `joinMaybe` t]
 

@@ -1,7 +1,7 @@
 module SyntaxTrees.Purescript.Type where
 
-import Data.List                     (intercalate)
-import Data.Text                     (Text, unpack)
+import ClassyPrelude
+
 import SyntaxTrees.Purescript.Common (Module, QClass, showQualified)
 import Utils.String                  (str, wrapParens, wrapParensCsv,
                                       wrapSpaces, (+++))

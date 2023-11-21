@@ -1,8 +1,7 @@
 module CommandLine.Options where
 
-import Data.Either.Extra   (mapLeft)
-import Data.List           (intercalate)
-import Data.Text           (Text, pack)
+import ClassyPrelude
+
 import Options.Applicative
 
 import qualified Bookhound.Parser            as Bookhound
@@ -70,4 +69,4 @@ language = Purescript <$ oneOf @Text ["Purescript", "purescript", "purs"] <|>
 parserOption :: Bookhound.Parser a -> Options.Applicative.Mod Options.Applicative.OptionFields a -> Parser a
 parserOption parser = option $ eitherReader reader
   where
-    reader = mapLeft show . Bookhound.runParser parser . pack
+    reader = first show . Bookhound.runParser parser . pack

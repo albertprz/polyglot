@@ -1,5 +1,7 @@
 module SyntaxTrees.Haskell.ClassDef where
 
+import ClassyPrelude
+
 import SyntaxTrees.Haskell.Common  (Class)
 import SyntaxTrees.Haskell.DataDef (DerivingStrategy)
 import SyntaxTrees.Haskell.FnDef   (FnDefOrSig)

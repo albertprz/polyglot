@@ -1,8 +1,9 @@
 module Utils.Functor where
 
+import ClassyPrelude
 
 ffmap :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
-ffmap x y = (fmap . fmap) x y
+ffmap = fmap . fmap
 
 
 infixl 4 <<$>>

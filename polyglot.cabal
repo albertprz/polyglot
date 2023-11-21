@@ -78,6 +78,7 @@ library
   hs-source-dirs:
       src
   default-extensions:
+      NoImplicitPrelude
       LambdaCase
       MultiWayIf
       TupleSections
@@ -86,6 +87,7 @@ library
       RankNTypes
       ExplicitForAll
       ScopedTypeVariables
+      TypeOperators
       TypeApplications
       LiberalTypeSynonyms
       InstanceSigs
@@ -118,12 +120,14 @@ library
     , bookhound
     , bytestring
     , casing
+    , classy-prelude
     , containers
     , directory
     , directory-tree
     , extra
     , filepath
     , fsnotify
+    , mtl
     , optparse-applicative
     , parallel
     , text
@@ -140,6 +144,7 @@ executable polyglot
   hs-source-dirs:
       app
   default-extensions:
+      NoImplicitPrelude
       LambdaCase
       MultiWayIf
       TupleSections
@@ -148,6 +153,7 @@ executable polyglot
       RankNTypes
       ExplicitForAll
       ScopedTypeVariables
+      TypeOperators
       TypeApplications
       LiberalTypeSynonyms
       InstanceSigs
@@ -180,12 +186,14 @@ executable polyglot
     , bookhound
     , bytestring
     , casing
+    , classy-prelude
     , containers
     , directory
     , directory-tree
     , extra
     , filepath
     , fsnotify
+    , mtl
     , optparse-applicative
     , parallel
     , polyglot

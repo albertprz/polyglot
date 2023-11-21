@@ -1,5 +1,7 @@
 module Parsers.Haskell.FnDef where
 
+import ClassyPrelude hiding (guard)
+
 import Lexers.Haskell.Layout     (lexeme)
 import Parsers.Haskell.Common    (literal, nonTokenQVar, qCtor, qCtorOp, qVar,
                                   qVarOp, token, var, varOp)
@@ -22,11 +24,7 @@ import Bookhound.Parsers.Number      (int)
 import Bookhound.Parsers.Text        (anyString, betweenCurlyBrackets,
                                       betweenParens, betweenSquare, spacing)
 
-import Control.Applicative ((<|>))
-import Data.Foldable       (Foldable (fold))
-import Data.Maybe          (maybeToList)
-import Data.Text           (Text)
-import Utils.String        (overText, wrapCurly)
+import Utils.String (overText, wrapCurly)
 
 
 fnSig :: Parser FnSig
@@ -194,7 +192,8 @@ adaptFnBody = do start <- otherText
 
 
 statements :: Parser a -> Parser [a]
-statements parser = fold <$> someSepBy (char ';') (maybeToList <$> (parser |?))
+statements parser =
+  fold <$> someSepBy (char ';') (fmap maybeToList (parser |?))
 
 betweenContext :: Parser a -> Parser [a]
 betweenContext = betweenCurlyBrackets . statements

@@ -1,5 +1,7 @@
 module Conversions.ToPurescript.Pattern where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.Pattern    as H
 import qualified SyntaxTrees.Purescript.Pattern as P
 
@@ -13,7 +15,7 @@ pattern' (H.CtorPattern x y) =
 pattern' (H.InfixCtorPattern x y) =
   P.InfixCtorPattern (qCtorOp x) (pattern' <$> y)
 pattern' (H.RecordPattern x y) =
-  P.RecordPattern (qCtor x) ((\(z, t) -> (var z, pattern' <$> t)) <$> y)
+  P.RecordPattern (qCtor x) (bimap var (fmap pattern') <$> y)
 pattern' (H.WildcardRecordPattern x y) =
   pattern' $ H.RecordPattern x y
 pattern' (H.AliasedPattern x y) =

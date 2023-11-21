@@ -1,5 +1,6 @@
 module Parsers.Haskell.Type where
 
+import ClassyPrelude
 
 import Bookhound.Parser              (Parser)
 import Bookhound.ParserCombinators   (multipleSepBy, string, (|+))
@@ -8,7 +9,6 @@ import Bookhound.Parsers.Collections (tupleOf)
 import Bookhound.Parsers.Text        (betweenParens, betweenSquare,
                                       maybeBetweenParens)
 
-import Control.Applicative      ((<|>))
 import Parsers.Haskell.Common   (ident, notReserved, qClass, qTerm')
 import SyntaxTrees.Haskell.Type (AnyKindedType (..), ClassConstraint (..),
                                  QTypeCtor (QTypeCtor), QTypeVar (QTypeVar),

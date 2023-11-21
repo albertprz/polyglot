@@ -1,24 +1,20 @@
 module Conversions.ToScala.Type where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.Type as H
 import qualified SyntaxTrees.Scala.Common as S
 import qualified SyntaxTrees.Scala.Type   as S
 
-import Conversions.ToScala.Common (find, qClass, qualifier')
+import Conversions.ToScala.Common (findDefault, qClass, qualifier')
 
-import Data.Char (toUpper)
-import Data.Map  (Map)
-import Data.Set  (Set)
-
-import qualified Data.Map  as Map
-import qualified Data.Set  as Set
-import           Data.Text (Text)
-import qualified Data.Text as Text
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 
 
 typeParam :: H.TypeParam -> S.TypeParam
-typeParam (H.TypeParam x) = S.TypeParam $ Text.map toUpper x
+typeParam (H.TypeParam x) = S.TypeParam $ toUpper x
 
 typeVar :: H.TypeVar -> S.TypeVar
 typeVar (H.TypeVar x) = S.TypeVar $ convertTypeVar x
@@ -114,10 +110,10 @@ qTypeCtor (H.QTypeCtor x y) = S.QTypeCtor (qualifier' <$> x) (typeCtor y)
 
 
 convertTypeCtor :: Text -> Text
-convertTypeCtor = find typeCtorMap
+convertTypeCtor = findDefault typeCtorMap
 
 convertTypeVar :: Text -> Text
-convertTypeVar = find typeVarMap
+convertTypeVar = findDefault typeVarMap
 
 typeCtorMap :: Map Text Text
 typeCtorMap = Map.fromList [("Maybe", "Option")]

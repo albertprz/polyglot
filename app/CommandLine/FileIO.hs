@@ -1,25 +1,25 @@
 module CommandLine.FileIO where
 
-import CommandLine.Options (Language (..), Opts (..))
+import ClassyPrelude
 
 import Lexers.Haskell.Layout (adaptLayout)
 
-import Control.Monad               ((<=<))
+import CommandLine.Options (Language (..), Opts (..))
+import System.Directory      (canonicalizePath)
+import System.Directory.Tree (AnchoredDirTree (..), DirTree (..))
+import System.FilePath       (joinPath, normalise, splitDirectories, splitPath,
+                              takeDirectory, takeExtensions, takeFileName,
+                              (-<.>))
+import System.FSNotify       (Event (..))
+
+import Data.Type.Equality
+import Control.Monad
 import Control.Parallel.Strategies (parMap, rseq)
-import Data.List                   (isPrefixOf)
-import Data.Text                   (Text, pack)
-import Data.Text.Encoding          (decodeUtf8, encodeUtf8)
 import Utils.Foldable              (andPred, orPred, wrapMaybe)
 import Utils.Functor               ((<<$>>))
 import Utils.String                (wrapBlock, wrapContext)
 
 
-import System.Directory      (canonicalizePath)
-import System.Directory.Tree (AnchoredDirTree (..), DirTree (..))
-import System.FilePath       (joinPath, normalise, splitDirectories, splitPath,
-                              takeDirectory, takeExtensions, takeFileName,
-                              (-<.>), (</>))
-import System.FSNotify       (ActionPredicate, Event (..))
 
 
 import qualified Data.ByteString as B (readFile, writeFile)
@@ -30,6 +30,7 @@ import qualified Parsers.Haskell.ModuleDef          as Parser
 
 import Bookhound.Parser (ParseError, runParser)
 import Utils.String     (wrapNewLines)
+import Utils.List
 
 
 toTargetLanguage :: Language -> Text -> Either [ParseError] String
@@ -60,8 +61,8 @@ moveTree fp2 (_ :/ x@(Dir _ _)) = "." :/ newDirTree
   where
 
     newDirTree    = foldr (\curr acc -> Dir curr [acc]) prunedDirTree
-                                                      (init outputDirs)
-    prunedDirTree = Dir (last outputDirs)
+                                                      (initList outputDirs)
+    prunedDirTree = Dir (lastEx outputDirs)
                         (getDirTreeContents 1 x)
     outputDirs = splitDirectories $ takeDirectory $ normalise fp2
 
@@ -70,22 +71,24 @@ moveTree _ x                      = x
 
 reportFailure :: DirTree a -> IO ()
 reportFailure (Failed x y) = putStrLn $
-  "\nFailure when converting file " ++ x ++ ": " ++ show y
+  "\nFailure when converting file " ++ pack x ++ ": " ++ tshow y
 reportFailure _ = pure ()
 
 
-watchPred :: Foldable t => t FilePath -> ActionPredicate
+watchPred :: (Element mono ~ FilePath, MonoFoldable mono)
+  => mono -> Event -> Bool
 watchPred x (Added fp _ _)    = filePathPred fp x
 watchPred x (Modified fp _ _) = filePathPred fp x
 watchPred x (Removed fp _ _)  = filePathPred fp x
 watchPred _ _                 = False
 
 
-filePathPred :: Foldable t => FilePath -> t FilePath -> Bool
-filePathPred fp x = isHaskellFile fp
-                    && all (== fileName) x
+filePathPred :: (Element mono ~ FilePath, MonoFoldable mono)
+  => FilePath -> mono -> Bool
+filePathPred fp x =
+  isHaskellFile fp && sameFiles
   where
-    fileName = takeFileName fp
+    sameFiles = all (== (takeFileName fp)) x
 
 getWatchPath :: FilePath -> Opts -> IO FilePath
 getWatchPath fp Opts{sourcePath, targetPath} =

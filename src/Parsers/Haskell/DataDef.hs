@@ -1,5 +1,7 @@
 module Parsers.Haskell.DataDef where
 
+import ClassyPrelude
+
 import Parsers.Haskell.Common      (class', ctor, var)
 import Parsers.Haskell.Type        (anyKindedType, standaloneType, type',
                                     typeCtor, typeParam)
@@ -16,8 +18,6 @@ import Bookhound.Parsers.Char        (colon, comma, equal)
 import Bookhound.Parsers.Collections (tupleOf)
 import Bookhound.Parsers.Text        (betweenCurlyBrackets, maybeBetweenParens)
 
-import Control.Applicative ((<|>))
-import Data.Foldable       (Foldable (fold))
 
 
 typeDef :: Parser TypeDef

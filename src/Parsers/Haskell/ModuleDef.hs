@@ -1,5 +1,6 @@
 module Parsers.Haskell.ModuleDef where
 
+import ClassyPrelude
 
 import Parsers.Haskell.ClassDef (classDef, derivingDef, instanceDef)
 import Parsers.Haskell.Common   (module', token, var, varOp)
@@ -18,11 +19,6 @@ import Bookhound.Parser            (Parser)
 import Bookhound.ParserCombinators (manySepBy, string, (|?))
 import Bookhound.Parsers.Char      (comma)
 import Bookhound.Parsers.Text      (betweenParens, maybeBetweenSpacing)
-
-
-import Control.Applicative ((<|>))
-import Data.Foldable       (Foldable (fold))
-import Data.Maybe          (isJust)
 
 
 

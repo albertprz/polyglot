@@ -1,5 +1,7 @@
 module SyntaxTrees.Haskell.ModuleDef where
 
+import ClassyPrelude
+
 import SyntaxTrees.Haskell.ClassDef (ClassDef, DerivingDef, InstanceDef)
 import SyntaxTrees.Haskell.Common   (Module, Var, VarOp)
 import SyntaxTrees.Haskell.DataDef  (DataDef, NewTypeDef, TypeDef)

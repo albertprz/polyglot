@@ -1,5 +1,7 @@
 module SyntaxTrees.Haskell.Pattern where
 
+import ClassyPrelude
+
 import SyntaxTrees.Haskell.Common (Literal, QCtor, QCtorOp, Var)
 import SyntaxTrees.Haskell.Type   (Type)
 

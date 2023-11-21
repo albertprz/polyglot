@@ -1,16 +1,14 @@
 module Conversions.ToPurescript.Type where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.Type    as H
 import qualified SyntaxTrees.Purescript.Type as P
 
-import Conversions.ToPurescript.Common (find, module', qClass)
+import Conversions.ToPurescript.Common (findDefault, module', qClass)
 
-import Data.Map (Map)
-import Data.Set (Set)
-
-import qualified Data.Map  as Map
-import qualified Data.Set  as Set
-import           Data.Text (Text)
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 
 
@@ -79,10 +77,10 @@ qTypeCtor (H.QTypeCtor x y) = P.QTypeCtor (module' <$> x) (typeCtor y)
 
 
 convertTypeCtor :: Text -> Text
-convertTypeCtor = find typeCtorMap
+convertTypeCtor = findDefault typeCtorMap
 
 convertTypeVar :: Text -> Text
-convertTypeVar = find typeVarMap
+convertTypeVar = findDefault typeVarMap
 
 typeCtorMap :: Map Text Text
 typeCtorMap = Map.empty

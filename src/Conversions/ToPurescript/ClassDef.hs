@@ -1,5 +1,7 @@
 module Conversions.ToPurescript.ClassDef where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.ClassDef    as H
 import qualified SyntaxTrees.Purescript.ClassDef as P
 

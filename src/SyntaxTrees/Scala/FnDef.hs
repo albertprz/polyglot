@@ -1,15 +1,16 @@
 module SyntaxTrees.Scala.FnDef where
 
-import Data.Monoid.HT            (when)
+import ClassyPrelude
+
 import SyntaxTrees.Scala.Common  (Literal, Modifier, QCtor, QCtorOp, QVar,
                                   QVarOp, Var)
 import SyntaxTrees.Scala.Pattern (Pattern)
 import SyntaxTrees.Scala.Type    (ArgList, Type, TypeParam,
                                   UsingArgList (UsingArgList))
 
-import Data.List (intercalate)
 
 import Conversions.ToScala.Pattern (allVars')
+import Data.Monoid.Extra           (mwhen)
 import Utils.Foldable              (hasSome, wrapMaybe)
 import Utils.String
 
@@ -250,7 +251,7 @@ showGiven :: Maybe Var -> [TypeParam] -> [UsingArgList]
 showGiven x y z t u = joinWords [foldMap show x,
                                  wrapSquareCsv y,
                                  str " " z,
-                                 when displaySep ":",
+                                 mwhen displaySep ":",
                                  show t]
    +++ implementation
 

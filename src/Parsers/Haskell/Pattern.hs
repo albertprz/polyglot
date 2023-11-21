@@ -1,5 +1,7 @@
 module Parsers.Haskell.Pattern where
 
+import ClassyPrelude
+
 import Parsers.Haskell.Common      (literal, qCtor, qCtorOp, token, var)
 import Parsers.Haskell.Type        (type')
 import SyntaxTrees.Haskell.Pattern (Pattern (..))
@@ -11,7 +13,6 @@ import Bookhound.Parsers.Char        (comma, underscore)
 import Bookhound.Parsers.Collections (listOf, tupleOf)
 import Bookhound.Parsers.Text        (betweenCurlyBrackets, betweenParens,
                                       maybeBetweenParens)
-import Control.Applicative           ((<|>))
 
 
 

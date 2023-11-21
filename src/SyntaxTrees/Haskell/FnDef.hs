@@ -1,5 +1,7 @@
 module SyntaxTrees.Haskell.FnDef where
 
+import ClassyPrelude
+
 import SyntaxTrees.Haskell.Common  (Literal, QCtor, QCtorOp, QVar, QVarOp, Var,
                                     VarOp)
 import SyntaxTrees.Haskell.Pattern (Pattern)

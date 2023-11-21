@@ -1,5 +1,7 @@
 module Conversions.ToScala.DataDef where
 
+import ClassyPrelude
+
 import qualified SyntaxTrees.Haskell.DataDef as H
 import qualified SyntaxTrees.Scala.Common    as S
 import qualified SyntaxTrees.Scala.DataDef   as S
@@ -7,7 +9,6 @@ import qualified SyntaxTrees.Scala.Type      as S
 
 import Conversions.ToScala.Common  (autoIds, class', ctor, var)
 import Conversions.ToScala.Type    (anyKindedType, type', typeCtor, typeParam)
-import Data.Text                   (Text)
 import SyntaxTrees.Haskell.DataDef (derivingClasses)
 
 

@@ -1,6 +1,8 @@
 module SyntaxTrees.Scala.DataDef where
 
-import Data.Monoid.HT           (when)
+import ClassyPrelude
+
+import Data.Monoid.Extra        (mwhen)
 import SyntaxTrees.Scala.Common (Ctor, Modifier, TypeClass)
 import SyntaxTrees.Scala.FnDef  (InternalFnDef, MethodDef)
 import SyntaxTrees.Scala.Type   (ArgList (..), Type, TypeCtor, TypeParam,
@@ -186,7 +188,7 @@ showStructure  x y z t u v w r s =
              joinList "extends" ", " r,
              sep ++ wrapSpacedBlock s]
   where
-    sep = when (x /= "extension" && hasSome s) ": "
+    sep = mwhen (x /= "extension" && hasSome s) ": "
 
 instance Show InternalDef where
   show (Fn x)         = show x

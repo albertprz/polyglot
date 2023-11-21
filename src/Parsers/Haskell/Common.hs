@@ -1,6 +1,6 @@
 module Parsers.Haskell.Common where
 
-import Data.Foldable (Foldable (fold))
+import ClassyPrelude
 
 
 import           Bookhound.Parser            (Parser, anyChar, satisfy,
@@ -17,8 +17,6 @@ import           Bookhound.Parsers.Number    (double, int, negInt)
 import           Bookhound.Parsers.Text      (betweenDoubleQuotes,
                                               betweenParens, betweenQuotes,
                                               maybeBetweenSpacing)
-import           Control.Applicative         ((<|>))
-import           Data.Text                   (Text, pack, unpack)
 import qualified Data.Text                   as Text
 import           SyntaxTrees.Haskell.Common  (Class (..), Ctor (..),
                                               CtorOp (..), Literal (..),
@@ -26,9 +24,11 @@ import           SyntaxTrees.Haskell.Common  (Class (..), Ctor (..),
                                               QCtor (..), QCtorOp (..),
                                               QVar (..), QVarOp (..), Var (..),
                                               VarOp (..))
+import           Text.Read                   (read)
 import           Utils.Foldable              (wrapMaybe)
-import           Utils.String                (overText, tshow, wrap,
-                                              wrapBackQuotes, wrapQuotes)
+import           Utils.List                  (initList)
+import           Utils.String                (overText, wrap, wrapBackQuotes,
+                                              wrapQuotes)
 
 
 
@@ -138,7 +138,8 @@ qTerm' :: (Text -> b) -> Parser (Maybe Module, b)
 qTerm' fn = token parser
   where
     parser = do xs <- getComponents <$> module''
-                pure (Module <$> wrapMaybe (init xs), fn $ last xs)
+                pure (Module <$> wrapMaybe (initList xs)
+                     , fn $ lastEx xs)
     getComponents (Module xs) = xs
 
 

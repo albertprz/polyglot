@@ -1,7 +1,7 @@
 module SyntaxTrees.Scala.Type where
 
-import Data.List                (intercalate)
-import Data.Text                (Text, unpack)
+import ClassyPrelude
+
 import SyntaxTrees.Scala.Common (Modifier, Package, QTypeClass, Var,
                                  showQualified)
 import Utils.Foldable           (wrapMaybe)
