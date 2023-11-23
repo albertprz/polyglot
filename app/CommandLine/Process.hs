@@ -4,8 +4,7 @@ import ClassyPrelude
 
 import CommandLine.FileIO  (convertDirTree, dirPred, emitError, formatterExec,
                             getWatchPath, isDir, moveTree, pathToLanguage,
-                            reportFailure, toTargetLanguage,
-                            watchPred)
+                            reportFailure, toTargetLanguage, watchPred)
 import CommandLine.Options (Opts (..))
 
 
@@ -72,7 +71,7 @@ actions Opts{language, sourcePath, targetPath, autoFormat, clearContents} =
   when clearContents (removeDirIfExists targetPath)
   >>= const (migrateDirTree sourcePath targetPath)
   >>= writeDirectoryWith writeFileUtf8
-  >>= (traverse_ reportFailure) . failures . dirTree
+  >>= traverse_ reportFailure . failures . dirTree
   >>= const format
 
   where

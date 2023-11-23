@@ -79,28 +79,17 @@ library
       src
   default-extensions:
       NoImplicitPrelude
+      StrictData
       LambdaCase
       MultiWayIf
-      TupleSections
-      PostfixOperators
       BlockArguments
-      RankNTypes
-      ExplicitForAll
-      ScopedTypeVariables
-      TypeOperators
-      TypeApplications
+      PostfixOperators
       LiberalTypeSynonyms
-      InstanceSigs
       FunctionalDependencies
       DuplicateRecordFields
       NoFieldSelectors
-      NamedFieldPuns
       RecordWildCards
       OverloadedRecordDot
-      ConstrainedClassMethods
-      MultiParamTypeClasses
-      FlexibleContexts
-      FlexibleInstances
       ApplicativeDo
       OverloadedStrings
       ViewPatterns
@@ -108,12 +97,6 @@ library
       TypeFamilies
       TypeFamilyDependencies
       DataKinds
-      PolyKinds
-      DeriveFunctor
-      DeriveFoldable
-      DeriveTraversable
-      DeriveGeneric
-      GeneralizedNewtypeDeriving
   ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base ==4.*
@@ -131,8 +114,7 @@ library
     , optparse-applicative
     , parallel
     , text
-    , utility-ht
-  default-language: Haskell2010
+  default-language: GHC2021
 
 executable polyglot
   main-is: Main.hs
@@ -145,28 +127,17 @@ executable polyglot
       app
   default-extensions:
       NoImplicitPrelude
+      StrictData
       LambdaCase
       MultiWayIf
-      TupleSections
-      PostfixOperators
       BlockArguments
-      RankNTypes
-      ExplicitForAll
-      ScopedTypeVariables
-      TypeOperators
-      TypeApplications
+      PostfixOperators
       LiberalTypeSynonyms
-      InstanceSigs
       FunctionalDependencies
       DuplicateRecordFields
       NoFieldSelectors
-      NamedFieldPuns
       RecordWildCards
       OverloadedRecordDot
-      ConstrainedClassMethods
-      MultiParamTypeClasses
-      FlexibleContexts
-      FlexibleInstances
       ApplicativeDo
       OverloadedStrings
       ViewPatterns
@@ -174,12 +145,6 @@ executable polyglot
       TypeFamilies
       TypeFamilyDependencies
       DataKinds
-      PolyKinds
-      DeriveFunctor
-      DeriveFoldable
-      DeriveTraversable
-      DeriveGeneric
-      GeneralizedNewtypeDeriving
   ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.*
@@ -198,5 +163,4 @@ executable polyglot
     , parallel
     , polyglot
     , text
-    , utility-ht
-  default-language: Haskell2010
+  default-language: GHC2021

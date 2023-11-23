@@ -4,7 +4,7 @@ import ClassyPrelude
 
 import Lexers.Haskell.Layout (adaptLayout)
 
-import CommandLine.Options (Language (..), Opts (..))
+import CommandLine.Options   (Language (..), Opts (..))
 import System.Directory      (canonicalizePath)
 import System.Directory.Tree (AnchoredDirTree (..), DirTree (..))
 import System.FilePath       (joinPath, normalise, splitDirectories, splitPath,
@@ -12,24 +12,19 @@ import System.FilePath       (joinPath, normalise, splitDirectories, splitPath,
                               (-<.>))
 import System.FSNotify       (Event (..))
 
-import Data.Type.Equality
 import Control.Monad
 import Control.Parallel.Strategies (parMap, rseq)
+import Data.Type.Equality
 import Utils.Foldable              (andPred, orPred, wrapMaybe)
 import Utils.Functor               ((<<$>>))
-import Utils.String                (wrapBlock, wrapContext)
+import Utils.String                (wrapBlock, wrapContext, wrapNewLines)
 
-
-
-
-import qualified Data.ByteString as B (readFile, writeFile)
 
 import qualified Conversions.ToPurescript.ModuleDef as ToPurescript
 import qualified Conversions.ToScala.ModuleDef      as ToScala
 import qualified Parsers.Haskell.ModuleDef          as Parser
 
 import Bookhound.Parser (ParseError, runParser)
-import Utils.String     (wrapNewLines)
 import Utils.List
 
 
@@ -46,11 +41,11 @@ convertDirTree :: Language -> DirTree Text -> DirTree Text
 convertDirTree language (File x y)
   | isHaskellFile x = applyTransform y
     where
-      applyTransform = either (Failed x . userError . wrapNewLines
-                              . wrapContext . ("Parse Errors: " ++)
-                              . wrapBlock)
-                              (File $ pathToLanguage language x)
-                       . (pack <$>) . toTargetLanguage language
+      applyTransform =
+        either (Failed x . userError . wrapNewLines
+                  . wrapContext . ("Parse Errors: " ++) . wrapBlock)
+                (File (pathToLanguage language x) . pack)
+                  . toTargetLanguage language
 
 convertDirTree language (Dir x y) = Dir x (parMap rseq (convertDirTree language) y)
 convertDirTree _ x = x
@@ -136,12 +131,3 @@ dirNamePred = not . orPred [isDotFile, (== "bin")]
 dirPred :: DirTree a -> Bool
 dirPred (Dir x _) = dirNamePred x
 dirPred _         = True
-
-
-readFileUtf8 :: FilePath -> IO Text
-readFileUtf8 fp | all dirNamePred (splitDirectories fp)
-  = decodeUtf8 <$> B.readFile fp
-readFileUtf8 _ = pure mempty
-
-writeFileUtf8 :: FilePath -> Text -> IO ()
-writeFileUtf8 fp = B.writeFile fp . encodeUtf8
